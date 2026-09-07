@@ -1,22 +1,22 @@
-# Docker images
+# docker/
 
-- **`Dockerfile.cpu`** (this pass): everything Phase 0-1 needs -- ingest, dedupe, fulltext
-  manifest, TF-IDF/KeyBERT keyword extraction, and the Streamlit curation app. Runs on the
-  laptop's CPU; no GPU required.
+`Dockerfile.cpu` is the only image, and `docker-compose.yml`'s single `pipeline` service builds
+from it. CPU only. It runs the classification and enrichment CLI and nothing else; no container
+here ever opens a connection to the database.
 
-- **`Dockerfile.gpu`** (not built yet, Phase 4): will add a CUDA-enabled PyTorch base image for
-  fine-tuning Bioformer/PubMedBERT on the lab NVIDIA GPU. Deferred until Phase 4 starts, since the
-  lab GPU's CUDA/driver version needs confirming first (see ROADMAP.md).
+It bakes the NLTK corpora and the KeyBERT/sentence-transformers weights in at build time, so a
+run needs no network access to tokenise, and so a host-Python run cannot silently diverge from
+what the container does. That is why `AGENTS.md` requires Docker for the engine.
 
-- **An Ollama-backed LLM service** (not built yet, Phase 5): will add a service running one or
-  more local LLM backends for the bake-off described in ROADMAP.md Phase 5, alongside cloud API
-  backends that don't need a container at all. Deferred until Phase 5 starts.
+What it mounts, and why each one is needed:
 
-Both `curate` and `pipeline` services in `docker-compose.yml` bind-mount
-`/home/gavinfarrell/PhD_Code` read-only at the same absolute path inside the container, because
-`configs/sources.yaml` references the sibling repos (`DOME_Top_Curate`,
-`DOME-Copilot-Data-Analysis`, etc.) by absolute host path. On a machine without those sibling
-repos present, only the sources that need them (`pdf_directory_gold` label sources and all
-`fulltext_roots`) will be unavailable -- the CSV/TSV/JSON sources still load fine, and
-`dome-triage fulltext fetch --pmcid ...` provides an independent full-text fallback (see
-AGENTS.md).
+| Mount | Why |
+|---|---|
+| `./data` | the spend and calibration logs the budget check reads and appends to |
+| `./configs` | the paths and the budget cap |
+| `./.git` (read-only) | so the provenance ledger can record the commit a run happened at |
+| `./curation_criteria` (read-only) | `CRITERIA.md` and the three vocabularies, read at runtime to build the prompts |
+| `./moros_pipeline` (read-write) | a run reads its staged or exported CSV from here and writes its event log back beside it |
+
+Rebuilding leaves the previous image dangling at about seven gigabytes. Run `docker image prune -f`
+after a few rebuilds and check `df -h /`. Never `docker system prune -a` without asking.
