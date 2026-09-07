@@ -13,37 +13,37 @@ label_sources:
   # total_weight,match_percentage,Top20_In_Journal  (verified).
   - name: dome_top_curate_positive
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/positive_entries.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/positive_entries.csv
     label: positive
     label_confidence: human_curated
 
   - name: dome_top_curate_negative
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/negative_entries.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/negative_entries.csv
     label: negative
     label_confidence: human_curated
 
   - name: dome_top_curate_skipped
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/skipped_entries.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/skipped_entries.csv
     label: skipped
     label_confidence: human_curated
 
   - name: dome_top_curate_top_positive
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_pos.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/top_pos.csv
     label: positive
     label_confidence: human_curated
 
   - name: dome_top_curate_top_negative
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_neg.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/top_neg.csv
     label: negative
     label_confidence: human_curated
 
   - name: dome_top_curate_top_skipped
     adapter: curated_csv
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_skipped.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/top_skipped.csv
     label: skipped
     label_confidence: human_curated
 
@@ -53,14 +53,14 @@ label_sources:
   # Note: different delimiters confirmed (tab vs comma).
   - name: copilot_1012_positive
     adapter: id_pair_only
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Download_Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary/positive_entries_pmid_pmcid_filtered.tsv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/Download_Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary/positive_entries_pmid_pmcid_filtered.tsv
     delimiter: "\t"
     label: positive
     label_confidence: human_curated
 
   - name: copilot_1012_negative
     adapter: id_pair_only
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Download_Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary/negative_entries_pmid_pmcid_filtered.csv
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/Download_Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary/negative_entries_pmid_pmcid_filtered.csv
     delimiter: ","
     label: negative
     label_confidence: human_curated
@@ -71,14 +71,14 @@ label_sources:
   # (a PMC{id}/ subdirectory containing PMC{id}_main.pdf plus supplementary files).
   - name: dome_registry_231_gold
     adapter: pdf_directory_gold
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/DOME_Registry_PMC_PDFs
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/DOME_Registry_PMC_PDFs
     pdf_layout: flat_main_pdf
     label: positive
     label_confidence: registry_confirmed
 
   - name: dome_registry_222_gold
     adapter: pdf_directory_gold
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
     pdf_layout: pmcid_subdir
     label: positive
     label_confidence: registry_confirmed
@@ -87,7 +87,7 @@ label_sources:
 
   - name: dome_top_curate_positive_candidates_pdfs
     adapter: pdf_directory_gold
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/Positive_PMC_PDFs
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/Positive_PMC_PDFs
     pdf_layout: flat_main_pdf
     label: positive
     label_confidence: heuristic_candidate
@@ -99,7 +99,7 @@ label_sources:
   # route to unresolved_needs_id_lookup.csv rather than being dropped or fuzzy-matched.
   - name: ebi_search_dome_api
     adapter: dome_registry_api_json
-    path: /home/gavinfarrell/PhD_Code/EBI_Search_DOME/dome_api_batches.json
+    path: ${DOME_TRIAGE_DATA_ROOT}/EBI_Search_DOME/dome_api_batches.json
     label: positive
     label_confidence: registry_confirmed
 
@@ -108,19 +108,19 @@ label_sources:
 # rows (Adapter B), all keyed by PMCID.
 fulltext_roots:
   - name: dome_registry_231_gold
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/DOME_Registry_PMC_PDFs
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/DOME_Registry_PMC_PDFs
     pdf_layout: flat_main_pdf
   - name: dome_registry_222_gold
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
     pdf_layout: pmcid_subdir
   - name: dome_top_curate_positive_candidates_pdfs
-    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/Positive_PMC_PDFs
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME_Top_Curate/Positive_PMC_PDFs
     pdf_layout: flat_main_pdf
   - name: copilot_1012_positive_pdfs
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary
     pdf_layout: pmcid_subdir
   - name: copilot_1012_negative_pdfs
-    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary
+    path: ${DOME_TRIAGE_DATA_ROOT}/DOME-Copilot-Data-Analysis/Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary
     pdf_layout: pmcid_subdir
 
 dedup:

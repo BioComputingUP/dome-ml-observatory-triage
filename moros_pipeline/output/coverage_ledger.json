@@ -1,1155 +1,1155 @@
 {
-  "queries": [
+ "queries": [
+  {
+   "query_sha256": "10a68780c930b8f716f465f7cf393df69d5290de8ac2ea594042d98d5645e82d",
+   "name": "ai_ml_core",
+   "canonical": "{\"combine\": \"OR\", \"date_field\": \"FIRST_PDATE\", \"sources\": [], \"terms\": [\"\\\"artificial intelligence\\\"\", \"\\\"machine learning\\\"\"]}",
+   "example_query": "(\"artificial intelligence\" OR \"machine learning\") AND (FIRST_PDATE:[1900-01-01 TO 2026-01-01])",
+   "windows": [
     {
-      "query_sha256": "10a68780c930b8f716f465f7cf393df69d5290de8ac2ea594042d98d5645e82d",
-      "name": "ai_ml_core",
-      "canonical": "{\"combine\": \"OR\", \"date_field\": \"FIRST_PDATE\", \"sources\": [], \"terms\": [\"\\\"artificial intelligence\\\"\", \"\\\"machine learning\\\"\"]}",
-      "example_query": "(\"artificial intelligence\" OR \"machine learning\") AND (FIRST_PDATE:[1900-01-01 TO 2026-01-01])",
-      "windows": [
-        {
-          "from": "1961-01-01",
-          "to": "1961-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:30.483998+00:00",
-          "loaded_to_moros": 2,
-          "loaded_at": "2026-09-03T15:38:32.149374+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1962-01-01",
-          "to": "1962-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:32.149416+00:00",
-          "loaded_to_moros": 2,
-          "loaded_at": "2026-09-03T15:38:33.862269+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1963-01-01",
-          "to": "1963-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:33.862345+00:00",
-          "loaded_to_moros": 4,
-          "loaded_at": "2026-09-03T15:38:35.523206+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1964-01-01",
-          "to": "1964-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:35.523270+00:00",
-          "loaded_to_moros": 4,
-          "loaded_at": "2026-09-03T15:38:37.174321+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1965-01-01",
-          "to": "1965-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:37.174379+00:00",
-          "loaded_to_moros": 3,
-          "loaded_at": "2026-09-03T15:38:38.981484+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1966-01-01",
-          "to": "1966-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:38.981541+00:00",
-          "loaded_to_moros": 1,
-          "loaded_at": "2026-09-03T15:38:40.649376+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1967-01-01",
-          "to": "1967-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:40.649446+00:00",
-          "loaded_to_moros": 4,
-          "loaded_at": "2026-09-03T15:38:42.399460+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1968-01-01",
-          "to": "1968-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:42.399505+00:00",
-          "loaded_to_moros": 3,
-          "loaded_at": "2026-09-03T15:38:43.895446+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1969-01-01",
-          "to": "1969-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:43.895527+00:00",
-          "loaded_to_moros": 2,
-          "loaded_at": "2026-09-03T15:38:45.329961+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1970-01-01",
-          "to": "1970-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:45.330042+00:00",
-          "loaded_to_moros": 1,
-          "loaded_at": "2026-09-03T15:38:46.762709+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1971-01-01",
-          "to": "1971-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:46.762787+00:00",
-          "loaded_to_moros": 1,
-          "loaded_at": "2026-09-03T15:38:48.094048+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1972-01-01",
-          "to": "1972-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:48.094091+00:00",
-          "loaded_to_moros": 3,
-          "loaded_at": "2026-09-03T15:38:49.478760+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1973-01-01",
-          "to": "1973-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:49.478835+00:00",
-          "loaded_to_moros": 7,
-          "loaded_at": "2026-09-03T15:38:50.864394+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1974-01-01",
-          "to": "1974-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:50.864452+00:00",
-          "loaded_to_moros": 5,
-          "loaded_at": "2026-09-03T15:38:52.292110+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1975-01-01",
-          "to": "1975-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:52.292147+00:00",
-          "loaded_to_moros": 4,
-          "loaded_at": "2026-09-03T15:38:53.726622+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1976-01-01",
-          "to": "1976-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:53.726696+00:00",
-          "loaded_to_moros": 4,
-          "loaded_at": "2026-09-03T15:38:55.085534+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1977-01-01",
-          "to": "1977-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:55.085591+00:00",
-          "loaded_to_moros": 9,
-          "loaded_at": "2026-09-03T15:38:56.594697+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1978-01-01",
-          "to": "1978-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:56.594790+00:00",
-          "loaded_to_moros": 15,
-          "loaded_at": "2026-09-03T15:38:57.959475+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1979-01-01",
-          "to": "1979-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:57.959518+00:00",
-          "loaded_to_moros": 19,
-          "loaded_at": "2026-09-03T15:38:59.870546+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1980-01-01",
-          "to": "1980-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:38:59.870604+00:00",
-          "loaded_to_moros": 24,
-          "loaded_at": "2026-09-03T15:39:01.222332+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1981-01-01",
-          "to": "1981-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:01.222373+00:00",
-          "loaded_to_moros": 34,
-          "loaded_at": "2026-09-03T15:39:02.635592+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1982-01-01",
-          "to": "1982-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:02.635651+00:00",
-          "loaded_to_moros": 35,
-          "loaded_at": "2026-09-03T15:39:04.449714+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1983-01-01",
-          "to": "1983-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:04.449791+00:00",
-          "loaded_to_moros": 54,
-          "loaded_at": "2026-09-03T15:39:05.810494+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1984-01-01",
-          "to": "1984-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:05.810548+00:00",
-          "loaded_to_moros": 81,
-          "loaded_at": "2026-09-03T15:39:07.242376+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1985-01-01",
-          "to": "1985-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:07.242420+00:00",
-          "loaded_to_moros": 128,
-          "loaded_at": "2026-09-03T15:39:08.579984+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1986-01-01",
-          "to": "1986-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:08.580071+00:00",
-          "loaded_to_moros": 184,
-          "loaded_at": "2026-09-03T15:39:10.007540+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1987-01-01",
-          "to": "1987-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:10.007585+00:00",
-          "loaded_to_moros": 160,
-          "loaded_at": "2026-09-03T15:39:11.414543+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1988-01-01",
-          "to": "1988-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:11.414589+00:00",
-          "loaded_to_moros": 171,
-          "loaded_at": "2026-09-03T15:39:12.808183+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1989-01-01",
-          "to": "1989-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:12.808233+00:00",
-          "loaded_to_moros": 194,
-          "loaded_at": "2026-09-03T15:39:14.271117+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1990-01-01",
-          "to": "1990-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:14.271211+00:00",
-          "loaded_to_moros": 241,
-          "loaded_at": "2026-09-03T15:39:15.667982+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1991-01-01",
-          "to": "1991-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:15.668037+00:00",
-          "loaded_to_moros": 223,
-          "loaded_at": "2026-09-03T15:39:17.076034+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1992-01-01",
-          "to": "1992-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:17.076096+00:00",
-          "loaded_to_moros": 179,
-          "loaded_at": "2026-09-03T15:39:18.427758+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1993-01-01",
-          "to": "1993-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:18.427836+00:00",
-          "loaded_to_moros": 262,
-          "loaded_at": "2026-09-03T15:39:19.838704+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1994-01-01",
-          "to": "1994-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:19.838752+00:00",
-          "loaded_to_moros": 301,
-          "loaded_at": "2026-09-03T15:39:21.269905+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1995-01-01",
-          "to": "1995-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:21.269947+00:00",
-          "loaded_to_moros": 337,
-          "loaded_at": "2026-09-03T15:39:22.690766+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1996-01-01",
-          "to": "1996-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:22.690839+00:00",
-          "loaded_to_moros": 307,
-          "loaded_at": "2026-09-03T15:39:24.552447+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1997-01-01",
-          "to": "1997-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:24.552510+00:00",
-          "loaded_to_moros": 360,
-          "loaded_at": "2026-09-03T15:39:25.982153+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1998-01-01",
-          "to": "1998-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:25.982197+00:00",
-          "loaded_to_moros": 373,
-          "loaded_at": "2026-09-03T15:39:27.416399+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "1999-01-01",
-          "to": "1999-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:27.416453+00:00",
-          "loaded_to_moros": 338,
-          "loaded_at": "2026-09-03T15:39:28.824658+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2000-01-01",
-          "to": "2000-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:28.824753+00:00",
-          "loaded_to_moros": 423,
-          "loaded_at": "2026-09-03T15:39:30.283356+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2001-01-01",
-          "to": "2001-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:30.283421+00:00",
-          "loaded_to_moros": 459,
-          "loaded_at": "2026-09-03T15:39:31.666677+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2002-01-01",
-          "to": "2002-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:31.666755+00:00",
-          "loaded_to_moros": 513,
-          "loaded_at": "2026-09-03T15:39:33.033768+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2003-01-01",
-          "to": "2003-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:33.033823+00:00",
-          "loaded_to_moros": 632,
-          "loaded_at": "2026-09-03T15:39:34.407817+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2004-01-01",
-          "to": "2004-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:34.407917+00:00",
-          "loaded_to_moros": 1325,
-          "loaded_at": "2026-09-03T15:39:35.788061+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2005-01-01",
-          "to": "2005-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:35.788123+00:00",
-          "loaded_to_moros": 2058,
-          "loaded_at": "2026-09-03T15:39:37.168599+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2006-01-01",
-          "to": "2006-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:37.168683+00:00",
-          "loaded_to_moros": 2345,
-          "loaded_at": "2026-09-03T15:39:38.591212+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2007-01-01",
-          "to": "2007-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:38.591296+00:00",
-          "loaded_to_moros": 2612,
-          "loaded_at": "2026-09-03T15:39:39.973566+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2008-01-01",
-          "to": "2008-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:39.973629+00:00",
-          "loaded_to_moros": 3022,
-          "loaded_at": "2026-09-03T15:39:41.445939+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2009-01-01",
-          "to": "2009-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:41.445987+00:00",
-          "loaded_to_moros": 2906,
-          "loaded_at": "2026-09-03T15:39:42.879606+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2010-01-01",
-          "to": "2010-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:42.879655+00:00",
-          "loaded_to_moros": 2729,
-          "loaded_at": "2026-09-03T15:39:44.239845+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2011-01-01",
-          "to": "2011-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:44.239944+00:00",
-          "loaded_to_moros": 3085,
-          "loaded_at": "2026-09-03T15:39:45.644189+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2012-01-01",
-          "to": "2012-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:45.644234+00:00",
-          "loaded_to_moros": 3402,
-          "loaded_at": "2026-09-03T15:39:47.064522+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2013-01-01",
-          "to": "2013-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:47.064579+00:00",
-          "loaded_to_moros": 4289,
-          "loaded_at": "2026-09-03T15:39:49.021936+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2014-01-01",
-          "to": "2014-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:49.022017+00:00",
-          "loaded_to_moros": 5159,
-          "loaded_at": "2026-09-03T15:39:50.391457+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2015-01-01",
-          "to": "2015-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:50.391499+00:00",
-          "loaded_to_moros": 5953,
-          "loaded_at": "2026-09-03T15:39:51.855626+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2016-01-01",
-          "to": "2016-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:51.855689+00:00",
-          "loaded_to_moros": 7237,
-          "loaded_at": "2026-09-03T15:39:53.216219+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2017-01-01",
-          "to": "2017-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:53.216287+00:00",
-          "loaded_to_moros": 10090,
-          "loaded_at": "2026-09-03T15:39:54.558006+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2018-01-01",
-          "to": "2018-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:54.558053+00:00",
-          "loaded_to_moros": 15740,
-          "loaded_at": "2026-09-03T15:39:55.950379+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2019-01-01",
-          "to": "2019-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:55.950427+00:00",
-          "loaded_to_moros": 24146,
-          "loaded_at": "2026-09-03T15:39:57.294382+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2020-01-01",
-          "to": "2020-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:57.294448+00:00",
-          "loaded_to_moros": 41827,
-          "loaded_at": "2026-09-03T15:39:58.660615+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2021-01-01",
-          "to": "2021-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:39:58.660696+00:00",
-          "loaded_to_moros": 61680,
-          "loaded_at": "2026-09-03T15:40:00.070788+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2022-01-01",
-          "to": "2022-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:40:00.070840+00:00",
-          "loaded_to_moros": 80705,
-          "loaded_at": "2026-09-03T15:40:01.419837+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2023-01-01",
-          "to": "2023-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:40:01.419921+00:00",
-          "loaded_to_moros": 90808,
-          "loaded_at": "2026-09-03T15:40:02.849939+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2024-01-01",
-          "to": "2024-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:40:02.850003+00:00",
-          "loaded_to_moros": 114105,
-          "loaded_at": "2026-09-03T15:40:04.196867+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2025-01-01",
-          "to": "2025-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T15:40:04.196953+00:00",
-          "loaded_to_moros": 192296,
-          "loaded_at": "2026-09-03T15:40:05.590524+00:00",
-          "path": "(pre-existing corpus)"
-        },
-        {
-          "from": "2026-01-01",
-          "to": "2026-09-03",
-          "fetched": 148815,
-          "fetched_at": "2026-09-03T20:00:09.676299+00:00",
-          "loaded_to_moros": 149330,
-          "loaded_at": "2026-09-03T15:40:07.194311+00:00",
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/2026.jsonl"
-        },
-        {
-          "from": "1900-01-01",
-          "to": "1900-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.329149+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1900.jsonl"
-        },
-        {
-          "from": "1901-01-01",
-          "to": "1901-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.373950+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1901.jsonl"
-        },
-        {
-          "from": "1902-01-01",
-          "to": "1902-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.448327+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1902.jsonl"
-        },
-        {
-          "from": "1903-01-01",
-          "to": "1903-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.525224+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1903.jsonl"
-        },
-        {
-          "from": "1904-01-01",
-          "to": "1904-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.572738+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1904.jsonl"
-        },
-        {
-          "from": "1905-01-01",
-          "to": "1905-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.618113+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1905.jsonl"
-        },
-        {
-          "from": "1906-01-01",
-          "to": "1906-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.667083+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1906.jsonl"
-        },
-        {
-          "from": "1907-01-01",
-          "to": "1907-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.723354+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1907.jsonl"
-        },
-        {
-          "from": "1908-01-01",
-          "to": "1908-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.772112+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1908.jsonl"
-        },
-        {
-          "from": "1909-01-01",
-          "to": "1909-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.827999+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1909.jsonl"
-        },
-        {
-          "from": "1910-01-01",
-          "to": "1910-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.878246+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1910.jsonl"
-        },
-        {
-          "from": "1911-01-01",
-          "to": "1911-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:11.952576+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1911.jsonl"
-        },
-        {
-          "from": "1912-01-01",
-          "to": "1912-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.627661+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1912.jsonl"
-        },
-        {
-          "from": "1913-01-01",
-          "to": "1913-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.676212+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1913.jsonl"
-        },
-        {
-          "from": "1914-01-01",
-          "to": "1914-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.731421+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1914.jsonl"
-        },
-        {
-          "from": "1915-01-01",
-          "to": "1915-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.777964+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1915.jsonl"
-        },
-        {
-          "from": "1916-01-01",
-          "to": "1916-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.833982+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1916.jsonl"
-        },
-        {
-          "from": "1917-01-01",
-          "to": "1917-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.882612+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1917.jsonl"
-        },
-        {
-          "from": "1918-01-01",
-          "to": "1918-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:12.946730+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1918.jsonl"
-        },
-        {
-          "from": "1919-01-01",
-          "to": "1919-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:13.009717+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1919.jsonl"
-        },
-        {
-          "from": "1920-01-01",
-          "to": "1920-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:13.067475+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1920.jsonl"
-        },
-        {
-          "from": "1921-01-01",
-          "to": "1921-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:13.891465+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1921.jsonl"
-        },
-        {
-          "from": "1922-01-01",
-          "to": "1922-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.007546+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1922.jsonl"
-        },
-        {
-          "from": "1923-01-01",
-          "to": "1923-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.282335+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1923.jsonl"
-        },
-        {
-          "from": "1924-01-01",
-          "to": "1924-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.353369+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1924.jsonl"
-        },
-        {
-          "from": "1925-01-01",
-          "to": "1925-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.589310+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1925.jsonl"
-        },
-        {
-          "from": "1926-01-01",
-          "to": "1926-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.691579+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1926.jsonl"
-        },
-        {
-          "from": "1927-01-01",
-          "to": "1927-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.802558+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1927.jsonl"
-        },
-        {
-          "from": "1928-01-01",
-          "to": "1928-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:14.858965+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1928.jsonl"
-        },
-        {
-          "from": "1929-01-01",
-          "to": "1929-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.083749+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1929.jsonl"
-        },
-        {
-          "from": "1930-01-01",
-          "to": "1930-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.157784+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1930.jsonl"
-        },
-        {
-          "from": "1931-01-01",
-          "to": "1931-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.229744+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1931.jsonl"
-        },
-        {
-          "from": "1932-01-01",
-          "to": "1932-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.270945+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1932.jsonl"
-        },
-        {
-          "from": "1933-01-01",
-          "to": "1933-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.357380+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1933.jsonl"
-        },
-        {
-          "from": "1934-01-01",
-          "to": "1934-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.395829+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1934.jsonl"
-        },
-        {
-          "from": "1935-01-01",
-          "to": "1935-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.459139+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1935.jsonl"
-        },
-        {
-          "from": "1936-01-01",
-          "to": "1936-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.543781+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1936.jsonl"
-        },
-        {
-          "from": "1937-01-01",
-          "to": "1937-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.718194+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1937.jsonl"
-        },
-        {
-          "from": "1938-01-01",
-          "to": "1938-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.771720+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1938.jsonl"
-        },
-        {
-          "from": "1939-01-01",
-          "to": "1939-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:16.850537+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1939.jsonl"
-        },
-        {
-          "from": "1940-01-01",
-          "to": "1940-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:17.559819+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1940.jsonl"
-        },
-        {
-          "from": "1941-01-01",
-          "to": "1941-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:17.746457+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1941.jsonl"
-        },
-        {
-          "from": "1942-01-01",
-          "to": "1942-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:17.938527+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1942.jsonl"
-        },
-        {
-          "from": "1943-01-01",
-          "to": "1943-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.033940+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1943.jsonl"
-        },
-        {
-          "from": "1944-01-01",
-          "to": "1944-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.110448+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1944.jsonl"
-        },
-        {
-          "from": "1945-01-01",
-          "to": "1945-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.481404+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1945.jsonl"
-        },
-        {
-          "from": "1946-01-01",
-          "to": "1946-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.736551+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1946.jsonl"
-        },
-        {
-          "from": "1947-01-01",
-          "to": "1947-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.789412+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1947.jsonl"
-        },
-        {
-          "from": "1948-01-01",
-          "to": "1948-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.879645+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1948.jsonl"
-        },
-        {
-          "from": "1949-01-01",
-          "to": "1949-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:18.945553+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1949.jsonl"
-        },
-        {
-          "from": "1950-01-01",
-          "to": "1950-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.005756+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1950.jsonl"
-        },
-        {
-          "from": "1951-01-01",
-          "to": "1951-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.098981+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1951.jsonl"
-        },
-        {
-          "from": "1952-01-01",
-          "to": "1952-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.158798+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1952.jsonl"
-        },
-        {
-          "from": "1953-01-01",
-          "to": "1953-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.223825+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1953.jsonl"
-        },
-        {
-          "from": "1954-01-01",
-          "to": "1954-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.284525+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1954.jsonl"
-        },
-        {
-          "from": "1955-01-01",
-          "to": "1955-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.344210+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1955.jsonl"
-        },
-        {
-          "from": "1956-01-01",
-          "to": "1956-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.606327+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1956.jsonl"
-        },
-        {
-          "from": "1957-01-01",
-          "to": "1957-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.703827+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1957.jsonl"
-        },
-        {
-          "from": "1958-01-01",
-          "to": "1958-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.756800+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1958.jsonl"
-        },
-        {
-          "from": "1959-01-01",
-          "to": "1959-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.808057+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1959.jsonl"
-        },
-        {
-          "from": "1960-01-01",
-          "to": "1960-12-31",
-          "fetched": 0,
-          "fetched_at": "2026-09-03T19:48:19.874328+00:00",
-          "loaded_to_moros": null,
-          "loaded_at": null,
-          "path": "/home/gavinfarrell/PhD_Code/dome-triage/moros_pipeline/output/incoming/10a68780c930/1960.jsonl"
-        }
-      ]
+     "from": "1961-01-01",
+     "to": "1961-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:30.483998+00:00",
+     "loaded_to_moros": 2,
+     "loaded_at": "2026-09-03T15:38:32.149374+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1962-01-01",
+     "to": "1962-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:32.149416+00:00",
+     "loaded_to_moros": 2,
+     "loaded_at": "2026-09-03T15:38:33.862269+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1963-01-01",
+     "to": "1963-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:33.862345+00:00",
+     "loaded_to_moros": 4,
+     "loaded_at": "2026-09-03T15:38:35.523206+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1964-01-01",
+     "to": "1964-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:35.523270+00:00",
+     "loaded_to_moros": 4,
+     "loaded_at": "2026-09-03T15:38:37.174321+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1965-01-01",
+     "to": "1965-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:37.174379+00:00",
+     "loaded_to_moros": 3,
+     "loaded_at": "2026-09-03T15:38:38.981484+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1966-01-01",
+     "to": "1966-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:38.981541+00:00",
+     "loaded_to_moros": 1,
+     "loaded_at": "2026-09-03T15:38:40.649376+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1967-01-01",
+     "to": "1967-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:40.649446+00:00",
+     "loaded_to_moros": 4,
+     "loaded_at": "2026-09-03T15:38:42.399460+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1968-01-01",
+     "to": "1968-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:42.399505+00:00",
+     "loaded_to_moros": 3,
+     "loaded_at": "2026-09-03T15:38:43.895446+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1969-01-01",
+     "to": "1969-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:43.895527+00:00",
+     "loaded_to_moros": 2,
+     "loaded_at": "2026-09-03T15:38:45.329961+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1970-01-01",
+     "to": "1970-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:45.330042+00:00",
+     "loaded_to_moros": 1,
+     "loaded_at": "2026-09-03T15:38:46.762709+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1971-01-01",
+     "to": "1971-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:46.762787+00:00",
+     "loaded_to_moros": 1,
+     "loaded_at": "2026-09-03T15:38:48.094048+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1972-01-01",
+     "to": "1972-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:48.094091+00:00",
+     "loaded_to_moros": 3,
+     "loaded_at": "2026-09-03T15:38:49.478760+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1973-01-01",
+     "to": "1973-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:49.478835+00:00",
+     "loaded_to_moros": 7,
+     "loaded_at": "2026-09-03T15:38:50.864394+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1974-01-01",
+     "to": "1974-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:50.864452+00:00",
+     "loaded_to_moros": 5,
+     "loaded_at": "2026-09-03T15:38:52.292110+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1975-01-01",
+     "to": "1975-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:52.292147+00:00",
+     "loaded_to_moros": 4,
+     "loaded_at": "2026-09-03T15:38:53.726622+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1976-01-01",
+     "to": "1976-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:53.726696+00:00",
+     "loaded_to_moros": 4,
+     "loaded_at": "2026-09-03T15:38:55.085534+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1977-01-01",
+     "to": "1977-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:55.085591+00:00",
+     "loaded_to_moros": 9,
+     "loaded_at": "2026-09-03T15:38:56.594697+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1978-01-01",
+     "to": "1978-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:56.594790+00:00",
+     "loaded_to_moros": 15,
+     "loaded_at": "2026-09-03T15:38:57.959475+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1979-01-01",
+     "to": "1979-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:57.959518+00:00",
+     "loaded_to_moros": 19,
+     "loaded_at": "2026-09-03T15:38:59.870546+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1980-01-01",
+     "to": "1980-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:38:59.870604+00:00",
+     "loaded_to_moros": 24,
+     "loaded_at": "2026-09-03T15:39:01.222332+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1981-01-01",
+     "to": "1981-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:01.222373+00:00",
+     "loaded_to_moros": 34,
+     "loaded_at": "2026-09-03T15:39:02.635592+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1982-01-01",
+     "to": "1982-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:02.635651+00:00",
+     "loaded_to_moros": 35,
+     "loaded_at": "2026-09-03T15:39:04.449714+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1983-01-01",
+     "to": "1983-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:04.449791+00:00",
+     "loaded_to_moros": 54,
+     "loaded_at": "2026-09-03T15:39:05.810494+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1984-01-01",
+     "to": "1984-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:05.810548+00:00",
+     "loaded_to_moros": 81,
+     "loaded_at": "2026-09-03T15:39:07.242376+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1985-01-01",
+     "to": "1985-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:07.242420+00:00",
+     "loaded_to_moros": 128,
+     "loaded_at": "2026-09-03T15:39:08.579984+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1986-01-01",
+     "to": "1986-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:08.580071+00:00",
+     "loaded_to_moros": 184,
+     "loaded_at": "2026-09-03T15:39:10.007540+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1987-01-01",
+     "to": "1987-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:10.007585+00:00",
+     "loaded_to_moros": 160,
+     "loaded_at": "2026-09-03T15:39:11.414543+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1988-01-01",
+     "to": "1988-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:11.414589+00:00",
+     "loaded_to_moros": 171,
+     "loaded_at": "2026-09-03T15:39:12.808183+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1989-01-01",
+     "to": "1989-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:12.808233+00:00",
+     "loaded_to_moros": 194,
+     "loaded_at": "2026-09-03T15:39:14.271117+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1990-01-01",
+     "to": "1990-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:14.271211+00:00",
+     "loaded_to_moros": 241,
+     "loaded_at": "2026-09-03T15:39:15.667982+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1991-01-01",
+     "to": "1991-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:15.668037+00:00",
+     "loaded_to_moros": 223,
+     "loaded_at": "2026-09-03T15:39:17.076034+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1992-01-01",
+     "to": "1992-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:17.076096+00:00",
+     "loaded_to_moros": 179,
+     "loaded_at": "2026-09-03T15:39:18.427758+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1993-01-01",
+     "to": "1993-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:18.427836+00:00",
+     "loaded_to_moros": 262,
+     "loaded_at": "2026-09-03T15:39:19.838704+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1994-01-01",
+     "to": "1994-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:19.838752+00:00",
+     "loaded_to_moros": 301,
+     "loaded_at": "2026-09-03T15:39:21.269905+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1995-01-01",
+     "to": "1995-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:21.269947+00:00",
+     "loaded_to_moros": 337,
+     "loaded_at": "2026-09-03T15:39:22.690766+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1996-01-01",
+     "to": "1996-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:22.690839+00:00",
+     "loaded_to_moros": 307,
+     "loaded_at": "2026-09-03T15:39:24.552447+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1997-01-01",
+     "to": "1997-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:24.552510+00:00",
+     "loaded_to_moros": 360,
+     "loaded_at": "2026-09-03T15:39:25.982153+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1998-01-01",
+     "to": "1998-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:25.982197+00:00",
+     "loaded_to_moros": 373,
+     "loaded_at": "2026-09-03T15:39:27.416399+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "1999-01-01",
+     "to": "1999-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:27.416453+00:00",
+     "loaded_to_moros": 338,
+     "loaded_at": "2026-09-03T15:39:28.824658+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2000-01-01",
+     "to": "2000-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:28.824753+00:00",
+     "loaded_to_moros": 423,
+     "loaded_at": "2026-09-03T15:39:30.283356+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2001-01-01",
+     "to": "2001-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:30.283421+00:00",
+     "loaded_to_moros": 459,
+     "loaded_at": "2026-09-03T15:39:31.666677+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2002-01-01",
+     "to": "2002-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:31.666755+00:00",
+     "loaded_to_moros": 513,
+     "loaded_at": "2026-09-03T15:39:33.033768+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2003-01-01",
+     "to": "2003-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:33.033823+00:00",
+     "loaded_to_moros": 632,
+     "loaded_at": "2026-09-03T15:39:34.407817+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2004-01-01",
+     "to": "2004-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:34.407917+00:00",
+     "loaded_to_moros": 1325,
+     "loaded_at": "2026-09-03T15:39:35.788061+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2005-01-01",
+     "to": "2005-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:35.788123+00:00",
+     "loaded_to_moros": 2058,
+     "loaded_at": "2026-09-03T15:39:37.168599+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2006-01-01",
+     "to": "2006-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:37.168683+00:00",
+     "loaded_to_moros": 2345,
+     "loaded_at": "2026-09-03T15:39:38.591212+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2007-01-01",
+     "to": "2007-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:38.591296+00:00",
+     "loaded_to_moros": 2612,
+     "loaded_at": "2026-09-03T15:39:39.973566+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2008-01-01",
+     "to": "2008-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:39.973629+00:00",
+     "loaded_to_moros": 3022,
+     "loaded_at": "2026-09-03T15:39:41.445939+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2009-01-01",
+     "to": "2009-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:41.445987+00:00",
+     "loaded_to_moros": 2906,
+     "loaded_at": "2026-09-03T15:39:42.879606+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2010-01-01",
+     "to": "2010-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:42.879655+00:00",
+     "loaded_to_moros": 2729,
+     "loaded_at": "2026-09-03T15:39:44.239845+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2011-01-01",
+     "to": "2011-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:44.239944+00:00",
+     "loaded_to_moros": 3085,
+     "loaded_at": "2026-09-03T15:39:45.644189+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2012-01-01",
+     "to": "2012-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:45.644234+00:00",
+     "loaded_to_moros": 3402,
+     "loaded_at": "2026-09-03T15:39:47.064522+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2013-01-01",
+     "to": "2013-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:47.064579+00:00",
+     "loaded_to_moros": 4289,
+     "loaded_at": "2026-09-03T15:39:49.021936+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2014-01-01",
+     "to": "2014-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:49.022017+00:00",
+     "loaded_to_moros": 5159,
+     "loaded_at": "2026-09-03T15:39:50.391457+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2015-01-01",
+     "to": "2015-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:50.391499+00:00",
+     "loaded_to_moros": 5953,
+     "loaded_at": "2026-09-03T15:39:51.855626+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2016-01-01",
+     "to": "2016-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:51.855689+00:00",
+     "loaded_to_moros": 7237,
+     "loaded_at": "2026-09-03T15:39:53.216219+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2017-01-01",
+     "to": "2017-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:53.216287+00:00",
+     "loaded_to_moros": 10090,
+     "loaded_at": "2026-09-03T15:39:54.558006+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2018-01-01",
+     "to": "2018-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:54.558053+00:00",
+     "loaded_to_moros": 15740,
+     "loaded_at": "2026-09-03T15:39:55.950379+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2019-01-01",
+     "to": "2019-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:55.950427+00:00",
+     "loaded_to_moros": 24146,
+     "loaded_at": "2026-09-03T15:39:57.294382+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2020-01-01",
+     "to": "2020-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:57.294448+00:00",
+     "loaded_to_moros": 41827,
+     "loaded_at": "2026-09-03T15:39:58.660615+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2021-01-01",
+     "to": "2021-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:39:58.660696+00:00",
+     "loaded_to_moros": 61680,
+     "loaded_at": "2026-09-03T15:40:00.070788+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2022-01-01",
+     "to": "2022-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:40:00.070840+00:00",
+     "loaded_to_moros": 80705,
+     "loaded_at": "2026-09-03T15:40:01.419837+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2023-01-01",
+     "to": "2023-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:40:01.419921+00:00",
+     "loaded_to_moros": 90808,
+     "loaded_at": "2026-09-03T15:40:02.849939+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2024-01-01",
+     "to": "2024-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:40:02.850003+00:00",
+     "loaded_to_moros": 114105,
+     "loaded_at": "2026-09-03T15:40:04.196867+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2025-01-01",
+     "to": "2025-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T15:40:04.196953+00:00",
+     "loaded_to_moros": 192296,
+     "loaded_at": "2026-09-03T15:40:05.590524+00:00",
+     "path": "(pre-existing corpus)"
+    },
+    {
+     "from": "2026-01-01",
+     "to": "2026-09-03",
+     "fetched": 148815,
+     "fetched_at": "2026-09-03T20:00:09.676299+00:00",
+     "loaded_to_moros": 149330,
+     "loaded_at": "2026-09-03T15:40:07.194311+00:00",
+     "path": "output/incoming/10a68780c930/2026.jsonl"
+    },
+    {
+     "from": "1900-01-01",
+     "to": "1900-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.329149+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1900.jsonl"
+    },
+    {
+     "from": "1901-01-01",
+     "to": "1901-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.373950+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1901.jsonl"
+    },
+    {
+     "from": "1902-01-01",
+     "to": "1902-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.448327+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1902.jsonl"
+    },
+    {
+     "from": "1903-01-01",
+     "to": "1903-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.525224+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1903.jsonl"
+    },
+    {
+     "from": "1904-01-01",
+     "to": "1904-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.572738+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1904.jsonl"
+    },
+    {
+     "from": "1905-01-01",
+     "to": "1905-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.618113+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1905.jsonl"
+    },
+    {
+     "from": "1906-01-01",
+     "to": "1906-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.667083+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1906.jsonl"
+    },
+    {
+     "from": "1907-01-01",
+     "to": "1907-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.723354+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1907.jsonl"
+    },
+    {
+     "from": "1908-01-01",
+     "to": "1908-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.772112+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1908.jsonl"
+    },
+    {
+     "from": "1909-01-01",
+     "to": "1909-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.827999+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1909.jsonl"
+    },
+    {
+     "from": "1910-01-01",
+     "to": "1910-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.878246+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1910.jsonl"
+    },
+    {
+     "from": "1911-01-01",
+     "to": "1911-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:11.952576+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1911.jsonl"
+    },
+    {
+     "from": "1912-01-01",
+     "to": "1912-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.627661+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1912.jsonl"
+    },
+    {
+     "from": "1913-01-01",
+     "to": "1913-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.676212+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1913.jsonl"
+    },
+    {
+     "from": "1914-01-01",
+     "to": "1914-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.731421+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1914.jsonl"
+    },
+    {
+     "from": "1915-01-01",
+     "to": "1915-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.777964+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1915.jsonl"
+    },
+    {
+     "from": "1916-01-01",
+     "to": "1916-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.833982+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1916.jsonl"
+    },
+    {
+     "from": "1917-01-01",
+     "to": "1917-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.882612+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1917.jsonl"
+    },
+    {
+     "from": "1918-01-01",
+     "to": "1918-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:12.946730+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1918.jsonl"
+    },
+    {
+     "from": "1919-01-01",
+     "to": "1919-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:13.009717+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1919.jsonl"
+    },
+    {
+     "from": "1920-01-01",
+     "to": "1920-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:13.067475+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1920.jsonl"
+    },
+    {
+     "from": "1921-01-01",
+     "to": "1921-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:13.891465+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1921.jsonl"
+    },
+    {
+     "from": "1922-01-01",
+     "to": "1922-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.007546+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1922.jsonl"
+    },
+    {
+     "from": "1923-01-01",
+     "to": "1923-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.282335+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1923.jsonl"
+    },
+    {
+     "from": "1924-01-01",
+     "to": "1924-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.353369+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1924.jsonl"
+    },
+    {
+     "from": "1925-01-01",
+     "to": "1925-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.589310+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1925.jsonl"
+    },
+    {
+     "from": "1926-01-01",
+     "to": "1926-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.691579+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1926.jsonl"
+    },
+    {
+     "from": "1927-01-01",
+     "to": "1927-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.802558+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1927.jsonl"
+    },
+    {
+     "from": "1928-01-01",
+     "to": "1928-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:14.858965+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1928.jsonl"
+    },
+    {
+     "from": "1929-01-01",
+     "to": "1929-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.083749+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1929.jsonl"
+    },
+    {
+     "from": "1930-01-01",
+     "to": "1930-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.157784+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1930.jsonl"
+    },
+    {
+     "from": "1931-01-01",
+     "to": "1931-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.229744+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1931.jsonl"
+    },
+    {
+     "from": "1932-01-01",
+     "to": "1932-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.270945+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1932.jsonl"
+    },
+    {
+     "from": "1933-01-01",
+     "to": "1933-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.357380+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1933.jsonl"
+    },
+    {
+     "from": "1934-01-01",
+     "to": "1934-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.395829+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1934.jsonl"
+    },
+    {
+     "from": "1935-01-01",
+     "to": "1935-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.459139+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1935.jsonl"
+    },
+    {
+     "from": "1936-01-01",
+     "to": "1936-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.543781+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1936.jsonl"
+    },
+    {
+     "from": "1937-01-01",
+     "to": "1937-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.718194+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1937.jsonl"
+    },
+    {
+     "from": "1938-01-01",
+     "to": "1938-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.771720+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1938.jsonl"
+    },
+    {
+     "from": "1939-01-01",
+     "to": "1939-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:16.850537+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1939.jsonl"
+    },
+    {
+     "from": "1940-01-01",
+     "to": "1940-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:17.559819+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1940.jsonl"
+    },
+    {
+     "from": "1941-01-01",
+     "to": "1941-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:17.746457+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1941.jsonl"
+    },
+    {
+     "from": "1942-01-01",
+     "to": "1942-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:17.938527+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1942.jsonl"
+    },
+    {
+     "from": "1943-01-01",
+     "to": "1943-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.033940+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1943.jsonl"
+    },
+    {
+     "from": "1944-01-01",
+     "to": "1944-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.110448+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1944.jsonl"
+    },
+    {
+     "from": "1945-01-01",
+     "to": "1945-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.481404+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1945.jsonl"
+    },
+    {
+     "from": "1946-01-01",
+     "to": "1946-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.736551+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1946.jsonl"
+    },
+    {
+     "from": "1947-01-01",
+     "to": "1947-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.789412+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1947.jsonl"
+    },
+    {
+     "from": "1948-01-01",
+     "to": "1948-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.879645+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1948.jsonl"
+    },
+    {
+     "from": "1949-01-01",
+     "to": "1949-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:18.945553+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1949.jsonl"
+    },
+    {
+     "from": "1950-01-01",
+     "to": "1950-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.005756+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1950.jsonl"
+    },
+    {
+     "from": "1951-01-01",
+     "to": "1951-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.098981+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1951.jsonl"
+    },
+    {
+     "from": "1952-01-01",
+     "to": "1952-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.158798+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1952.jsonl"
+    },
+    {
+     "from": "1953-01-01",
+     "to": "1953-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.223825+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1953.jsonl"
+    },
+    {
+     "from": "1954-01-01",
+     "to": "1954-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.284525+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1954.jsonl"
+    },
+    {
+     "from": "1955-01-01",
+     "to": "1955-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.344210+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1955.jsonl"
+    },
+    {
+     "from": "1956-01-01",
+     "to": "1956-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.606327+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1956.jsonl"
+    },
+    {
+     "from": "1957-01-01",
+     "to": "1957-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.703827+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1957.jsonl"
+    },
+    {
+     "from": "1958-01-01",
+     "to": "1958-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.756800+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1958.jsonl"
+    },
+    {
+     "from": "1959-01-01",
+     "to": "1959-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.808057+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1959.jsonl"
+    },
+    {
+     "from": "1960-01-01",
+     "to": "1960-12-31",
+     "fetched": 0,
+     "fetched_at": "2026-09-03T19:48:19.874328+00:00",
+     "loaded_to_moros": null,
+     "loaded_at": null,
+     "path": "output/incoming/10a68780c930/1960.jsonl"
     }
-  ]
+   ]
+  }
+ ]
 }

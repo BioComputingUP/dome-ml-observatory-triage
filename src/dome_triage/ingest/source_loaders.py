@@ -14,6 +14,8 @@ from typing import Callable
 
 import pandas as pd
 
+from dome_triage.config import resolve_path
+
 from dome_triage.ingest.id_mapping import clean_doi, clean_pmcid, clean_pmid
 from dome_triage.schema import RawRecord
 
@@ -68,7 +70,7 @@ def _parse_match_metadata(row: pd.Series) -> dict | None:
 
 
 def load_curated_csv(source_cfg: dict) -> LoaderResult:
-    path = Path(source_cfg["path"])
+    path = resolve_path(source_cfg["path"])
     df = pd.read_csv(path, dtype=str, keep_default_na=True)
 
     records = [
@@ -97,7 +99,7 @@ def load_curated_csv(source_cfg: dict) -> LoaderResult:
 
 
 def load_id_pair_only(source_cfg: dict) -> LoaderResult:
-    path = Path(source_cfg["path"])
+    path = resolve_path(source_cfg["path"])
     delimiter = source_cfg.get("delimiter", ",")
     df = pd.read_csv(path, sep=delimiter, dtype=str, keep_default_na=True)
 
@@ -133,7 +135,7 @@ _PDF_LAYOUTS: dict[str, Callable[[Path], list[str]]] = {
 
 
 def load_pdf_directory_gold(source_cfg: dict) -> LoaderResult:
-    root = Path(source_cfg["path"])
+    root = resolve_path(source_cfg["path"])
     layout = source_cfg["pdf_layout"]
     pmcids = _PDF_LAYOUTS[layout](root)
 
@@ -156,7 +158,7 @@ def load_pdf_directory_gold(source_cfg: dict) -> LoaderResult:
 
 
 def load_dome_registry_api_json(source_cfg: dict) -> LoaderResult:
-    path = Path(source_cfg["path"])
+    path = resolve_path(source_cfg["path"])
     with open(path) as f:
         batches: dict[str, list[dict]] = json.load(f)
 

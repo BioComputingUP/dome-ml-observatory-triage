@@ -87,6 +87,15 @@ Folder names are load-bearing. `build_incoming_documents.py` imports `pid.py` fr
 epmc_licence_backfill.csv` and `<repo>/moros_pipeline/output/epmc_citations.csv`; the engine
 reads `curation_criteria/` from the repository root. Do not rename or move these folders.
 
+**No tracked file may contain a machine-specific absolute path.** A `/home/<user>/...` path
+makes the repository unrunnable for anyone else and fails silently rather than loudly; eighteen
+config lines and sixty-two ledger entries carried one until 2026-09-07. Config refers to external
+data as `${DOME_TRIAGE_DATA_ROOT}/...`, resolved by `config.py::resolve_path`, which defaults the
+root to this repository's parent and RAISES on an unset variable rather than resolving somewhere
+unintended. Container paths (`/app/...`) are portable and fine. Run
+`python3 scripts/check_no_absolute_paths.py` before committing; `tests/test_config_paths.py` pins
+the behaviour.
+
 The engine's docstrings cite documents from the research project in which it was validated
 (`STEPS_Progress.md`, `Database_STEPS_Progress.md`, `FINALISATION_ROADMAP.md`,
 `thinking_ablation/`, `enrichment_trial_dataset/`). They are not in this repository and are not

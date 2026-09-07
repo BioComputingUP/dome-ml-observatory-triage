@@ -242,7 +242,7 @@ def step_keywords_build_lexicon(cfg: PipelineConfig) -> None:
     tfidf_df = pd.read_csv(tfidf_path)
     keybert_df = pd.read_csv(keybert_path)
 
-    seed_path = Path(cfg.pipeline["keywords"]["seed_terms"])
+    seed_path = resolve_path(cfg.pipeline["keywords"]["seed_terms"])
     seed_df = load_seed_terms(seed_path) if seed_path.exists() else None
 
     candidates = build_candidate_lexicon(tfidf_df, keybert_df, seed_df)

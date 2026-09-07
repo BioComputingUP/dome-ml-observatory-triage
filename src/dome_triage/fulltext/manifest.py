@@ -12,6 +12,7 @@ from typing import Callable, Optional
 import pandas as pd
 import requests
 
+from dome_triage.config import resolve_path
 from dome_triage.ingest.id_mapping import clean_pmcid
 
 EPMC_FULLTEXT_XML_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTextXML"
@@ -40,7 +41,7 @@ _LAYOUTS: dict[str, Callable[[Path], list[tuple[str, Path]]]] = {
 def build_manifest(sources_cfg: dict) -> pd.DataFrame:
     rows = []
     for root_cfg in sources_cfg.get("fulltext_roots", []):
-        root = Path(root_cfg["path"])
+        root = resolve_path(root_cfg["path"])
         if not root.exists():
             continue
         entries = _LAYOUTS[root_cfg["pdf_layout"]](root)

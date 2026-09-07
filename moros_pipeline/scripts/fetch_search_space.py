@@ -66,6 +66,21 @@ def window_for(year: int, up_to: date) -> tuple[str, str]:
     return start, end
 
 
+def _ledger_path(out: Path) -> str:
+    """How a fetched window's file is recorded in the ledger: relative to this folder.
+
+    The ledger is committed, so an absolute path in it names one machine and, worse, survives a
+    move -- the 62 windows recorded before 2026-09-07 still pointed into a repository this one
+    replaced. The field is written here and read nowhere, so it is provenance rather than a
+    lookup, but provenance that names a directory nobody else has is not much use.
+    """
+    try:
+        return str(out.resolve().relative_to(FOLDER_DIR))
+    except ValueError:
+        # --incoming pointed outside the folder; an absolute path is then the honest record.
+        return str(out)
+
+
 def run(config_path: Path, ledger_path: Path, incoming_dir: Path, up_to: date,
         dry_run: bool, show_query: bool, ignore_cross_check: bool) -> None:
     space = SearchSpace.load(config_path)
@@ -143,7 +158,7 @@ def run(config_path: Path, ledger_path: Path, incoming_dir: Path, up_to: date,
                     n += 1
             tmp.replace(out)
             done.write_text(f"{n}\n", encoding="utf-8")
-            ledger.record_window(space, start, end, fetched=n, path=str(out))
+            ledger.record_window(space, start, end, fetched=n, path=_ledger_path(out))
             ledger.save()  # after every window, so an interrupted run keeps what it finished
             print(f"{year}: {n:,} records -> {out}")
     finally:

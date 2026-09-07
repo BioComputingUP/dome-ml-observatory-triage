@@ -68,6 +68,12 @@ repository's root. The app is not part of the operational surface. Every test th
 classification, enrichment, the DeepSeek client, the staged-file scope, the event-log lock, the
 response parser, the Europe PMC client, provenance — runs and must pass.
 
+No path in this repository names a machine. Config files refer to the external data
+repositories as `${DOME_TRIAGE_DATA_ROOT}/...`, which defaults to this repository's parent
+directory, so a checkout with the siblings beside it needs no configuration; set that one variable
+if they live elsewhere. `python3 scripts/check_no_absolute_paths.py` fails if an absolute home path
+ever reaches a tracked file.
+
 Hermetic tests for the host-side scripts, no server or network needed:
 
 ```bash

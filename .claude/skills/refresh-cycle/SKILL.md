@@ -15,8 +15,9 @@ holds the check-ins. Read `SKILLS.md` for the map. Preconditions: VPN, `moros_pi
 root `.env` with `DEEPSEEK_API_KEY`, the Docker image built, `docker ps` shows no `pipeline`
 container.
 
-1. **Baseline.** `python3 moros_pipeline/scripts/verify_corpus.py` (note the count) and
-   `python3 schema/check_alignment.py --live`. Drift is a stop unless the user accepts it.
+1. **Baseline.** `python3 moros_pipeline/scripts/verify_corpus.py` (note the count),
+   `python3 schema/check_alignment.py --live`, and
+   `python3 scripts/check_no_absolute_paths.py`. Drift is a stop unless the user accepts it.
 2. **`triage-fetch`.** Report windows, new records, no-abstract records.
    → **Ask:** classify N records for ~$X (from `cost-estimate`, with off-peak status)?
 3. **`classify`.** Smoke `--limit 50` if anything is new, then the batch. Report counts and the
