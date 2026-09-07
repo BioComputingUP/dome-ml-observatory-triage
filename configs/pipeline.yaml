@@ -1,0 +1,64 @@
+# Global pipeline settings shared across CLI steps.
+
+curation:
+  events_log: data/processed/curation_events.csv
+  conflict_resolutions: data/processed/conflict_resolutions.csv
+  original_cohort_review_events: data/processed/original_cohort_review_events.csv
+  llm_seed_review_events: data/processed/llm_seed_review_events.csv
+  # Step 20 -- human tie-break decisions on DeepSeek/human disagreements
+  # (curate/pages/6_Cross_Curate_Resolve.py). Same reasoning as the event logs above.
+  cross_curate_resolution_events: data/processed/cross_curate_resolution_events.csv
+  backup_suffix: "_backup"
+  default_curator: gavinfarrell
+
+keywords:
+  candidates: data/processed/keyword_lexicon_candidates.csv
+  lexicon: data/processed/keyword_lexicon.csv
+  exclusionary_lexicon: data/processed/keyword_lexicon_exclusionary.csv
+  seed_terms: /home/gavinfarrell/PhD_Code/MLit-Triage-Nextflow/categorized_terms.csv
+  # Tier 2 -- curated_terms.py's additions, kept separate from the human-curated lexicon/
+  # exclusionary_lexicon above (see keywords.seed-additional-terms).
+  added_positive_terms: data/processed/keyword_lexicon_added_positive.csv
+  added_negative_terms: data/processed/keyword_lexicon_added_negative.csv
+  # Tier 3 -- tier 1 + tier 2 combined and cleaned (see keywords.suggest-final-lexicon /
+  # keywords/lexicon_cleanup.py). Never auto-promoted to lexicon/exclusionary_lexicon above.
+  suggested_lexicon: data/processed/keyword_lexicon_suggested_final.csv
+  suggested_exclusionary_lexicon: data/processed/keyword_lexicon_exclusionary_suggested_final.csv
+  suggested_cleanup_log: data/processed/keyword_lexicon_cleanup_log.csv
+
+# Step 8 (Keyword Review) curation checkpoint -- see curate/term_review_state.py. Every term gets
+# one of three final decisions -- positive / negative (exclusionary) / irrelevant -- regardless of
+# which candidate pile it was surfaced from, so a term can be reclassified across piles, and a
+# curator can manually add a term that was never auto-extracted at all.
+keyword_review:
+  events_log: data/processed/keyword_review_events.csv
+  irrelevant_terms: data/processed/keyword_lexicon_irrelevant.csv
+  default_min_discriminative_score: 0.0
+  default_min_document_frequency: 1
+  default_max_discriminative_score: -0.001
+  default_max_terms_per_session: 500
+
+budget:
+  # Hard cap (GBP) on paid cloud/API spend across the whole project (Phase 4+). Any code path
+  # that calls a paid API or provisions paid cloud/TPU compute must estimate and log cost here
+  # before running, and must not proceed past this cap without explicit confirmation.
+  total_cap_gbp: 100
+  spend_log: data/processed/compute_spend_log.csv
+  # Step 20 -- a separate, USD-denominated sub-cap for the DeepSeek second-curator work only,
+  # layered UNDER (not instead of) the project-wide GBP cap above. Kept in its own currency-
+  # unambiguous log file rather than mixed into the shared GBP compute_spend_log.csv -- reconcile
+  # manually if either limit is ever close. See llm_classify/budget.py and STEPS_Progress.md
+  # Step 20's "Currency mismatch" risk note.
+  deepseek_second_curator:
+    # Raised from 10 -> 1000 on 2026-08-27, explicitly at Gavin's instruction, for Step 23a's
+    # full-landscape run. Real basis, not a guess: the Step 20e 7,600-record run logged $7.60,
+    # i.e. ~$0.001/record, so the ~833k-record remaining pool projects to roughly $830 at peak
+    # rates or ~$415 off-peak (DeepSeek off-peak = 01:00-04:00 and 06:00-10:00 UTC Mon-Fri are
+    # PEAK; everything else is half price). The cap is a speed bump, not a spend authority --
+    # `--confirm` is still required for every paid command.
+    total_cap_usd: 1000
+    spend_log: data/processed/deepseek_second_curator_spend_log.csv
+
+fulltext:
+  link_mode: none   # none | symlink | copy -- see AGENTS.md; default never copies PDFs into the repo
+  local_dir: data/fulltext

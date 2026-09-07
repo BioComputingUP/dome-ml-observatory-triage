@@ -1,0 +1,28 @@
+measured_on: 2026-09-03
+model_id: deepseek-v4-flash
+classification:
+  prompt_version: v1
+  criteria_sha256: bd9d66dd892e6c0a231ac59ba102543ea6caa89db67fc1b914795501f4f60449
+  source: incremental batch classification events, n=13,499 (2026-09-03)
+  n_events: 13499
+  input_tokens: 8698
+  output_tokens: 299
+  record_tokens_estimate: 300
+  real_anchor_usd_per_record: 0.000304
+  no_abstract_share: 0.051
+  parse_error_rate: 0.002
+  last_incremental_batch_records: 13499
+  last_incremental_batch_positives: 7369
+enrichment:
+  prompt_version: e1
+  vocab_sha256: 41db952f15118176fa27dac724eff9dff59714b62854859d9606ef440ee473c7
+  source: four-journal enrichment events, n=5,871 rows / 3,359 records (2026-09-03)
+  n_events: 5871
+  input_tokens: 3078
+  cache_hit_tokens: 2845
+  output_tokens: 5877
+  reasoning_tokens: 5752
+  max_tokens: 16000
+  truncation_rate: 0.015
+  real_anchor_usd_per_1k: 4.07
+  records_per_min_at_concurrency_800: 418

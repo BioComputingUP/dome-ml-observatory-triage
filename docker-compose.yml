@@ -1,0 +1,41 @@
+# One service: the container that runs the validated `dome-triage` CLI (classification and
+# enrichment against the DeepSeek API). Nothing in this container ever connects to the database --
+# every moros read or write is a host-side `python3 moros_pipeline/scripts/<x>.py`.
+#
+#   docker compose build
+#   docker compose run --rm pipeline dome-triage llm-classify --help
+#   docker compose run --rm pipeline pytest
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cpu
+    command: ["bash"]
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs
+      # So provenance.py's git-commit lookup works inside the container too.
+      - ./.git:/app/.git:ro
+      # CRITERIA.md and the three vocabulary JSONs are read at runtime by
+      # llm_classify/prompts.py and llm_classify/enrichment.py. Read-only: nothing in the
+      # pipeline ever writes here.
+      - ./curation_criteria:/app/curation_criteria:ro
+      # Read-WRITE: a classify run reads its staged CSV from here (written on the host by
+      # build_incoming_documents.py) and writes its event log back here via --events-out; an
+      # enrichment run reads its export (export_journal_for_enrichment.py) and writes its events
+      # here the same way. Keeping every batch's events beside its input is what keeps identifier
+      # spaces from being conflated in one log.
+      - ./moros_pipeline:/app/moros_pipeline
+    working_dir: /app
+    tty: true
+    stdin_open: true
+    environment:
+      # Substituted by Compose from the repo-root .env (gitignored). See .env.example.
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - NCBI_API_KEY=${NCBI_API_KEY:-}
+      - CROSSREF_MAILTO=${CROSSREF_MAILTO:-}
+      # Python block-buffers stdout when it is not a TTY; a redirected or backgrounded run would
+      # otherwise die with an empty log. Unbuffered means every run is diagnosable.
+      - PYTHONUNBUFFERED=1
+    # Hard memory ceiling so a bug in a long run is contained to this container, not the host.
+    mem_limit: 12g

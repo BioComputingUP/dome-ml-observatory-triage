@@ -1,0 +1,26 @@
+{
+  "classification": {
+    "criteria_file": "curation_criteria/CRITERIA.md",
+    "criteria_sha256": "bd9d66dd892e6c0a231ac59ba102543ea6caa89db67fc1b914795501f4f60449",
+    "max_tokens": 6000,
+    "prompt_version": "v1"
+  },
+  "enrichment": {
+    "domain_rendering": "flat",
+    "max_tokens": 16000,
+    "prompt_version": "e1",
+    "vocab_file_sha256": {
+      "domain_vocab.json": "156fb50433dfacbc9e14ec3fe892f1887d035d382a1deefc6e92ce65a8af891b",
+      "model_type_seed_vocab.json": "f3c5f1caf3ad18f2aee1f99885b51c8631108295b5084e8af9769dc8a0a75692",
+      "modelling_branch_vocab.json": "35f2da1d0b666c78e3a9818034b5da73979d4b760e69021f514e5ae9ee6e3761"
+    },
+    "vocab_files": [
+      "curation_criteria/domain_vocab.json",
+      "curation_criteria/modelling_branch_vocab.json",
+      "curation_criteria/model_type_seed_vocab.json"
+    ],
+    "vocab_sha256": "41db952f15118176fa27dac724eff9dff59714b62854859d9606ef440ee473c7"
+  },
+  "model_id": "deepseek-v4-flash",
+  "user_message_template": "Title: {title}\nJournal: {journal}\nYear: {year}\n\nAbstract:\n{abstract}"
+}

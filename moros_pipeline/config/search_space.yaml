@@ -1,0 +1,50 @@
+# The corpus definition -- edit this file to change what the pipeline looks for.
+#
+# Until now this lived as a hardcoded constant in
+# src/dome_triage/ingest/bulk_match.py (`AI_ML_QUERY`), which meant changing the corpus meant
+# changing code. Everything downstream keys on the sha256 of the canonical query string built
+# from this file, so **editing it invalidates coverage for the changed query only** -- previously
+# fetched windows for the old query stay recorded, and the new query starts from nothing rather
+# than silently inheriting the old query's coverage.
+#
+# Run `python3 scripts/fetch_search_space.py --show-query` to see the exact EPMC query and its
+# hash without fetching anything.
+
+version: 1
+name: ai_ml_core
+
+# Combined with `combine` into the term clause. Quote multi-word phrases -- EPMC treats an
+# unquoted phrase as separate tokens. Hyphenated variants are NOT worth adding: EPMC normalises
+# hyphens, measured to add exactly zero records (search_space_expansion/README.md).
+terms:
+  - '"artificial intelligence"'
+  - '"machine learning"'
+combine: OR
+
+# Empty = every EPMC source, which is how the existing 827,061-document corpus was actually
+# built. Measured breakdown of the core query (search_space_expansion/, 2026-08-27):
+# MED 761,411 / PPR 58,911 (preprints) / PMC 15,361 / AGR 5,955 / PAT 160. Adding `- MED` here
+# would silently drop the preprints, so leave it empty unless that is the intent.
+sources: []
+
+# FIRST_PDATE is first publication date. The existing corpus was fetched on this field, so
+# changing it would make coverage windows incomparable with what is already loaded.
+date_field: FIRST_PDATE
+
+# The earliest date any window starts from. The live bulk_match checkpoints cover 1950-2026
+# contiguously; the all-time core query measured 842,271 records back to 1900.
+coverage_start: '1900-01-01'
+
+# Candidate expansion terms, measured live in search_space_expansion/output/term_expansion_counts.csv.
+# Move one up into `terms` to widen the corpus. The counts are incremental records NOT already
+# matched by the core query.
+#
+# Worth considering -- precise, low false-positive:
+#   "BERT" 38,074 | "GPT" 30,185 | "U-Net" 13,094 | "ResNet" 10,224 | "YOLO" 6,386
+#   "DBSCAN" 3,899 | "XGBoost" 3,311 | "federated learning" 1,680 | "LightGBM" 676
+#   "HDBSCAN" 599 | "AI agent" 264 | "CatBoost" 243 | "agentic system" 32
+#
+# Do NOT add -- the counts are dominated by unrelated senses:
+#   "neural network" 1,550,000 (mostly biological) | "logistic regression" 1,080,000 (classical
+#   statistics, not ML method papers) | "BIRCH" 51,500 (the tree)
+expansion_candidates_see: ../search_space_expansion/output/term_expansion_counts.csv

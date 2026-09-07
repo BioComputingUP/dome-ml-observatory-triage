@@ -1,0 +1,24 @@
+{
+  "n_fetched": 744620,
+  "license_counts": {
+    "cc by": 408600,
+    "no license (non-OA / not disclosed)": 201116,
+    "cc by-nc-nd": 83860,
+    "cc by-nc": 42981,
+    "cc by-nc-sa": 6536,
+    "cc0": 881,
+    "cc by-nd": 324,
+    "cc by-sa": 321,
+    "cc": 1
+  },
+  "open_access_counts": {
+    "Y": 528322,
+    "N": 216298
+  },
+  "coverage": {
+    "n_target_pmids": 744646,
+    "n_fetched_pmids": 744620,
+    "n_missing_pmids": 26,
+    "coverage_rate": 0.9999650840802207
+  }
+}

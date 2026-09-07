@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://observatory.dome-ml.org/schema/v1.1.0/ai-ml-landscape.schema.json",
+  "title": "DOME Observatory AI/ML landscape record",
+  "description": "One document per screened publication. Source of truth for this shape is dome-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside dome-triage (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
+  "type": "object",
+  "required": ["_id", "schema_version", "identifiers", "publication_metadata", "source", "content_filters", "llm_classification", "llm_enrichment"],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Deterministic PID (UUID5, fixed namespace, pmcid>doi>pmid priority) minted per record -- the same paper always mints the same PID, so this is stable across re-runs and safe to use in URLs (/record/:pid)."
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "The shape of this document, e.g. \"1.1.0\" -- describes the document's structure, not the paper's content or any processing run. Bump only when this module's document shape changes; see schema/CHANGELOG.md."
+    },
+    "identifiers": {
+      "type": "object",
+      "description": "Every external identifier and cross-reference for this paper. pmid/pmcid/doi come from the source corpus; the rest are reserved for a future linking pass and are always null today.",
+      "required": ["pmid", "pmcid", "doi", "dome_registry", "bioai_repo", "huggingface", "kaggle", "zenodo"],
+      "properties": {
+        "pmid": { "type": ["string", "null"], "description": "PubMed ID, bare digits. Blank in ~8.2% of the source corpus." },
+        "pmcid": { "type": ["string", "null"], "description": "PubMed Central ID, e.g. \"PMC12283288\". Null when the paper has no PMC full text. Blank in ~24.5% of the source corpus." },
+        "doi": { "type": ["string", "null"], "description": "Digital Object Identifier, e.g. \"10.3389/fimmu.2025.1608262\". Blank in <1% of the source corpus." },
+        "dome_registry": { "type": ["string", "null"], "description": "Reserved: cross-reference to a matching DOME Registry entry, if one exists. Always null until the linking pass runs." },
+        "bioai_repo": { "type": ["string", "null"], "description": "Reserved: cross-reference to a code/method repository. Always null until the linking pass runs." },
+        "huggingface": { "type": ["string", "null"], "description": "Reserved: cross-reference to a HuggingFace model/dataset. Always null until the linking pass runs." },
+        "kaggle": { "type": ["string", "null"], "description": "Reserved: cross-reference to a Kaggle dataset/notebook. Always null until the linking pass runs." },
+        "zenodo": { "type": ["string", "null"], "description": "Reserved: cross-reference to a Zenodo deposition. Always null until the linking pass runs." }
+      }
+    },
+    "publication_metadata": {
+      "type": "object",
+      "required": ["title", "abstract", "authors", "year", "journal", "citation_count"],
+      "properties": {
+        "title": { "type": ["string", "null"], "description": "Paper title, plain text. Blank in <0.1% of the source corpus." },
+        "abstract": { "type": ["string", "null"], "description": "Paper abstract. Can contain embedded HTML-ish tags (e.g. \"<h4>Background</h4>\") -- render accordingly, don't assume plain text. Blank in ~5.4% of the source corpus." },
+        "authors": { "type": ["string", "null"], "description": "Comma-separated author list as one plain-text string, e.g. \"Liang L, Liang H, He M\". Blank in ~1.0% of the source corpus." },
+        "year": { "type": ["integer", "null"], "description": "Publication year." },
+        "journal": { "type": ["string", "null"], "description": "Journal name, plain text. Blank in ~6.8% of the source corpus." },
+        "citation_count": { "type": ["integer", "null"], "description": "Forward-compatible placeholder -- always null in the current corpus (never populated upstream), kept in the shape deliberately rather than dropped." }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["abstract_source", "metadata_repair_sources", "access"],
+      "properties": {
+        "abstract_source": { "type": ["string", "null"], "description": "Which upstream source the abstract text came from -- observed values: europepmc (~93.5%), crossref, pubmed. Blank in ~5.4% of the source corpus." },
+        "metadata_repair_sources": { "type": ["string", "null"], "description": "Which repair pass(es) touched this row's metadata, e.g. \"ncbi_idconv\". Blank in ~91% of the source corpus (most rows needed no repair)." },
+        "access": {
+          "type": "object",
+          "required": ["open_access", "license", "fulltext_available"],
+          "properties": {
+            "open_access": { "type": ["boolean", "null"], "description": "Whether the paper is open access. ~66% true across the source corpus." },
+            "license": { "type": ["string", "null"], "description": "License string joined from the Europe PMC licensing lookup, e.g. \"cc by\". Null where no license lookup matched." },
+            "fulltext_available": { "type": ["boolean", "null"], "description": "Whether full text (not just abstract) is available. ~74% true across the source corpus." }
+          }
+        }
+      }
+    },
+    "content_filters": {
+      "type": "object",
+      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining six are the AI/ML enrichment pass's output -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags).",
+      "required": ["mesh_headings", "pub_types", "keywords_author", "domain_tier1", "domain_tier2", "domain_tier3", "learning_paradigm", "model_family", "model_type"],
+      "properties": {
+        "mesh_headings": { "type": "array", "items": { "type": "string" }, "description": "MeSH headings assigned to the paper, e.g. [\"Humans\", \"Arthritis, Rheumatoid\"]. Populated for every record." },
+        "pub_types": { "type": "array", "items": { "type": "string" }, "description": "Publication types, e.g. [\"research-article\", \"Journal Article\"]. Populated for every record." },
+        "keywords_author": { "type": "array", "items": { "type": "string" }, "description": "Author-supplied keywords. Populated for every record (may be an empty array if the paper listed none)." },
+        "domain_tier1": { "type": ["string", "null"], "description": "EDAM topic branch, tier 1 (broadest). Single-select -- max_tags: 1. See vocab/domain.json for the 13 controlled terms. Null until the enrichment pass runs on this record." },
+        "domain_tier2": { "type": "array", "items": { "type": "string" }, "description": "EDAM topic branch, tier 2. Multi-select -- max_tags: 2. See vocab/domain.json for the 121 controlled terms. Empty until the enrichment pass runs on this record." },
+        "domain_tier3": { "type": "array", "items": { "type": "string" }, "description": "EDAM topic branch, tier 3 (most specific). Multi-select -- max_tags: 3. See vocab/domain.json for the 125 controlled terms. Empty until the enrichment pass runs on this record." },
+        "learning_paradigm": { "type": "array", "items": { "type": "string" }, "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record." },
+        "model_family": { "type": "array", "items": { "type": "string" }, "description": "What kind of system/method family -- a cross-cutting, multi-label axis distinct from learning_paradigm (e.g. deep learning, large language model, ensemble learning). Multi-select -- max_tags: 3. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record." },
+        "model_type": { "type": "array", "items": { "type": "string" }, "description": "The specific method(s) used, e.g. \"random forest\", \"XGBoost\". Deliberately OPEN free text, not a closed enum: vocab/model-type-seed.json's 76 canonical terms + aliases are coverage assurance and normalization only -- the canonical spelling is emitted on a match, otherwise the paper's own term is tagged verbatim. Empty until the enrichment pass runs on this record." }
+      }
+    },
+    "llm_classification": {
+      "type": "object",
+      "description": "The positive/negative/undeterminable screening decision and its provenance. Populated for every record -- this is the pass that already ran on the full corpus.",
+      "required": ["provider", "model_tier", "model_id", "mode", "classification", "rationale", "prompt_version", "ruleset_sha256", "batch_id", "timestamp"],
+      "properties": {
+        "provider": { "type": ["string", "null"], "description": "LLM provider, e.g. \"deepseek\"." },
+        "model_tier": { "type": ["string", "null"], "description": "Provider-specific tier, e.g. \"flash\"." },
+        "model_id": { "type": ["string", "null"], "description": "Exact model id used, e.g. \"deepseek-v4-flash\"." },
+        "mode": { "type": ["string", "null"], "description": "Classification mode, e.g. \"primary\"." },
+        "classification": { "type": ["string", "null"], "enum": ["positive", "negative", "undeterminable", null], "description": "The screening verdict: positive = genuine AI/ML methods paper. Corpus-wide: 355,569 positive, 464,603 negative, 6,923 undeterminable." },
+        "rationale": { "type": ["string", "null"], "description": "Free-text model rationale for the classification decision. Always LLM-generated -- surface this fact to users, don't present it as a human judgement." },
+        "prompt_version": { "type": ["string", "null"], "description": "Version tag of the prompt template used, e.g. \"v1\"." },
+        "ruleset_sha256": { "type": ["string", "null"], "description": "sha256 of the criteria the classification was run against -- lets a later run detect if the criteria changed." },
+        "batch_id": { "type": ["string", "null"], "description": "Identifier of the classification batch/run this record's event came from." },
+        "timestamp": { "type": ["string", "null"], "format": "date-time", "description": "ISO-8601 UTC timestamp of the classification event." }
+      }
+    },
+    "llm_enrichment": {
+      "type": "object",
+      "description": "Deliberately PARALLEL in shape to llm_classification (same provenance fields) -- this is the enrichment pass that populates content_filters.domain_tier1-3/learning_paradigm/model_family/model_type. Every field is present now (all null) rather than a single null placeholder, precisely so no schema migration is needed once this pass actually runs on a record.",
+      "required": ["provider", "model_tier", "model_id", "mode", "rationale", "prompt_version", "ruleset_sha256", "batch_id", "timestamp", "vocab_violations", "parse_status", "input_tokens", "output_tokens", "cache_hit_tokens", "parse_fallback_used"],
+      "properties": {
+        "provider": { "type": ["string", "null"], "description": "LLM provider used for enrichment." },
+        "model_tier": { "type": ["string", "null"], "description": "Provider-specific tier used for enrichment." },
+        "model_id": { "type": ["string", "null"], "description": "Exact model id used for enrichment." },
+        "mode": { "type": ["string", "null"], "description": "Enrichment mode." },
+        "rationale": { "type": ["string", "null"], "description": "Free-text model rationale for the enrichment tags assigned." },
+        "prompt_version": { "type": ["string", "null"], "description": "Version tag of the enrichment prompt template used." },
+        "ruleset_sha256": { "type": ["string", "null"], "description": "sha256 of the vocabulary/criteria the enrichment was run against." },
+        "batch_id": { "type": ["string", "null"], "description": "Identifier of the enrichment batch/run this record's event came from." },
+        "timestamp": { "type": ["string", "null"], "format": "date-time", "description": "ISO-8601 UTC timestamp of the enrichment event." },
+        "vocab_violations": { "type": ["array", "null"], "description": "Any tag the model emitted that didn't match a controlled vocabulary term -- logged, not silently dropped." },
+        "parse_status": { "type": ["string", "null"], "description": "Whether the model's structured output parsed cleanly." },
+        "input_tokens": { "type": ["integer", "null"], "description": "Input token count for the enrichment call." },
+        "output_tokens": { "type": ["integer", "null"], "description": "Output token count for the enrichment call." },
+        "cache_hit_tokens": { "type": ["integer", "null"], "description": "Cached input token count for the enrichment call." },
+        "parse_fallback_used": { "type": ["boolean", "null"], "description": "Whether a fallback parser had to be used to recover the model's output." }
+      }
+    }
+  }
+}

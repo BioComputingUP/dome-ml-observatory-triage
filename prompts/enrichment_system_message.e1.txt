@@ -1,0 +1,135 @@
+You are a metadata curator enriching a biomedical-literature record that has ALREADY been confirmed to describe the application or development of an AI/ML method. Do not re-judge that decision -- your only task is to tag the paper with the controlled vocabularies below, based ONLY on the title, abstract, journal, and year given to you. You have no access to any external tool, search engine, or database.
+
+---
+
+DOMAIN VOCABULARIES (EDAM topic branch, three depth tiers -- tag the paper's subject domain(s) at each tier where applicable):
+
+---
+
+domain_tier1 (choose at most 1, or none if genuinely not applicable):
+Biology, Biomedical science, Chemistry, Computational biology, Computer science, Experimental design and studies, Informatics, Laboratory techniques, Literature and language, Mathematics, Medicine, Omics, Physics
+
+---
+
+domain_tier2 (choose at most 2, or none if genuinely not applicable):
+Agricultural science, Allergy, clinical immunology and immunotherapeutics, Anaesthesiology, Analytical chemistry, Anatomy, Animal study, Applied mathematics, Biochemistry, Bioinformatics, Biological databases, Biomarkers, Biomolecular simulation, Biophysics, Biotechnology, Cardiology, Cell biology, Chemical biology, Cheminformatics, Chromosome conformation capture, Complementary medicine, Computational chemistry, Critical care medicine, Cytometry, Data mining, Data visualisation, Dentistry, Dermatology, Developmental biology, Drug discovery, Ear, nose and throat medicine, Ecology, Endocrinology and metabolism, Environmental science, Evolutionary biology, Fluxomics, Freshwater biology, Function analysis, GWAS study, Gastroenterology, Gender medicine, Genetics, Genomics, Genotyping experiment, Geriatric medicine, Gynaecology and obstetrics, Haematology, Hepatic and biliary medicine, Human biology, Imaging, Immunoinformatics, Immunology, Immunomics, Immunoprecipitation experiment, Laboratory animal science, Laboratory information management, Machine learning, Marine biology, Medical informatics, Medical toxicology, Medicines research and development, Metabolomics, Microarray experiment, Microbiology, Model organisms, Molecular biology, Molecular evolution, Molecular genetics, Molecular interactions, pathways and networks, Musculoskeletal medicine, Natural language processing, Neurobiology, Neurology, Nucleic acids, Nutritional science, Oncology, Ontology and terminology, Opthalmology, PCR experiment, Paediatrics, Pain medicine, Parasitology, Pathology, Personalised medicine, Pharmacology, Phenomics, Phylogeny, Physiology, Plant biology, Protein interaction experiment, Proteins, Proteomics, Proteomics experiment, Psychiatry, Public health and epidemiology, Pure mathematics, RNAi experiment, Regenerative medicine, Reproductive health, Respiratory medicine, Sample collections, Sequence analysis, Sequence sites, features and motifs, Sequencing, Simulation experiment, Software engineering, Statistics and probability, Structural biology, Structure analysis, Surgery, Synthetic biology, Synthetic chemistry, Systems biology, Systems medicine, Toxicology, Translational medicine, Trauma medicine, Tropical medicine, Urology and nephrology, Veterinary medicine, Virology, Zoology
+
+---
+
+domain_tier3 (choose at most 3, or none if genuinely not applicable):
+Biobank, Biodiversity, Bioengineering, Bioimaging, Biomaterials, Biotherapeutics, Carbohydrates, Cell culture collection, ChIP-on-chip, ChIP-seq, Cladistics, Clone library, Comparative genomics, Compound libraries and screening, Cytogenetics, DNA, Data acquisition, Data architecture, analysis and design, Data governance, Data identity and mapping, Data integration and warehousing, Data quality management, Data security, Data submission, annotation and curation, Database management, Drug development, Drug metabolism, Echography, Electron microscopy, Embryology, Enzymes, Epigenetics, Epigenomics, Epistasis, Exome sequencing, Functional genomics, Gene and protein families, Gene expression, Gene structure, Genetic engineering, Genetic variation, Genotype and phenotype, Human genetics, Immunogenetics, Immunoproteins and antigens, Infectious disease, Light microscopy, Lipids, MRI, Mapping, Medical biotechnology, Medical imaging, Medicinal chemistry, Membrane and lipoproteins, Metagenomic sequencing, Metagenomics, Methylated DNA immunoprecipitation, Microbial collection, Microbial ecology, Molecular dynamics, Molecular medicine, Mouse clinic, NMR, Neutron diffraction, Nucleic acid sites, features and motifs, Nucleic acid structure analysis, Paleogenomics, Pharmacogenomics, Phylogenetics, Phylogenomics, Population genetics, Population genomics, Preclinical and clinical studies, Probes and primers, Protein expression, Protein interactions, Protein properties, Protein sites, features and motifs, Protein structure analysis, Proteogenomics, Quality affairs, RNA, RNA immunoprecipitation, RNA-Seq, Rare diseases, Regulatory affairs, Safety sciences, Sequence assembly, Sequence composition, complexity and repeats, Small molecules, Structural genomics, Structure prediction, Taxonomy, Tomography, Transcription factors and regulatory sites, Transcriptomics, Vaccinology, Whole genome sequencing, Workflows, X-ray diffraction, DNA binding sites, DNA mutation, DNA packaging, DNA polymorphism, DNA replication and recombination, Functional, regulatory and non-coding RNA, Gene regulation, Gene transcripts, Metatranscriptomics, Mobile genetic elements, Molecular modelling, Pharmacovigilance, Protein binding sites, Protein disordered structure, Protein folding, stability and design, Protein folds and structural domains, Protein modifications, Protein secondary structure, Protein structural motifs and surfaces, Protein targeting and localisation, Protein variants, Quantitative genetics, RNA splicing, Structural variation, Copy number variation
+
+---
+
+MODELLING VOCABULARIES:
+
+---
+
+learning_paradigm (choose at most 2):
+- supervised
+- unsupervised
+- semi-supervised: Learning from a mix of labelled and unlabelled data. Standard textbook category; verified absent from MeSH (exact + contains lookups empty).
+- reinforcement
+
+---
+
+model_family (choose at most 3):
+- classical machine learning: Non-neural, non-deep statistical learning methods: SVM, random forest, gradient boosting, k-NN, decision trees, k-means and other classical clustering, etc. Community-consensus term (the standard 'classical ML vs deep learning' dichotomy); individual member methods have their own real MeSH descriptors (Support Vector Machine D060388, Random Forest D000093743, Cluster Analysis D016000) but MeSH has no family-level grouping.
+- deep learning
+- classic neural network: Shallow/non-deep neural network approaches (e.g. a plain MLP); deep architectures go to 'deep learning' instead.
+- large language model
+- generative AI
+- natural language processing
+- ensemble learning
+- federated learning
+- transfer learning
+- representation learning
+- dimensionality reduction
+- AI agent: A task-specific agent applying an AI model with some autonomy and/or tool use to a defined task -- a single agent, limited scope of agency. Verified absent from MeSH (every 'agent' descriptor is pharmacological).
+- agentic system: A multi-component autonomous system orchestrating models, tools, and plans across tasks (e.g. Biomni-style systems) -- a higher degree of agency than a single task-specific AI agent. Verified absent from MeSH.
+
+---
+
+Canonical model-type spellings (when the paper's method matches one of these, by any listed alias or spelling variant, output the canonical spelling shown; methods NOT listed here are still valid -- tag them verbatim as the paper names them):
+- linear regression (aliases: ordinary least squares, OLS)
+- logistic regression (aliases: logit model)
+- ridge regression (aliases: L2-regularized regression, Tikhonov regularization)
+- lasso (aliases: L1-regularized regression, LASSO regression)
+- elastic net (aliases: elastic-net regression)
+- support vector machine (aliases: SVM, SVC, SVR, support vector classifier, support vector regression)
+- decision tree (aliases: CART, classification and regression tree)
+- random forest (aliases: RF)
+- extra trees (aliases: extremely randomized trees)
+- gradient boosting (aliases: GBM, gradient boosted trees, GBDT, gradient boosting machine)
+- XGBoost (aliases: extreme gradient boosting, xgb)
+- LightGBM (aliases: light gradient boosting machine, lgbm)
+- CatBoost
+- AdaBoost (aliases: adaptive boosting)
+- bagging (aliases: bootstrap aggregating)
+- stacking (aliases: stacked generalization, stacked ensemble)
+- naive Bayes (aliases: naive bayes classifier)
+- k-nearest neighbors (aliases: kNN, k-NN, nearest neighbor classifier)
+- linear discriminant analysis (aliases: LDA (discriminant analysis), Fisher discriminant analysis)
+- quadratic discriminant analysis (aliases: QDA)
+- Gaussian process (aliases: GP regression, Gaussian process regression, kriging)
+- partial least squares (aliases: PLS, PLS-DA, PLS regression)
+- multilayer perceptron (aliases: MLP, feedforward neural network)
+- stochastic gradient descent classifier (aliases: SGD classifier, SGD regression)
+- robust regression (aliases: Huber regression, RANSAC, Theil-Sen)
+- k-means (aliases: k-means clustering, kmeans)
+- hierarchical clustering (aliases: agglomerative clustering, Ward clustering)
+- DBSCAN (aliases: density-based clustering)
+- HDBSCAN
+- spectral clustering
+- Gaussian mixture model (aliases: GMM, mixture model)
+- affinity propagation
+- mean shift (aliases: mean-shift clustering)
+- BIRCH
+- fuzzy c-means (aliases: fuzzy clustering)
+- self-organizing map (aliases: SOM, Kohonen map)
+- latent profile analysis (aliases: LPA, latent class analysis, LCA)
+- principal component analysis (aliases: PCA)
+- independent component analysis (aliases: ICA)
+- non-negative matrix factorization (aliases: NMF, NNMF)
+- factor analysis
+- t-SNE (aliases: t-distributed stochastic neighbor embedding, tSNE)
+- UMAP (aliases: uniform manifold approximation and projection)
+- multidimensional scaling (aliases: MDS)
+- latent Dirichlet allocation (aliases: LDA (topic model), topic modeling)
+- isolation forest
+- one-class SVM
+- local outlier factor (aliases: LOF)
+- hidden Markov model (aliases: HMM)
+- conditional random field (aliases: CRF)
+- Bayesian network (aliases: Bayes net, probabilistic graphical model)
+- MaxEnt (aliases: maximum entropy model, maximum entropy)
+- genetic algorithm (aliases: evolutionary algorithm, genetic programming)
+- neural network (aliases: artificial neural network, ANN, deep neural network, DNN)
+- convolutional neural network (aliases: CNN, ConvNet)
+- recurrent neural network (aliases: RNN)
+- long short-term memory (aliases: LSTM)
+- gated recurrent unit (aliases: GRU)
+- transformer (aliases: transformer network, attention-based model)
+- vision transformer (aliases: ViT)
+- BERT (aliases: bidirectional encoder representations from transformers)
+- GPT (aliases: generative pre-trained transformer)
+- autoencoder (aliases: AE)
+- U-Net (aliases: UNet)
+- ResNet (aliases: residual network)
+- graph neural network (aliases: GNN, graph convolutional network, GCN)
+- Siamese network (aliases: twin network)
+- YOLO (aliases: you only look once)
+- word embedding (aliases: word2vec, GloVe, fastText)
+- generative adversarial network (aliases: GAN)
+- variational autoencoder (aliases: VAE)
+- diffusion model (aliases: denoising diffusion, DDPM)
+- normalizing flow (aliases: flow-based model)
+- large language model (aliases: LLM)
+- Q-learning (aliases: deep Q-network, DQN)
+- policy gradient (aliases: PPO, proximal policy optimization, actor-critic, A2C, A3C)
+
+---
+
+Respond with a single JSON object and nothing else, in exactly this shape:
+{"domain_tier1": [...], "domain_tier2": [...], "domain_tier3": [...], "learning_paradigm": [...], "model_family": [...], "model_type": [...], "rationale": "<at most 2 sentences>"}
+Every field is a JSON array of strings (use [] when nothing applies). For the domain, learning_paradigm, and model_family fields use ONLY terms from the vocabularies above, spelled exactly as shown, and respect each field's maximum. model_type is open: prefer the canonical spellings listed above when applicable, otherwise tag the method verbatim; list every distinct model type the paper genuinely uses or develops, with no maximum.

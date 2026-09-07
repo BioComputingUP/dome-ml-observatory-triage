@@ -1,0 +1,61 @@
+# Runtime data. The database (moros) is the system of record. Event logs written under data/ and
+# moros_pipeline/output/ are the paid record of a run and must be merged into moros with the
+# load_*.py scripts before they are ever discarded.
+data/*
+!data/.gitkeep
+!data/processed/
+data/processed/*
+# The DeepSeek budget log (cumulative cap check) and the calibration log (`project-cost` reads it).
+!data/processed/deepseek_second_curator_spend_log.csv
+!data/processed/second_curator_calibration_log.csv
+!data/processed/cost_estimates/
+
+# moros_pipeline: the real connection details (an internal host address), fetched windows, staged
+# batches, event logs, rollback snapshots and per-run reports. The coverage ledger IS tracked: it
+# is the record of which windows of the search space have ever been fetched and loaded.
+moros_pipeline/.env
+moros_pipeline/output/*
+!moros_pipeline/output/coverage_ledger.json
+!moros_pipeline/output/.gitkeep
+
+# Built documents JSONL for each batch -- regenerable from the staged CSV + events.
+mongo_landscape_export/output/*
+!mongo_landscape_export/output/.gitkeep
+
+# Secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+.venv/
+venv/
+nltk_data/
+.cache/
+.streamlit/
+
+# Run logs from long commands
+logs/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Claude Code: skills ARE tracked (.claude/skills/); only local settings are not.
+.claude/settings.local.json
+
+# PDFs never committed, except the tiny placeholder fixtures the loader tests depend on.
+*.pdf
+!tests/fixtures/**/*.pdf
+
+# cross_links: staged link tables, regenerable
+cross_links/output/*
+!cross_links/output/.gitkeep

@@ -1,0 +1,45 @@
+{
+  "First Entry": [
+    {
+      "_id": "entry_a",
+      "publication": {
+        "pmid": "99999999",
+        "doi": "10.1000/aaa999",
+        "title": "An applied ML paper in the registry",
+        "journal": "Bioinformatics",
+        "year": "2020",
+        "authors": "Ng A, Lee B"
+      },
+      "uuid": "uuid-a",
+      "shortid": "shorta"
+    }
+  ],
+  "First Two Entries": [
+    {
+      "_id": "entry_a",
+      "publication": {
+        "pmid": "99999999",
+        "doi": "10.1000/aaa999",
+        "title": "An applied ML paper in the registry",
+        "journal": "Bioinformatics",
+        "year": "2020",
+        "authors": "Ng A, Lee B"
+      },
+      "uuid": "uuid-a",
+      "shortid": "shorta"
+    },
+    {
+      "_id": "entry_b",
+      "publication": {
+        "pmid": "",
+        "doi": "-",
+        "title": "An entry with no usable identifiers",
+        "journal": "Unknown",
+        "year": "2019",
+        "authors": ""
+      },
+      "uuid": "uuid-b",
+      "shortid": "shortb"
+    }
+  ]
+}

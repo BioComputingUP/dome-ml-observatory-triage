@@ -1,0 +1,33 @@
+# CPU-only image covering ingest/dedupe/fulltext/keywords/curate -- everything this repo's
+# Phase 0-1 needs. A GPU image for BERT fine-tuning (Phase 4) and an LLM/Ollama image (Phase 5)
+# are deliberately not built yet -- see docker/README.md.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# The .git bind mount is owned by the host user, not the container's root -- tell git that's
+# fine (read-only, single-purpose container, not a general security concern here).
+RUN git config --global --add safe.directory /app
+
+COPY pyproject.toml README.md LICENSE.md ./
+COPY src/ src/
+COPY tests/ tests/
+
+RUN pip install --no-cache-dir -e ".[dev]"
+
+# Bake in NLTK corpora and the KeyBERT/sentence-transformers model weights at build time, so
+# containers never need network access at runtime just to tokenize or extract keywords.
+RUN python -c "import nltk; [nltk.download(p, quiet=True) for p in ('stopwords', 'punkt_tab', 'wordnet', 'omw-1.4')]"
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+COPY configs/ configs/
+
+EXPOSE 8501
+
+CMD ["dome-triage", "--help"]

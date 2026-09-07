@@ -1,0 +1,74 @@
+{
+  "_id": null,
+  "schema_version": "1.2.0",
+  "identifiers": {
+    "pmid": null,
+    "pmcid": null,
+    "doi": null,
+    "dome_registry": null,
+    "bioai_repo": null,
+    "huggingface": null,
+    "kaggle": null,
+    "zenodo": null
+  },
+  "publication_metadata": {
+    "title": null,
+    "abstract": null,
+    "authors": null,
+    "year": null,
+    "journal": null,
+    "citation_count": null,
+    "citation_count_updated": null,
+    "citation_source": null
+  },
+  "source": {
+    "abstract_source": null,
+    "metadata_repair_sources": null,
+    "decision_provenance": null,
+    "access": {
+      "open_access": null,
+      "license": null,
+      "fulltext_available": null
+    }
+  },
+  "content_filters": {
+    "mesh_headings": [],
+    "pub_types": [],
+    "keywords_author": [],
+    "domain_tier1": null,
+    "domain_tier2": [],
+    "domain_tier3": [],
+    "learning_paradigm": [],
+    "model_family": [],
+    "model_type": []
+  },
+  "llm_classification": {
+    "provider": null,
+    "model_tier": null,
+    "model_id": null,
+    "mode": null,
+    "classification": null,
+    "rationale": null,
+    "prompt_version": null,
+    "ruleset_sha256": null,
+    "batch_id": null,
+    "timestamp": null
+  },
+  "llm_enrichment": {
+    "provider": null,
+    "model_tier": null,
+    "model_id": null,
+    "mode": null,
+    "rationale": null,
+    "prompt_version": null,
+    "ruleset_sha256": null,
+    "batch_id": null,
+    "timestamp": null,
+    "vocab_violations": null,
+    "parse_status": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_hit_tokens": null,
+    "parse_fallback_used": null
+  }
+}

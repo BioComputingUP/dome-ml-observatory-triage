@@ -1,0 +1,92 @@
+{
+  "_id": "8b720ad0-8cf7-5304-a016-3b15feae2815",
+  "schema_version": "1.1.0",
+  "identifiers": {
+    "pmid": "40703513",
+    "pmcid": "PMC12283288",
+    "doi": "10.3389/fimmu.2025.1608262",
+    "dome_registry": null,
+    "bioai_repo": null,
+    "huggingface": null,
+    "kaggle": null,
+    "zenodo": null
+  },
+  "publication_metadata": {
+    "title": "Integrative multi-omics analysis reveals the interaction mechanisms between gut microbiota metabolites and ferroptosis in rheumatoid arthritis.",
+    "abstract": "<h4>Background</h4>Rheumatoid arthritis (RA) is an autoimmune disease characterized by chronic synovitis and joint destruction. To systematically investigate the regulatory relationship between key ferroptosis genes and gut metabolites in RA, this study employed an integrative multi-omics approach combined with machine learning algorithms and single-cell transcriptomic data, identifying and validating GPX3 and MYC as potential critical ferroptosis regulators in RA.<h4>Methods and results</h4>First, 16 candidate genes were obtained by intersecting WGCNA, differential expression analysis results, and targets related to ferroptosis and gut microbiota. Following cross-validation with machine learning approaches including LASSO, SVM, and RFE-RF, GPX3 and MYC were ultimately identified as crucial genes. GSVA and GSEA analyses revealed that high expression of GPX3 and MYC was enriched in interferon response and TNFA signaling pathways, while their low expression was associated with fatty acid metabolism and oxidative phosphorylation pathways. Further single-cell RNA sequencing analysis demonstrated that MYC was expressed in multiple immune cell types, particularly in CD4+ T cells and NK cells. Ferroptosis scoring for CD8+ T cells and subsequent cell communication analysis revealed stronger interactions between CD8+ T cells with higher ferroptosis scores and other immune cells through IFN-II and CCL signaling, further intensifying the activation of the inflammatory microenvironment. Additionally, molecular docking analysis of GPX3 and MYC with the gut metabolites Diosgenin and Differentiation-inducing factor 3 (DIF-3) respectively showed that the GPX3-Diosgenin complex had the lowest binding energy, and a 100 ns molecular dynamics simulation was performed on this complex. Results showed good stability of the complex across indicators such as RMSD, RMSF, SASA, and radius of gyration, suggesting that Diosgenin may intervene in ferroptosis and inflammatory injury in RA by binding to and modulating GPX3 function.<h4>Conclusion</h4>This study elucidated the multifaceted mechanisms of GPX3 and MYC in RA pathogenesis and preliminarily validated the potential role of gut metabolites in mediating ferroptosis regulation, offering novel theoretical foundations and potential strategies for diagnostic biomarker screening and targeted therapy in RA.",
+    "authors": "Liang L, Liang H, He M, Zhang H, Ke P.",
+    "year": 2025,
+    "journal": "Frontiers in immunology",
+    "citation_count": null
+  },
+  "source": {
+    "abstract_source": "europepmc",
+    "metadata_repair_sources": null,
+    "access": {
+      "open_access": true,
+      "license": "cc by",
+      "fulltext_available": true
+    }
+  },
+  "content_filters": {
+    "mesh_headings": [
+      "Humans",
+      "Arthritis, Rheumatoid",
+      "Glutathione Peroxidase",
+      "Proto-Oncogene Proteins c-myc",
+      "Gene Expression Profiling",
+      "Transcriptome",
+      "Gastrointestinal Microbiome",
+      "Ferroptosis",
+      "Phospholipid Hydroperoxide Glutathione Peroxidase",
+      "Multiomics"
+    ],
+    "pub_types": [
+      "research-article",
+      "Journal Article"
+    ],
+    "keywords_author": [
+      "Rheumatoid arthritis",
+      "MYC",
+      "Gut Microbiota",
+      "Ferroptosis",
+      "Gpx3",
+      "Gutmgene Database"
+    ],
+    "domain_tier1": null,
+    "domain_tier2": [],
+    "domain_tier3": [],
+    "learning_paradigm": [],
+    "model_family": [],
+    "model_type": []
+  },
+  "llm_classification": {
+    "provider": "deepseek",
+    "model_tier": "flash",
+    "model_id": "deepseek-v4-flash",
+    "mode": "primary",
+    "classification": "positive",
+    "rationale": "The study applies machine learning algorithms (LASSO, SVM, RFE-RF) with cross-validation to identify key genes from an integrative multi-omics dataset, constituting a genuine ML methodology component.",
+    "prompt_version": "v1",
+    "ruleset_sha256": "bd9d66dd892e6c0a231ac59ba102543ea6caa89db67fc1b914795501f4f60449",
+    "batch_id": "classify_flash_bulk_pool_excluding_curated_primary_20260827T224454",
+    "timestamp": "2026-08-27T22:44:56.416265+00:00"
+  },
+  "llm_enrichment": {
+    "provider": null,
+    "model_tier": null,
+    "model_id": null,
+    "mode": null,
+    "rationale": null,
+    "prompt_version": null,
+    "ruleset_sha256": null,
+    "batch_id": null,
+    "timestamp": null,
+    "vocab_violations": null,
+    "parse_status": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_hit_tokens": null,
+    "parse_fallback_used": null
+  }
+}

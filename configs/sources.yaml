@@ -1,0 +1,193 @@
+# Registry of input data sources for `dome-triage ingest load-sources` and
+# `dome-triage fulltext build-manifest`. See AGENTS.md before adding a new source.
+#
+# label_sources contribute rows (with a label + provenance) to the canonical dataset.
+# fulltext_roots are scanned only to build the full-text manifest (data/fulltext_manifest.csv),
+# keyed by PMCID against whatever's already present from label_sources -- they never introduce
+# new labeled rows on their own.
+
+label_sources:
+  # --- Adapter A: curated_csv -----------------------------------------------------------
+  # DOME_Top_Curate/curation.ipynb output. All 6 files share the identical header:
+  # DOI,PMID,PMCID,Year,Citation_Count,Title,Abstract,Journal,Authors,matches,match_count,
+  # total_weight,match_percentage,Top20_In_Journal  (verified).
+  - name: dome_top_curate_positive
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/positive_entries.csv
+    label: positive
+    label_confidence: human_curated
+
+  - name: dome_top_curate_negative
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/negative_entries.csv
+    label: negative
+    label_confidence: human_curated
+
+  - name: dome_top_curate_skipped
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/skipped_entries.csv
+    label: skipped
+    label_confidence: human_curated
+
+  - name: dome_top_curate_top_positive
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_pos.csv
+    label: positive
+    label_confidence: human_curated
+
+  - name: dome_top_curate_top_negative
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_neg.csv
+    label: negative
+    label_confidence: human_curated
+
+  - name: dome_top_curate_top_skipped
+    adapter: curated_csv
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/top_skipped.csv
+    label: skipped
+    label_confidence: human_curated
+
+  # --- Adapter B: id_pair_only -----------------------------------------------------------
+  # DOME-Copilot-Data-Analysis curation round: PMID+PMCID only, no title/abstract -- these
+  # rows require `dome-triage ingest enrich-metadata` before they can be scored or curated.
+  # Note: different delimiters confirmed (tab vs comma).
+  - name: copilot_1012_positive
+    adapter: id_pair_only
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Download_Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary/positive_entries_pmid_pmcid_filtered.tsv
+    delimiter: "\t"
+    label: positive
+    label_confidence: human_curated
+
+  - name: copilot_1012_negative
+    adapter: id_pair_only
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Download_Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary/negative_entries_pmid_pmcid_filtered.csv
+    delimiter: ","
+    label: negative
+    label_confidence: human_curated
+
+  # --- Adapter C: pdf_directory_gold -------------------------------------------------------
+  # No separate metadata file -- the PMCID list IS the PDF directory listing. Two directory
+  # layouts confirmed: flat_main_pdf (PMC{id}_main.pdf directly in the root) and pmcid_subdir
+  # (a PMC{id}/ subdirectory containing PMC{id}_main.pdf plus supplementary files).
+  - name: dome_registry_231_gold
+    adapter: pdf_directory_gold
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/DOME_Registry_PMC_PDFs
+    pdf_layout: flat_main_pdf
+    label: positive
+    label_confidence: registry_confirmed
+
+  - name: dome_registry_222_gold
+    adapter: pdf_directory_gold
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
+    pdf_layout: pmcid_subdir
+    label: positive
+    label_confidence: registry_confirmed
+    # Confirmed a genuinely different snapshot from dome_registry_231_gold (9-PMCID diff) --
+    # both load as independent registry_confirmed provenance, never assumed identical.
+
+  - name: dome_top_curate_positive_candidates_pdfs
+    adapter: pdf_directory_gold
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/Positive_PMC_PDFs
+    pdf_layout: flat_main_pdf
+    label: positive
+    label_confidence: heuristic_candidate
+
+  # --- Adapter D: dome_registry_api_json ---------------------------------------------------
+  # Raw DOME registry review API dump. Confirmed the 6 top-level batch keys are
+  # cumulative/overlapping (213 raw entries, 210 unique by `_id`) -- must dedupe by `_id`
+  # before flattening. A small number of entries (confirmed: 3) have no usable pmid/doi and
+  # route to unresolved_needs_id_lookup.csv rather than being dropped or fuzzy-matched.
+  - name: ebi_search_dome_api
+    adapter: dome_registry_api_json
+    path: /home/gavinfarrell/PhD_Code/EBI_Search_DOME/dome_api_batches.json
+    label: positive
+    label_confidence: registry_confirmed
+
+# Scanned only for full-text availability (never introduces new labeled rows). Includes the
+# 3 label-bearing PDF sources above plus the 2 sources storing full text for the id_pair_only
+# rows (Adapter B), all keyed by PMCID.
+fulltext_roots:
+  - name: dome_registry_231_gold
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/DOME_Registry_PMC_PDFs
+    pdf_layout: flat_main_pdf
+  - name: dome_registry_222_gold
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/DOME_Registry_222_PMCID_PDFs_PMC_Full_Text_and_Supplementary
+    pdf_layout: pmcid_subdir
+  - name: dome_top_curate_positive_candidates_pdfs
+    path: /home/gavinfarrell/PhD_Code/DOME_Top_Curate/Positive_PMC_PDFs
+    pdf_layout: flat_main_pdf
+  - name: copilot_1012_positive_pdfs
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Positive_1012_PDFs_PMCID_Full_Text_and_Supplementary
+    pdf_layout: pmcid_subdir
+  - name: copilot_1012_negative_pdfs
+    path: /home/gavinfarrell/PhD_Code/DOME-Copilot-Data-Analysis/Negative_1012_PDFs_PMCID_Full_Text_and_Supplementary
+    pdf_layout: pmcid_subdir
+
+dedup:
+  # Priority for choosing the *displayed* canonical_key of an already-formed cluster only --
+  # NOT the rule for deciding cluster membership (that's union-find over any shared ID; see
+  # src/dome_triage/dedupe/keys.py).
+  id_priority: [pmcid, doi, pmid]
+
+epmc:
+  base_url: https://www.ebi.ac.uk/europepmc/webservices/rest
+  # 1000 is Europe PMC's documented max pageSize for cursorMark-paginated search -- fewer, larger
+  # pages means fewer HTTP round-trips for the same total records, which matters most for
+  # bulk-match's multi-decade fetch. If EPMC ever rejects it, the existing Retry/backoff surfaces
+  # a clear error rather than failing silently.
+  page_size: 1000
+  max_retries: 5
+  backoff_factor: 1.5
+
+paths:
+  interim_dir: data/interim
+  processed_dir: data/processed
+  raw_records: data/interim/raw_records.csv
+  raw_records_enriched: data/interim/raw_records_enriched.csv
+  canonical_dataset: data/processed/canonical_dataset.csv
+  conflicts_for_review: data/processed/conflicts_for_review.csv
+  unresolved_needs_id_lookup: data/processed/unresolved_needs_id_lookup.csv
+  fulltext_manifest: data/fulltext_manifest.csv
+  epmc_cache: data/interim/epmc_cache.jsonl
+  dataset_profile_dir: data/processed/dataset_profile
+  original_cohort_second_review_profile_dir: data/processed/original_cohort_second_review_profile
+  llm_seed_pmids: data/processed/llm_language_model_seed_pmids.csv
+  llm_seed_candidate_pool: data/interim/llm_seed_candidates_pool.csv
+  review_filter_profile_dir: data/processed/review_filter_profile
+  # Step 20 -- DeepSeek second-curator (see STEPS_Progress.md).
+  second_curator_sample: data/processed/second_curator_sample.csv
+  llm_classification_events: data/processed/llm_classification_events.csv
+  second_curator_calibration_log: data/processed/second_curator_calibration_log.csv
+  human_llm_agreement_report: data/processed/human_llm_agreement_report.csv
+  second_curator_profile_dir: data/processed/second_curator_profile
+  llm_classify_validation_results: data/processed/llm_classify_validation_results.csv
+  # Step 20a -- post-Cross-Curate-Resolve consensus charts. Deliberately a separate folder from
+  # second_curator_profile_dir above, which stays as the honest PRE-review snapshot.
+  post_review_consensus_profile_dir: data/processed/post_review_consensus_profile
+  # Step 20f -- Step 20e's full-population re-run: trusted-pool agreement at full scale, the EPMC
+  # candidate-pool confirmation rate, and whole-evaluated-population alignment.
+  full_population_profile_dir: data/processed/full_population_profile
+  # Step 20j -- positive-set enrichment trial. Input is the isolated test set built on the host by
+  # enrichment_trial_dataset/build_positive_test_set.py (folder mounted read-only in
+  # docker-compose.yml); events + profile live under data/processed/ like every other run.
+  enrichment_positive_set: enrichment_trial_dataset/output/enrichment_trial_positive_set.csv
+  enrichment_classification_events: data/processed/enrichment_classification_events.csv
+  enrichment_profile_dir: data/processed/enrichment_profile
+  # Step 23a -- full EPMC AI/ML landscape classification. Separate file from
+  # llm_classification_events.csv (different population, and this run must never risk touching
+  # the frozen trusted-pool event log).
+  landscape_classification_events: data/processed/landscape_classification_events.csv
+  landscape_classification_profile_dir: data/processed/landscape_classification_profile
+  # Step 23a(b): NOT "canonical" -- that word already means the human-curated + second-curator
+  # trusted set (canonical_dataset.csv). This is DeepSeek-only, single-pass, one confidence tier.
+  ai_ml_landscape_classified: data/processed/ai_ml_landscape_classified.csv
+  ai_ml_landscape_classified_unresolved_parse_errors: data/processed/ai_ml_landscape_classified_unresolved_parse_errors.csv
+  # Step 23a(b) follow-up: does DeepSeek's classification under last night's overnight-run config
+  # (current code, current criteria, concurrency=1000) still agree with human ground truth? One
+  # dedicated folder -- the raw re-run event log AND its profile charts together -- rather than
+  # scattering files across data/processed/.
+  overnight_config_validation_dir: data/processed/overnight_config_validation
+  # Step 20f -- post-Cross-Curate-Resolve consensus for Step 20e's own (new) disagreements, once
+  # Gavin has manually resolved them -- the full-population analog of post_review_consensus_profile_dir
+  # above, kept as its own folder since it covers a different population under different criteria.
+  full_population_consensus_profile_dir: data/processed/full_population_consensus_profile

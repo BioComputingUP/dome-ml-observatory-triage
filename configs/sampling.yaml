@@ -1,0 +1,27 @@
+# Stratified sampling config for `dome-triage sampling stratify`. See ROADMAP.md's "Curation
+# workload estimate" for the worked-example arithmetic this feeds -- cap_per_stratum is the one
+# number to change if a first pass turns out too big or too small.
+
+strata:
+  n_score_bands: 4
+  top_n_journals: 15
+  year_bucket_width: 5
+
+sampling:
+  cap_per_stratum: 10
+  random_state: 42
+
+paths:
+  bulk_candidates: data/interim/bulk_candidates.csv
+  bulk_candidates_scored: data/interim/bulk_candidates_scored.csv
+  # Step 23a metadata repair (NCBI): resumable checkpoints, safe to delete to force a clean re-run.
+  metadata_repair_records: data/interim/metadata_repair_records.jsonl
+  metadata_repair_idmap: data/interim/metadata_repair_idmap.jsonl
+  id_completion_checkpoint: data/interim/id_completion.jsonl
+  crossref_abstract_checkpoint: data/interim/crossref_abstracts.jsonl
+  stratified_candidate_pool: data/processed/stratified_candidate_pool.csv
+  stratum_report: data/processed/stratum_report.csv
+  clear_negative_candidates: data/interim/clear_negative_candidates.csv
+  clear_negative_candidates_screened: data/interim/clear_negative_candidates_screened.csv
+  clear_negative_score_plot: data/processed/clear_negative_score_distribution.png
+  clear_negative_candidates_filtered: data/interim/clear_negative_candidates_filtered.csv

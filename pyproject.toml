@@ -1,0 +1,49 @@
+[project]
+name = "dome-triage"
+version = "0.1.0"
+description = "Literature triage pipeline for identifying DOME-relevant AI/ML publications in Europe PMC"
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.11"
+authors = [{ name = "Gavin Farrell" }]
+
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.4",
+    "nltk>=3.8",
+    "requests>=2.31",
+    "streamlit>=1.30",
+    "sentence-transformers>=2.5",
+    "keybert>=0.8",
+    "rank-bm25>=0.2",
+    "tqdm>=4.66",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+dome-triage = "dome_triage.cli:app"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]

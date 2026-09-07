@@ -1,0 +1,4 @@
+DOI,PMID,PMCID,Year,Citation_Count,Title,Abstract,Journal,Authors,matches,match_count,total_weight,match_percentage,Top20_In_Journal
+10.1000/xyz111,11111111.0,PMC1111111,2022.0,7.0,A machine learning model for X,"<h4>Background</h4>We trained a random forest on Y data.",Journal of Examples,Smith J,"[{'term': 'learning', 'column': 'Abstract', 'weight': 1}, {'term': 'model', 'column': 'Title', 'weight': 1}]",2,2.0,14.02,True
+10.1000/xyz222,22222222.0,PMC2222222,2021.0,3.0,A clinical trial of drug Z,We conducted a randomized controlled trial.,Journal of Medicine,Doe J,[],0,0.0,0.0,False
+10.1000/xyz333,,PMC3333333,2020.0,,A paper with no PMID,Some abstract text here.,Journal of Examples,Lee K,[],0,0.0,0.0,False

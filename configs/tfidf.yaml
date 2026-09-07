@@ -1,0 +1,34 @@
+# TF-IDF extraction config for src/dome_triage/keywords/tfidf_extract.py
+
+sublinear_tf: true
+ngram_range: [1, 3]
+min_df: 3
+max_df: 0.85
+max_features: 20000
+
+# Extra stopwords beyond the standard English list -- EPMC abstracts carry inline pseudo-HTML
+# section tags (e.g. <h4>Background</h4>) which, if not stripped in preprocessing, pollute the
+# extracted terms (confirmed present as noise in categorized_terms.csv: "h4", "background",
+# "http"). Preprocessing strips these tags; this stoplist is a second line of defense.
+extra_stopwords:
+  - h4
+  - h3
+  - background
+  - objective
+  - objectives
+  - conclusion
+  - conclusions
+  - method
+  - methods
+  - result
+  - results
+  - http
+  - https
+  - sup
+  - doi
+
+corpora:
+  # negative_entries.csv doubles as the baseline general-biomedical-ML corpus for computing
+  # discriminative_score = tfidf_mean(positive) - tfidf_mean(negative)
+  positive_label: positive
+  baseline_label: negative

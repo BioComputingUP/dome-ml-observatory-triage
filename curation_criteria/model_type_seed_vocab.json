@@ -1,0 +1,831 @@
+{
+  "status": "OFFICIAL -- confirmed by Gavin 2026-08-27",
+  "design": "model_type stays OPEN free-text; this seed is coverage assurance + normalization only (emit the canonical spelling when a paper's method matches an entry; otherwise tag verbatim)",
+  "built": "2026-08-27",
+  "n_seed_entries": 76,
+  "sklearn_version_checked": "1.6.1",
+  "sklearn_coverage_check": {
+    "sklearn_inventory_size": 111,
+    "mapped": 95,
+    "ignored_with_reason": 16,
+    "unmapped_gaps": []
+  },
+  "terms": [
+    {
+      "canonical": "linear regression",
+      "aliases": [
+        "ordinary least squares",
+        "OLS"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LinearRegression"
+      ]
+    },
+    {
+      "canonical": "logistic regression",
+      "aliases": [
+        "logit model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LogisticRegression",
+        "LogisticRegressionCV"
+      ]
+    },
+    {
+      "canonical": "ridge regression",
+      "aliases": [
+        "L2-regularized regression",
+        "Tikhonov regularization"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Ridge",
+        "RidgeCV",
+        "RidgeClassifier",
+        "RidgeClassifierCV",
+        "KernelRidge"
+      ]
+    },
+    {
+      "canonical": "lasso",
+      "aliases": [
+        "L1-regularized regression",
+        "LASSO regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Lasso",
+        "LassoCV",
+        "LassoLars",
+        "LassoLarsCV",
+        "LassoLarsIC",
+        "MultiTaskLasso",
+        "MultiTaskLassoCV",
+        "Lars",
+        "LarsCV"
+      ]
+    },
+    {
+      "canonical": "elastic net",
+      "aliases": [
+        "elastic-net regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "ElasticNet",
+        "ElasticNetCV",
+        "MultiTaskElasticNet",
+        "MultiTaskElasticNetCV"
+      ]
+    },
+    {
+      "canonical": "support vector machine",
+      "aliases": [
+        "SVM",
+        "SVC",
+        "SVR",
+        "support vector classifier",
+        "support vector regression"
+      ],
+      "family_hint": "classical machine learning",
+      "mesh_id": "D060388",
+      "sklearn": [
+        "SVC",
+        "SVR",
+        "LinearSVC",
+        "LinearSVR",
+        "NuSVC",
+        "NuSVR"
+      ]
+    },
+    {
+      "canonical": "decision tree",
+      "aliases": [
+        "CART",
+        "classification and regression tree"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "DecisionTreeClassifier",
+        "DecisionTreeRegressor",
+        "ExtraTreeClassifier",
+        "ExtraTreeRegressor"
+      ]
+    },
+    {
+      "canonical": "random forest",
+      "aliases": [
+        "RF"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "mesh_id": "D000093743",
+      "sklearn": [
+        "RandomForestClassifier",
+        "RandomForestRegressor",
+        "RandomTreesEmbedding"
+      ]
+    },
+    {
+      "canonical": "extra trees",
+      "aliases": [
+        "extremely randomized trees"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "ExtraTreesClassifier",
+        "ExtraTreesRegressor"
+      ]
+    },
+    {
+      "canonical": "gradient boosting",
+      "aliases": [
+        "GBM",
+        "gradient boosted trees",
+        "GBDT",
+        "gradient boosting machine"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "GradientBoostingClassifier",
+        "GradientBoostingRegressor",
+        "HistGradientBoostingClassifier",
+        "HistGradientBoostingRegressor"
+      ]
+    },
+    {
+      "canonical": "XGBoost",
+      "aliases": [
+        "extreme gradient boosting",
+        "xgb"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "LightGBM",
+      "aliases": [
+        "light gradient boosting machine",
+        "lgbm"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "CatBoost",
+      "aliases": [],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "AdaBoost",
+      "aliases": [
+        "adaptive boosting"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "AdaBoostClassifier",
+        "AdaBoostRegressor"
+      ]
+    },
+    {
+      "canonical": "bagging",
+      "aliases": [
+        "bootstrap aggregating"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "BaggingClassifier",
+        "BaggingRegressor"
+      ]
+    },
+    {
+      "canonical": "stacking",
+      "aliases": [
+        "stacked generalization",
+        "stacked ensemble"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "StackingClassifier",
+        "StackingRegressor",
+        "VotingClassifier",
+        "VotingRegressor"
+      ]
+    },
+    {
+      "canonical": "naive Bayes",
+      "aliases": [
+        "naive bayes classifier"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianNB",
+        "MultinomialNB",
+        "BernoulliNB",
+        "ComplementNB",
+        "CategoricalNB"
+      ]
+    },
+    {
+      "canonical": "k-nearest neighbors",
+      "aliases": [
+        "kNN",
+        "k-NN",
+        "nearest neighbor classifier"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "KNeighborsClassifier",
+        "KNeighborsRegressor",
+        "RadiusNeighborsClassifier",
+        "RadiusNeighborsRegressor",
+        "NearestCentroid",
+        "NearestNeighbors",
+        "KNeighborsTransformer",
+        "RadiusNeighborsTransformer"
+      ]
+    },
+    {
+      "canonical": "linear discriminant analysis",
+      "aliases": [
+        "LDA (discriminant analysis)",
+        "Fisher discriminant analysis"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LinearDiscriminantAnalysis"
+      ]
+    },
+    {
+      "canonical": "quadratic discriminant analysis",
+      "aliases": [
+        "QDA"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "QuadraticDiscriminantAnalysis"
+      ]
+    },
+    {
+      "canonical": "Gaussian process",
+      "aliases": [
+        "GP regression",
+        "Gaussian process regression",
+        "kriging"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianProcessClassifier",
+        "GaussianProcessRegressor"
+      ]
+    },
+    {
+      "canonical": "partial least squares",
+      "aliases": [
+        "PLS",
+        "PLS-DA",
+        "PLS regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "PLSRegression",
+        "PLSCanonical",
+        "PLSSVD",
+        "CCA"
+      ]
+    },
+    {
+      "canonical": "multilayer perceptron",
+      "aliases": [
+        "MLP",
+        "feedforward neural network"
+      ],
+      "family_hint": "classic neural network",
+      "sklearn": [
+        "MLPClassifier",
+        "MLPRegressor",
+        "BernoulliRBM"
+      ]
+    },
+    {
+      "canonical": "stochastic gradient descent classifier",
+      "aliases": [
+        "SGD classifier",
+        "SGD regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "SGDClassifier",
+        "SGDRegressor",
+        "SGDOneClassSVM",
+        "Perceptron",
+        "PassiveAggressiveClassifier",
+        "PassiveAggressiveRegressor"
+      ]
+    },
+    {
+      "canonical": "robust regression",
+      "aliases": [
+        "Huber regression",
+        "RANSAC",
+        "Theil-Sen"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "HuberRegressor",
+        "RANSACRegressor",
+        "TheilSenRegressor",
+        "QuantileRegressor",
+        "TweedieRegressor",
+        "PoissonRegressor",
+        "GammaRegressor",
+        "ARDRegression",
+        "BayesianRidge",
+        "OrthogonalMatchingPursuit",
+        "OrthogonalMatchingPursuitCV",
+        "IsotonicRegression"
+      ]
+    },
+    {
+      "canonical": "k-means",
+      "aliases": [
+        "k-means clustering",
+        "kmeans"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "KMeans",
+        "MiniBatchKMeans",
+        "BisectingKMeans"
+      ]
+    },
+    {
+      "canonical": "hierarchical clustering",
+      "aliases": [
+        "agglomerative clustering",
+        "Ward clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "AgglomerativeClustering",
+        "FeatureAgglomeration"
+      ]
+    },
+    {
+      "canonical": "DBSCAN",
+      "aliases": [
+        "density-based clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "DBSCAN",
+        "OPTICS"
+      ]
+    },
+    {
+      "canonical": "HDBSCAN",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "HDBSCAN"
+      ]
+    },
+    {
+      "canonical": "spectral clustering",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "SpectralClustering",
+        "SpectralBiclustering",
+        "SpectralCoclustering"
+      ]
+    },
+    {
+      "canonical": "Gaussian mixture model",
+      "aliases": [
+        "GMM",
+        "mixture model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianMixture",
+        "BayesianGaussianMixture"
+      ]
+    },
+    {
+      "canonical": "affinity propagation",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "AffinityPropagation"
+      ]
+    },
+    {
+      "canonical": "mean shift",
+      "aliases": [
+        "mean-shift clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "MeanShift"
+      ]
+    },
+    {
+      "canonical": "BIRCH",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Birch"
+      ]
+    },
+    {
+      "canonical": "fuzzy c-means",
+      "aliases": [
+        "fuzzy clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "self-organizing map",
+      "aliases": [
+        "SOM",
+        "Kohonen map"
+      ],
+      "family_hint": "classic neural network",
+      "sklearn": []
+    },
+    {
+      "canonical": "latent profile analysis",
+      "aliases": [
+        "LPA",
+        "latent class analysis",
+        "LCA"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "principal component analysis",
+      "aliases": [
+        "PCA"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "PCA",
+        "IncrementalPCA",
+        "KernelPCA",
+        "SparsePCA",
+        "MiniBatchSparsePCA",
+        "TruncatedSVD"
+      ]
+    },
+    {
+      "canonical": "independent component analysis",
+      "aliases": [
+        "ICA"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "FastICA"
+      ]
+    },
+    {
+      "canonical": "non-negative matrix factorization",
+      "aliases": [
+        "NMF",
+        "NNMF"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "NMF",
+        "MiniBatchNMF",
+        "DictionaryLearning",
+        "MiniBatchDictionaryLearning",
+        "SparseCoder"
+      ]
+    },
+    {
+      "canonical": "factor analysis",
+      "aliases": [],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "FactorAnalysis"
+      ]
+    },
+    {
+      "canonical": "t-SNE",
+      "aliases": [
+        "t-distributed stochastic neighbor embedding",
+        "tSNE"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "TSNE"
+      ]
+    },
+    {
+      "canonical": "UMAP",
+      "aliases": [
+        "uniform manifold approximation and projection"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": []
+    },
+    {
+      "canonical": "multidimensional scaling",
+      "aliases": [
+        "MDS"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "MDS",
+        "Isomap",
+        "LocallyLinearEmbedding",
+        "SpectralEmbedding"
+      ]
+    },
+    {
+      "canonical": "latent Dirichlet allocation",
+      "aliases": [
+        "LDA (topic model)",
+        "topic modeling"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LatentDirichletAllocation"
+      ]
+    },
+    {
+      "canonical": "isolation forest",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "IsolationForest"
+      ]
+    },
+    {
+      "canonical": "one-class SVM",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "OneClassSVM"
+      ]
+    },
+    {
+      "canonical": "local outlier factor",
+      "aliases": [
+        "LOF"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LocalOutlierFactor",
+        "EllipticEnvelope"
+      ]
+    },
+    {
+      "canonical": "hidden Markov model",
+      "aliases": [
+        "HMM"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "conditional random field",
+      "aliases": [
+        "CRF"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "Bayesian network",
+      "aliases": [
+        "Bayes net",
+        "probabilistic graphical model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "MaxEnt",
+      "aliases": [
+        "maximum entropy model",
+        "maximum entropy"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "genetic algorithm",
+      "aliases": [
+        "evolutionary algorithm",
+        "genetic programming"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "neural network",
+      "aliases": [
+        "artificial neural network",
+        "ANN",
+        "deep neural network",
+        "DNN"
+      ],
+      "family_hint": "classic neural network or deep learning (depth-dependent)",
+      "sklearn": []
+    },
+    {
+      "canonical": "convolutional neural network",
+      "aliases": [
+        "CNN",
+        "ConvNet"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "recurrent neural network",
+      "aliases": [
+        "RNN"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "long short-term memory",
+      "aliases": [
+        "LSTM"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "gated recurrent unit",
+      "aliases": [
+        "GRU"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "transformer",
+      "aliases": [
+        "transformer network",
+        "attention-based model"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "vision transformer",
+      "aliases": [
+        "ViT"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "BERT",
+      "aliases": [
+        "bidirectional encoder representations from transformers"
+      ],
+      "family_hint": "deep learning + large language model",
+      "sklearn": []
+    },
+    {
+      "canonical": "GPT",
+      "aliases": [
+        "generative pre-trained transformer"
+      ],
+      "family_hint": "deep learning + large language model + generative AI",
+      "sklearn": []
+    },
+    {
+      "canonical": "autoencoder",
+      "aliases": [
+        "AE"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "U-Net",
+      "aliases": [
+        "UNet"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "ResNet",
+      "aliases": [
+        "residual network"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "graph neural network",
+      "aliases": [
+        "GNN",
+        "graph convolutional network",
+        "GCN"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "Siamese network",
+      "aliases": [
+        "twin network"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "YOLO",
+      "aliases": [
+        "you only look once"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "word embedding",
+      "aliases": [
+        "word2vec",
+        "GloVe",
+        "fastText"
+      ],
+      "family_hint": "representation learning",
+      "sklearn": []
+    },
+    {
+      "canonical": "generative adversarial network",
+      "aliases": [
+        "GAN"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": []
+    },
+    {
+      "canonical": "variational autoencoder",
+      "aliases": [
+        "VAE"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": []
+    },
+    {
+      "canonical": "diffusion model",
+      "aliases": [
+        "denoising diffusion",
+        "DDPM"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": []
+    },
+    {
+      "canonical": "normalizing flow",
+      "aliases": [
+        "flow-based model"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": []
+    },
+    {
+      "canonical": "large language model",
+      "aliases": [
+        "LLM"
+      ],
+      "family_hint": "large language model",
+      "sklearn": []
+    },
+    {
+      "canonical": "Q-learning",
+      "aliases": [
+        "deep Q-network",
+        "DQN"
+      ],
+      "family_hint": "reinforcement",
+      "sklearn": []
+    },
+    {
+      "canonical": "policy gradient",
+      "aliases": [
+        "PPO",
+        "proximal policy optimization",
+        "actor-critic",
+        "A2C",
+        "A3C"
+      ],
+      "family_hint": "reinforcement",
+      "sklearn": []
+    }
+  ]
+}

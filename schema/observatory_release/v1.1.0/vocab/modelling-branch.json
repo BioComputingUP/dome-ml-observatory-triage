@@ -1,0 +1,36 @@
+{
+  "source": "NLM MeSH AI/ML branch (all descriptor IDs verified live against id.nlm.nih.gov, 2026-08-26) plus 4 clearly-flagged project extensions where MeSH has no descriptor",
+  "decided": "2026-08-26",
+  "decision_note": "Two-axis split agreed with Gavin: learning_paradigm (how the model learns; textbook-consensus axis) and model_family (what kind of system/method family; cross-cutting, multi-label). Gavin's two amendments incorporated: (1) AI agent vs agentic system as two separate terms -- different degrees of agency, task-specific agent vs Biomni-style system; (2) classical machine learning added so classic supervised/unsupervised methods (SVM, random forest, k-means, ...) have a family to land in -- individual classical methods have their own real MeSH descriptors (e.g. Support Vector Machine D060388, Random Forest D000093743) but MeSH has no family-level grouping for them, hence project extension.",
+  "fields": {
+    "learning_paradigm": {
+      "max_tags": 2,
+      "guidance": "How the model learns. Usually exactly 1; use 2 only for genuine hybrids.",
+      "terms": [
+        {"label": "supervised", "mesh_id": "D000069553", "mesh_label": "Supervised Machine Learning"},
+        {"label": "unsupervised", "mesh_id": "D000069558", "mesh_label": "Unsupervised Machine Learning"},
+        {"label": "semi-supervised", "mesh_id": null, "extension": true, "definition": "Learning from a mix of labelled and unlabelled data. Standard textbook category; verified absent from MeSH (exact + contains lookups empty)."},
+        {"label": "reinforcement", "mesh_id": "D000098408", "mesh_label": "Reinforcement Machine Learning"}
+      ]
+    },
+    "model_family": {
+      "max_tags": 3,
+      "guidance": "What kind of system/method family. Cross-cutting and multi-label: a supervised paper can be deep learning + ensemble at once. Boundary between the two classical terms: non-neural statistical learning methods go to 'classical machine learning'; shallow/non-deep neural approaches go to 'classic neural network'; deep architectures go to 'deep learning'.",
+      "terms": [
+        {"label": "classical machine learning", "mesh_id": null, "extension": true, "definition": "Non-neural, non-deep statistical learning methods: SVM, random forest, gradient boosting, k-NN, decision trees, k-means and other classical clustering, etc. Community-consensus term (the standard 'classical ML vs deep learning' dichotomy); individual member methods have their own real MeSH descriptors (Support Vector Machine D060388, Random Forest D000093743, Cluster Analysis D016000) but MeSH has no family-level grouping."},
+        {"label": "deep learning", "mesh_id": "D000077321", "mesh_label": "Deep Learning"},
+        {"label": "classic neural network", "mesh_id": "D016571", "mesh_label": "Neural Networks, Computer", "definition": "Shallow/non-deep neural network approaches (e.g. a plain MLP); deep architectures go to 'deep learning' instead."},
+        {"label": "large language model", "mesh_id": "D000098342", "mesh_label": "Large Language Models", "mesh_introduced": 2025},
+        {"label": "generative AI", "mesh_id": "D000098842", "mesh_label": "Generative Artificial Intelligence", "mesh_introduced": 2025},
+        {"label": "natural language processing", "mesh_id": "D009323", "mesh_label": "Natural Language Processing"},
+        {"label": "ensemble learning", "mesh_id": "D000098406", "mesh_label": "Ensemble Learning"},
+        {"label": "federated learning", "mesh_id": "D000098407", "mesh_label": "Federated Learning"},
+        {"label": "transfer learning", "mesh_id": "D000098410", "mesh_label": "Transfer Machine Learning"},
+        {"label": "representation learning", "mesh_id": "D000098409", "mesh_label": "Representation Machine Learning"},
+        {"label": "dimensionality reduction", "mesh_id": "D000098405", "mesh_label": "Dimensionality Reduction"},
+        {"label": "AI agent", "mesh_id": null, "extension": true, "definition": "A task-specific agent applying an AI model with some autonomy and/or tool use to a defined task -- a single agent, limited scope of agency. Verified absent from MeSH (every 'agent' descriptor is pharmacological)."},
+        {"label": "agentic system", "mesh_id": null, "extension": true, "definition": "A multi-component autonomous system orchestrating models, tools, and plans across tasks (e.g. Biomni-style systems) -- a higher degree of agency than a single task-specific AI agent. Verified absent from MeSH."}
+      ]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# Structured feature flags captured during curation, for future BERT/model-training feature
+# engineering. This is a living checklist, not a fixed schema -- add/remove entries freely as
+# it becomes clearer what actually helps (see AGENTS.md and ROADMAP.md's Curation app section).
+# Each flag is fixed-vocabulary (checkbox/dropdown in the app), never free text -- notes already
+# covers free text.
+
+features:
+  - key: close_negative_reason
+    label: "If negative, why? (pick before or after clicking Negative -- picking does not submit by itself)"
+    type: select
+    options:
+      - theoretical-method-only
+      - generic-nlp-extraction-only
+      - wrong-domain-non-bio
+      - review-mentions-ml-only
+      - other
+    shown_when_decision: negative
+    # Full explanation per option, shown as a hover tooltip on its button in the Curate app --
+    # kept in sync with curation_criteria/CRITERIA.md's "Negative" section, which is the prose
+    # version of the same rules (that file is the one to edit first when a rule changes; mirror
+    # the wording back here).
+    descriptions:
+      theoretical-method-only: >-
+        Purely theoretical/mathematical proposal with no applied component or real-data
+        evaluation.
+      generic-nlp-extraction-only: >-
+        Generic NLP/text-extraction work that isn't really ML methodology in the sense this
+        project cares about.
+      wrong-domain-non-bio: >-
+        Wrong domain entirely, or "AI"/"ML" used in an unrelated/non-computational sense that
+        slipped through the search (e.g. "AI" = Avian Influenza, Artificial Insemination, Aortic
+        Insufficiency).
+      review-mentions-ml-only: >-
+        A review/survey that discusses other people's ML methods without applying one itself --
+        including systematic reviews, meta-analyses that only reanalyze published results (no
+        original modeling/re-implementation), narrative reviews, and overview/special-issue
+        pieces. PRISMA or QUADAS-2 referenced in the paper is a strong signal it belongs here.
+      other: >-
+        Perspective, opinion, commentary, editorial, case report, letter to the editor,
+        correspondence, guide/tutorial/how-to paper (training or educational material explaining
+        how to apply a method, not an experimental methods paper) -- or any other reason not
+        covered above (add a note explaining which).

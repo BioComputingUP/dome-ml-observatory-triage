@@ -1,0 +1,12 @@
+{
+  "fetched_at": "2026-09-07T21:02:24+00:00",
+  "total": 846716,
+  "positive": 366234,
+  "negative": 473503,
+  "undeterminable": 6979,
+  "enriched": 3332,
+  "positive_not_enriched": 362902,
+  "positive_not_enriched_with_abstract": 359653,
+  "citations_never_fetched": 16027,
+  "citations_older_than_30d": 0
+}
