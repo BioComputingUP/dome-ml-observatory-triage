@@ -1,10 +1,15 @@
 # Roadmap
 
-1. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
+1. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
+   skills in `.claude/skills/` exercised in tandem against the commands they document.
+2. **Cross links.** Build the fetch process for the reserved `identifiers.*` fields (Hugging Face,
+   DOME Registry, Zenodo, `bioai_repo`, Kaggle) per [`cross_links/README.md`](cross_links/README.md),
+   then add an `identifiers` write mode to `moros_write.py` with tests.
+3. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
    distribution, and where that description is served.
-2. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
+4. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
    metadata, kept in step with `schema/`.
-3. **Test 1 and 2** end to end against the live service before either is published.
+5. **Test 3 and 4** end to end against the live service before either is published.
 
 Short list, unranked, to judge later:
 
@@ -14,8 +19,13 @@ Short list, unranked, to judge later:
   published schema went **ahead** of the authored one on 2026-09-07 (`CURRENT` v1.3.0, database and
   `schema.py` both 1.2.0); `schema/check_alignment.py` names the three fields. Nothing populates
   them yet, so no data is wrong — the shape is simply not authored here yet.
-- Fill the reserved `identifiers.*` cross-link fields (see `cross_links/`), then add an
-  `identifiers` write mode to `moros_write.py` with tests.
+- **Automated monthly Zenodo archive** of the corpus, via a GitHub Actions workflow: cursor-loop
+  `GET /api/export` (NDJSON, `X-Next-Cursor` until absent), gzip, deposit with a metadata sidecar
+  (count, size, sha256, `schema_version`) and the schema release itself. Reuse the working
+  lifecycle in `DOME_zenodo_archive/download_dome_registry.py`, but read the token from a
+  `ZENODO_TOKEN` Actions secret rather than a source literal, parameterise it so one script serves
+  both archives, and cite the concept DOI. The observatory's `/download/bulk` page currently
+  hardcodes an unregistered DOI waiting on this.
 - Enrich the remaining positives (~360k with an abstract; see `COST_DASHBOARD.md`), by journal
   cohorts, off-peak, weekends.
 - Decide whether `citation_count` needs an index (`ensure_indexes.py --measure-citation-sort`).
