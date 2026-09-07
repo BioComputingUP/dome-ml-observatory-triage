@@ -1,4 +1,4 @@
-# dome-observatory-triage
+# dome-ml-observatory-triage
 
 The data pipeline behind [DOME Observatory](https://observatory.dome-ml.org/): it fetches the
 metadata of AI/ML publications from Europe PMC, classifies each one with a validated LLM
@@ -10,7 +10,7 @@ Two operational repositories, one database, one direction of writes:
 
 | Repository | Role | Touches moros |
 |---|---|---|
-| **this one** — `dome-observatory-triage` | data management: fetch, dedupe, classify, enrich, format, load, refresh | **the only writer** |
+| **this one** — `dome-ml-observatory-triage` | data management: fetch, dedupe, classify, enrich, format, load, refresh | **the only writer** |
 | [`dome-ml-observatory`](https://github.com/BioComputingUP/dome-ml-observatory) | the production service: Angular UI + NestJS API, and the **published schema releases** | read-only |
 
 Every command below is meant to be run one at a time by a person (or by an agent following the

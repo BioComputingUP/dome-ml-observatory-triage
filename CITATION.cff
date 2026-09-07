@@ -4,9 +4,9 @@ authors:
   - family-names: Farrell
     given-names: Gavin
     orcid: "https://orcid.org/0000-0001-5166-8551"
-title: "DOME Observatory Triage"
+title: "DOME ML Observatory Triage"
 version: 0.1.0
 date-released: 2026-09-07
 url: "https://observatory.dome-ml.org/"
-repository-code: "https://github.com/BioComputingUP/dome-observatory-triage"
+repository-code: "https://github.com/BioComputingUP/dome-ml-observatory-triage"
 license: CC-BY-4.0

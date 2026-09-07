@@ -1,6 +1,6 @@
 # Creative Commons Attribution 4.0 International License
 
-**dome-observatory-triage** © 2026 by **Gavin Farrell** is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+**dome-ml-observatory-triage** © 2026 by **Gavin Farrell** is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## License Summary
 

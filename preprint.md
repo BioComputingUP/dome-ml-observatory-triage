@@ -3,7 +3,7 @@
 **Status:** the Observatory's frontend and backend read three new fields as of schema v1.3.0.
 Nothing populates them yet. This document is the specification for the pipeline work that will,
 written to be executed cold and then moved into the processing/data-management repo
-(`dome-observatory-triage`, or whatever succeeds it).
+(`dome-ml-observatory-triage`, or whatever succeeds it).
 
 **Why it exists.** 56,863 corpus records are preprints, and every one of them has
 `publication_metadata.journal: null`. Europe PMC returns nothing in `journalTitle` for a `SRC:PPR`
@@ -211,7 +211,7 @@ is precisely the kind of drift that a monthly automated archive introduces silen
 
 ## 5b. The alignment check will report drift until this lands
 
-`dome-observatory-triage/schema/check_alignment.py` compares the authored shape, this repo's
+`dome-ml-observatory-triage/schema/check_alignment.py` compares the authored shape, this repo's
 `schema/CURRENT` and the live `schema_version` on moros. Because the contract was published here
 first, it currently reports, by design:
 
