@@ -615,7 +615,7 @@ def llm_classify_validate_criteria(
     config_dir: str = _CONFIG_DIR_OPTION,
 ) -> None:
     """Step 20's explicit "first" requirement: runs both the primary (3-way) and forced-choice
-    (2-way) prompts over curation_criteria/example_decision_cases.csv (hand-pick ~12-15 real records
+    (2-way) prompts over curation_criteria/validation_fixtures.csv (hand-pick ~12-15 real records
     with an expected_classification first) and prints a pass/fail table + the primary variant's
     undetermined rate + one full constructed prompt, before any larger spend."""
     pipeline_steps.step_llm_classify_validate_criteria(_load_config(config_dir), tier, confirm)

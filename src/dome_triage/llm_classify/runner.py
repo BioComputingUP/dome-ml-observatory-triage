@@ -74,7 +74,7 @@ def run_criteria_validation(
     fixtures: pd.DataFrame, tier: str, client: DeepSeekClient, criteria_text: str
 ) -> pd.DataFrame:
     """Runs BOTH the primary (3-way) and forced-choice (2-way) prompt variants over the hand-picked
-    example decision cases (`curation_criteria/example_decision_cases.csv`) -- flash tier only in
+    validation fixtures (`curation_criteria/validation_fixtures.csv`) -- flash tier only in
     practice, since the same prompt drives both DeepSeek tiers by construction, so there's no
     reason to spend at pro-tier prices before the prompt itself is proven correct. Returns one row
     per (record_id, variant) with the model's answer, whether it matched the fixture's own

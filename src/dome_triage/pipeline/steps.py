@@ -2096,14 +2096,14 @@ def _stream_classify_events_to_disk(events_path: Path, event_iterator, columns: 
 def step_llm_classify_validate_criteria(cfg: PipelineConfig, tier: str = "flash", confirmed: bool = False) -> None:
     """Step 20's explicit "first" requirement: is the prompt actually working, checked BEFORE any
     calibration or real-sample spend. Runs BOTH the primary (3-way) and forced-choice (2-way)
-    prompt variants over the hand-picked `curation_criteria/example_decision_cases.csv` fixtures --
+    prompt variants over the hand-picked `curation_criteria/validation_fixtures.csv` fixtures --
     flash tier only in practice, since the same prompt drives both DeepSeek tiers by construction.
     Prints a pass/fail table per variant, the primary variant's undetermined rate (the number that
     decides which variant drives the real 500+500 sample -- see STEPS_Progress.md Step 20's
     decision rule), and the full constructed prompt for one record so you can visually confirm the
     criteria text really made it in."""
     started_at = time.monotonic()
-    fixtures_path = resolve_path("curation_criteria/example_decision_cases.csv")
+    fixtures_path = resolve_path("curation_criteria/validation_fixtures.csv")
     if not fixtures_path.exists():
         raise ValueError(
             f"{fixtures_path} does not exist -- hand-pick ~12-15 real records with an "
@@ -2268,7 +2268,7 @@ def step_llm_classify_sample(
     canonical_path = cfg.path("canonical_dataset")
     dataset = pd.read_csv(canonical_path, dtype=str)
 
-    fixtures_path = resolve_path("curation_criteria/example_decision_cases.csv")
+    fixtures_path = resolve_path("curation_criteria/validation_fixtures.csv")
     exclude_ids: set = set()
     if fixtures_path.exists():
         exclude_ids = set(pd.read_csv(fixtures_path, dtype=str)["record_id"])
