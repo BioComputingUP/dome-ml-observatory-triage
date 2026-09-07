@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fails if any tracked file names a machine-specific absolute path.
 
-A path like `/home/someone/...` in a committed file makes the repository unrunnable for everyone
+A path naming a user's home directory in a committed file makes the repository unrunnable for everyone
 else and breaks silently rather than loudly. This existed here until 2026-09-07: eighteen lines of
 `configs/` and sixty-two coverage-ledger entries pointed into one laptop's home directory. Config
 paths now use `${DOME_TRIAGE_DATA_ROOT}` (see `src/dome_triage/config.py`, which defaults it to
@@ -27,6 +27,8 @@ REPO = Path(__file__).resolve().parent.parent
 # Each pattern names a user-specific root. `/app` and other container-absolute paths are portable
 # and deliberately absent.
 PATTERNS = {
+    # These literals do not trip the check on this file: a match needs a real path segment
+    # after the slash, and a character class is not one.
     "unix home": re.compile(r"/home/[A-Za-z0-9._-]+"),
     "macOS home": re.compile(r"/Users/[A-Za-z0-9._-]+"),
     "windows drive": re.compile(r"\b[A-Za-z]:\\\\?[A-Za-z0-9._-]"),
