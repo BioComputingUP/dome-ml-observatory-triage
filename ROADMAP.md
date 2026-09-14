@@ -6,9 +6,17 @@
      supplements link (not author data).
    - Missing: data citations (DataCite/Crossref) and database-side links.
    - Left: retest, `fetch_datalinks.py`, rebuild, reload; commit; restart `observatory-ws`.
+
+**FAIR metadata (items 6–7, plus Dublin Core and OAI-PMH):** plan in [`roadmap_FAIR.md`](roadmap_FAIR.md).
+6. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
+   distribution, and where that description is served.
+7. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
+   metadata, kept in step with `schema/`.
+
 2. **Finalise schema versioning.** With v1.4.0 authored and released, settle the release procedure — who bumps,
    when, what a release carries — so the authored `SCHEMA_VERSION`, the published `schema/CURRENT`
    and the live `schema_version` stop drifting. `schema/check_alignment.py` is the arbiter.
+
 3. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
    skills in `.claude/skills/` exercised in tandem against the commands they document.
 4. **Cross links.** Derive `identifiers.zenodo` and `bioai_repo` from `data_links`, and build the
@@ -19,10 +27,7 @@
    gzip, deposit through the Zenodo API with a sidecar (count, size, sha256, `schema_version`) and
    the schema release. Reuse `DOME_zenodo_archive/download_dome_registry.py`, `ZENODO_TOKEN` from
    Actions secrets. Replaces the unregistered DOI hardcoded on `/download/bulk`.
-6. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
-   distribution, and where that description is served.
-7. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
-   metadata, kept in step with `schema/`.
+
 8. **Test 6 and 7** end to end against the live service before either is published.
 9. **Keep the two repositories aligned.** Last, once the items above land: `check_alignment.py`
    clean, and no claim, count or link in either repo's `README.md`, `ROADMAP.md` or skills
