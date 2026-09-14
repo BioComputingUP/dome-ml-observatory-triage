@@ -163,6 +163,14 @@ field.
   then fails with `.git/hooks/: Permission denied`. Harmless once the repository exists (2026-09-07:
   `rmdir .git`, then `git init`). If you ever clone into a fresh directory and run Compose before
   the clone finishes, that is the symptom.
+- **Europe PMC's text-mined identifiers were stored verbatim and 1,513 documents got links that
+  404** (2026-09-14): `10.5281/zenodo.18675888.`, `10.6084/m9.figshare.24123303”.`, DOIs cut from
+  comma lists, `×` for `x`, `zenodo.XXXXX` placeholders, free text where an RRID was matched. Never
+  store an annotation's `exact` string. `moros_pipeline/scripts/link_identifiers.py` defines a clean
+  identifier; `build_data_links.py` is the only place identifiers are chosen (repairing what it can
+  and confirming every DOI at doi.org); `load_fields.py --mode data_links` and `load_documents.py`
+  refuse a file with a malformed link before connecting; `verify_corpus.py` fails if one is in
+  moros. Keep all four in place, and extend `link_identifiers.py` rather than cleaning anywhere else.
 
 ## Provenance of this repository
 

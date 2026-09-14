@@ -36,10 +36,10 @@ Exit code 1 on any difference, with each one named.
 with, copied by the `schema-sync` skill so a diff is readable offline. It is a copy, not an
 authority.
 
-**The snapshot is v1.1.0 and deliberately behind.** As of 2026-09-07 the sibling repository has
-uncommitted `releases/v1.2.0/` and `releases/v1.3.0/` folders and a `CURRENT` of v1.3.0. A
-snapshot is only ever taken from a committed release, so this one waits. `check_alignment.py`
-reads the sibling working tree directly and already reports the real state: published v1.3.0,
-authored and live 1.2.0, three fields (`identifiers.epmc_id`,
-`publication_metadata.preprint_server`, `source.epmc_source`) published but not yet authored here.
-Authoring them is the first item in `ROADMAP.md`; the specification is `docs/preprint.md`.
+**Where the three sides stand (2026-09-14).** Authored here: 1.4.0 (the v1.3.0 preprint fields
+plus the `data_links` group). Published in the sibling working tree: v1.4.0, cut with its
+`schema-version` skill in the same change. Live on moros: 1.2.0 until `migrate_v1_4_0.py --confirm`
+runs, so `check_alignment.py --live` reports the corpus as behind until then — that is the
+migration due, not drift to fix by hand. The snapshot below is still v1.1.0: a snapshot is only
+ever taken from a committed release, so refresh it with the `schema-sync` skill once the sibling's
+v1.4.0 folder is committed.

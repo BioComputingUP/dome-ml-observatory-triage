@@ -11,16 +11,14 @@ built (`mongo_landscape_export/scripts/schema.py::_identifiers`):
 | `identifiers.kaggle` | a Kaggle dataset or competition slug | no public paper-to-Kaggle linkage API; text mining of full text for `kaggle.com/` URLs |
 | `identifiers.zenodo` | a Zenodo record DOI (`10.5281/zenodo.*`) for code or data | Europe PMC data links; Zenodo REST search by related identifier (`relation:isSupplementTo` the paper DOI); full-text URL mining |
 
-A sixth identifier field is coming: `identifiers.epmc_id` (Europe PMC's own accession, e.g.
-`PPR18364`), specified in [`../docs/preprint.md`](../docs/preprint.md) for schema v1.3.0. It is
-captured directly from the search response rather than looked up, so it is not this folder's
-work — but it is what makes a correct `/article/{source}/{id}` link, and any cross-link that
-resolves through Europe PMC should prefer it over the pmid form.
-
-Also worth evaluating as generic sources: Europe PMC **data links** (all categories: data
-citations, accession numbers, software), **Europe PMC text-mined annotations**, **OpenAlex** (which
-returns related works and some repository signals), **Software Heritage** (archived repository
-URLs), **DataCite** event data (citations from datasets/software to the paper DOI).
+Two things landed next to this folder rather than in it. `identifiers.epmc_id` (Europe PMC's own
+accession) and the whole `data_links` group (schema v1.4.0) are fetched by
+`moros_pipeline/scripts/fetch_epmc_metadata.py`, `fetch_annotations.py` and `fetch_datalinks.py`
+and merged by `build_data_links.py` (see the `data-links` skill). So the Europe PMC data-links
+rows in the table above are no longer a fetch for this folder: `identifiers.zenodo` and
+`identifiers.bioai_repo` should be derived from `pid_data_links.csv` (resources `zenodo`,
+`github`, `software_heritage`), and any link that resolves through Europe PMC should use
+`/article/{epmc_source}/{epmc_id}`.
 
 Nothing here runs yet. `fetch_cross_links.py` is an argparse shell with the structure the real
 script should keep; fill it in per source, one source per subcommand, each resumable and

@@ -121,8 +121,14 @@ def build_clause(key_type: str, key: str) -> str:
     raise ValueError(f"unknown key type {key_type!r}")
 
 
-def build_query(key_type: str, keys: list[str]) -> str:
+def build_query(key_type: str, keys: list[str], src: str | None = None) -> str:
+    """`src` overrides the source restriction: `fetch_epmc_metadata.py` passes "PPR" to fetch a
+    preprint's own record by DOI, because for a preprint later published in a journal the DOI
+    resolves to both a PPR and a MED record and `pick_best()` would take the MED one
+    (docs/preprint.md, "The one trap"). Left None, the default rule below applies unchanged."""
     clauses = " OR ".join(build_clause(key_type, k) for k in keys)
+    if src is not None:
+        return f"({clauses}) AND SRC:{src}"
     # SRC:MED only on the pmid pass: a PMID *is* a MEDLINE identifier, so the restriction is free
     # and keeps the result set to one record per key. Restricting the doi/pmcid passes would
     # exclude exactly the preprint and PMC-only records those passes exist to reach.

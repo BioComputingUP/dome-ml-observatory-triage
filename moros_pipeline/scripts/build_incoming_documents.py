@@ -33,6 +33,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent
                        / "mongo_landscape_export" / "scripts"))
 from pid import mint_landscape_pid  # noqa: E402  -- see the sys.path note below
 
+from fetch_epmc_metadata import identity_fields, summary_fields  # noqa: E402
+
 # `pid.py` is imported from mongo_landscape_export/scripts rather than copied. The UUID5 minting
 # rule is the single property that makes every upsert in this project idempotent; a second
 # implementation of it that drifted by one character would mint different _ids for the same papers
@@ -48,6 +50,12 @@ OUTPUT_COLUMNS = [
     "pid", "pmid", "pmcid", "doi", "title", "abstract", "authors", "year", "journal",
     "mesh_headings", "pub_types", "keywords_author", "is_open_access", "fulltext_available",
     "abstract_source", "epmc_source", "first_publication_date",
+    # Schema v1.3.0 / v1.4.0, read straight off the same `core` search record -- zero extra HTTP.
+    # `epmc_source` above predates them and is kept in place; the identity and the data-links
+    # summary use the exact readers the retrospective backfill uses (fetch_epmc_metadata.py).
+    "epmc_id", "preprint_server",
+    "has_data", "data_links_tags", "accession_types", "db_cross_references",
+    "has_tm_accessions", "has_db_xrefs", "has_suppl",
 ]
 
 
@@ -91,6 +99,9 @@ def epmc_record_to_row(record: dict) -> dict | None:
         "abstract_source": "europepmc" if abstract else "",
         "epmc_source": record.get("source") or "",
         "first_publication_date": record.get("firstPublicationDate") or "",
+        "epmc_id": identity_fields(record)["epmc_id"],
+        "preprint_server": identity_fields(record)["preprint_server"],
+        **summary_fields(record),
     }
 
 

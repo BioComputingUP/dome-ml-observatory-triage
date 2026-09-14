@@ -1,0 +1,74 @@
+{
+  "version": "6.8",
+  "hitCount": 3,
+  "request": {"id": "33024307", "source": "MED"},
+  "dataLinkList": {
+    "Category": [
+      {
+        "Name": "Nucleotide Sequences",
+        "CategoryLinkCount": 1,
+        "Section": [
+          {
+            "ObtainedBy": "tm_accession",
+            "Tags": ["supporting_data"],
+            "SectionLinkCount": 1,
+            "Linklist": {
+              "Link": [
+                {
+                  "ObtainedBy": "tm_accession",
+                  "PublicationDate": "04-11-2022",
+                  "LinkProvider": {"Name": "Europe PMC"},
+                  "RelationshipType": {"Name": "References"},
+                  "Source": {"Type": {"Name": "literature"},
+                             "Identifier": {"ID": "33024307", "IDScheme": "MED"}},
+                  "Target": {"Type": {"Name": "dataset"},
+                             "Identifier": {"ID": "AY278488", "IDScheme": "ENA",
+                                            "IDURL": "http://identifiers.org/ebi/ena.embl:AY278488"},
+                             "Title": "AY278488",
+                             "Publisher": {"Name": "Europe PMC"}}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Data Citations",
+        "CategoryLinkCount": 2,
+        "Section": [
+          {
+            "ObtainedBy": "ext_links",
+            "Tags": ["related_data"],
+            "SectionLinkCount": 2,
+            "Linklist": {
+              "Link": [
+                {
+                  "ObtainedBy": "ext_links",
+                  "PublicationDate": "2021-03-01",
+                  "LinkProvider": {"Name": "DataCite"},
+                  "RelationshipType": {"Name": "IsSupplementedBy"},
+                  "Source": {"Type": {"Name": "literature"},
+                             "Identifier": {"ID": "10.1038/s41586-020-2951-z", "IDScheme": "DOI"}},
+                  "Target": {"Type": {"Name": "dataset"},
+                             "Identifier": {"ID": "10.5281/zenodo.4457982", "IDScheme": "DOI",
+                                            "IDURL": "https://doi.org/10.5281/zenodo.4457982"},
+                             "Title": "Structural basis of RBD binding: source data",
+                             "Publisher": {"Name": "Zenodo"}}
+                },
+                {
+                  "ObtainedBy": "ext_links",
+                  "LinkProvider": {"Name": "DataCite"},
+                  "RelationshipType": {"Name": "IsReferencedBy"},
+                  "Target": {"Type": {"Name": "dataset"},
+                             "Identifier": {"ID": "10.5061/dryad.dm57j", "IDScheme": "DOI",
+                                            "IDURL": "https://doi.org/10.5061/dryad.dm57j"},
+                             "Publisher": {"Name": "Dryad"}}
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

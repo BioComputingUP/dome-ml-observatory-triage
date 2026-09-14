@@ -23,13 +23,15 @@ container.
 3. **`classify`.** Smoke `--limit 50` if anything is new, then the batch. Report counts and the
    real balance delta.
    → **Ask:** build documents and load into moros?
-4. **`moros-write` A.** Citations + licences for the batch, build, dry run, `--limit 100` trial,
-   confirm, `ensure_indexes.py`, `verify_corpus.py --expect-count`. Report inserted / left out.
+4. **`moros-write` A.** Citations + licences and Europe PMC data links for the batch, build, dry
+   run, `--limit 100` trial, confirm, `ensure_indexes.py`, `verify_corpus.py --expect-count`.
+   Report inserted / left out, and how many new documents carry data links.
    → **Ask:** enrich the batch's positives now (~$4 per 1,000; N positives ≈ $Y; T minutes; off-peak
    window from `offpeak_window.py`)? Or a different cohort? Or not this month?
 5. **`enrich`** (if yes) with its own `--events-out`, then **`moros-write` B** to merge. Report
    ok / truncated / violations and the balance delta.
-6. **`citations-refresh`** (monthly, free) if the user wants it in the same session.
+6. **`citations-refresh`** (monthly, free) if the user wants it in the same session; the
+   **`data-links`** refresh (`--max-age-days 180`, free) when it is due.
 7. **Post-load checklist** (from `moros-write`): restart `observatory-ws`, reconcile
    `generate_facet_stats.py --from-api`, `schema-sync` if the shape changed.
 8. **Close.** Regenerate `COST_DASHBOARD.md` (`cost-estimate` step 3), and give the user a short

@@ -1,10 +1,11 @@
 {
   "_id": null,
-  "schema_version": "1.2.0",
+  "schema_version": "1.4.0",
   "identifiers": {
     "pmid": null,
     "pmcid": null,
     "doi": null,
+    "epmc_id": null,
     "dome_registry": null,
     "bioai_repo": null,
     "huggingface": null,
@@ -17,6 +18,7 @@
     "authors": null,
     "year": null,
     "journal": null,
+    "preprint_server": null,
     "citation_count": null,
     "citation_count_updated": null,
     "citation_source": null
@@ -25,6 +27,7 @@
     "abstract_source": null,
     "metadata_repair_sources": null,
     "decision_provenance": null,
+    "epmc_source": null,
     "access": {
       "open_access": null,
       "license": null,
@@ -41,6 +44,18 @@
     "learning_paradigm": [],
     "model_family": [],
     "model_type": []
+  },
+  "data_links": {
+    "has_data": null,
+    "tags": [],
+    "accession_types": [],
+    "db_cross_references": [],
+    "fetched_at": null,
+    "sources": [],
+    "link_count": null,
+    "truncated": null,
+    "resources": [],
+    "links": []
   },
   "llm_classification": {
     "provider": null,

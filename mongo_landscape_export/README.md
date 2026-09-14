@@ -9,7 +9,7 @@ paths relative to the repository root. Moving or renaming anything here changes 
 
 | File | What it does |
 |---|---|
-| `scripts/schema.py` | `build_document(row)` / `build_curated_document(row)`: one CSV row in, one grouped, typed document out. Owns `SCHEMA_VERSION` (currently `1.2.0`) and the three `decision_provenance` values. Pure functions, no I/O. |
+| `scripts/schema.py` | `build_document(row)` / `build_curated_document(row)`: one CSV row in, one grouped, typed document out. Owns `SCHEMA_VERSION` (currently `1.4.0`) and the three `decision_provenance` values. Pure functions, no I/O. |
 | `scripts/pid.py` | Mints the deterministic UUID5 `_id` (`pmcid > doi > pmid`). The same paper always mints the same `_id`, which is what makes every load idempotent. **Never reimplement this.** |
 | `scripts/citations_index.py` | Loads a `fetch_citations.py` output and looks a record up by `pmid -> doi -> pmcid`. |
 | `scripts/build_staged_documents.py` | Staged CSV + classification events + citations/licences -> documents JSONL. The recurring path. |

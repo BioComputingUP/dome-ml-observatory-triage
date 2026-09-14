@@ -43,6 +43,7 @@ from tqdm import tqdm
 
 from pymongo import ReplaceOne
 
+from link_identifiers import malformed_links
 from moros_client import ID_FIELD, Moros, load_env
 from moros_write import REPORT_DIR, ROLLBACK_DIR, new_run_id, sha256_file, utc_now_iso
 
@@ -148,6 +149,20 @@ def iter_documents(path: Path, limit: int | None):
             yield json.loads(line)
 
 
+def find_malformed_data_links(path: Path, limit: int | None) -> list[tuple[str, tuple]]:
+    """(document _id, malformed link) for every link in the input that must not reach moros.
+
+    `build_data_links.py` chooses identifiers and `build_staged_documents.py` carries them into the
+    batch's documents unchanged, so this should always be empty; a non-empty answer means the JSONL
+    was built from a stale or hand-edited data-links file. `link_identifiers.malformed_links` is the
+    one definition, shared with `load_fields.py` and the build itself."""
+    found: list[tuple[str, tuple]] = []
+    for doc in iter_documents(path, limit):
+        for link in malformed_links(doc.get("data_links")):
+            found.append((doc.get(ID_FIELD), link))
+    return found
+
+
 def upsert_via_pymongo(
     moros: Moros, path: Path, limit: int | None, existing: set[str],
     allow_replace_existing: bool,
@@ -231,6 +246,14 @@ def run(input_path: Path, gate_report: Path, confirm: bool, limit: int | None,
           + (f" (--limit {limit})" if limit else ""))
     if len(set(ids)) != len(ids):
         raise SystemExit("the input contains duplicate _ids -- refusing to load")
+
+    malformed = find_malformed_data_links(input_path, limit)
+    if malformed:
+        raise SystemExit(
+            f"[{run_id}] refusing to load, nothing written: {len(malformed):,} malformed data link(s) "
+            f"in {len({doc_id for doc_id, _ in malformed}):,} document(s), first {malformed[:3]} -- "
+            f"rebuild the data links with build_data_links.py, then the documents"
+        )
 
     with Moros.from_env() as moros:
         print(f"[{run_id}] target {moros.describe()}")

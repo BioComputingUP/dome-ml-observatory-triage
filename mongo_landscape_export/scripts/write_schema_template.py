@@ -33,6 +33,7 @@ def build_template() -> dict:
             "pmid": None,
             "pmcid": None,
             "doi": None,
+            "epmc_id": None,
             "dome_registry": None,
             "bioai_repo": None,
             "huggingface": None,
@@ -45,6 +46,7 @@ def build_template() -> dict:
             "authors": None,
             "year": None,
             "journal": None,
+            "preprint_server": None,
             "citation_count": None,
             "citation_count_updated": None,
             "citation_source": None,
@@ -53,6 +55,7 @@ def build_template() -> dict:
             "abstract_source": None,
             "metadata_repair_sources": None,
             "decision_provenance": None,
+            "epmc_source": None,
             "access": {
                 "open_access": None,
                 "license": None,
@@ -69,6 +72,20 @@ def build_template() -> dict:
             "learning_paradigm": [],
             "model_family": [],
             "model_type": [],
+        },
+        # Real leaves, never an empty `{}`: check_alignment.py enumerates leaf paths and an empty
+        # dict would collapse the whole group into one path.
+        "data_links": {
+            "has_data": None,
+            "tags": [],
+            "accession_types": [],
+            "db_cross_references": [],
+            "fetched_at": None,
+            "sources": [],
+            "link_count": None,
+            "truncated": None,
+            "resources": [],
+            "links": [],
         },
         "llm_classification": {
             "provider": None,

@@ -1,0 +1,837 @@
+[
+ {
+  "source": "MED",
+  "extId": "34265844",
+  "pmcid": "PMC8371605",
+  "annotations": [
+   {
+    "exact": "6w6w",
+    "tags": [
+     {
+      "name": "6w6w",
+      "uri": "http://identifiers.org/pdbe/pdb:6w6w"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-7bdc327f23dfee8b8735c26e648c6a82",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 28,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "128000",
+    "tags": [
+     {
+      "name": "128000",
+      "uri": "https://omim.org/entry/128000"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-a700d027711383abf15ab188f51e54ce",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 8,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "6j3q",
+    "tags": [
+     {
+      "name": "6j3q",
+      "uri": "http://identifiers.org/pdbe/pdb:6j3q"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-c0dacff360ff02ae0a3be97fb49a5d26",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 4,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "6fes",
+    "tags": [
+     {
+      "name": "6fes",
+      "uri": "http://identifiers.org/pdbe/pdb:6fes"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-0c7fb41dcf267502918c873ba8cec878",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 4,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "5jxf",
+    "tags": [
+     {
+      "name": "5jxf",
+      "uri": "http://identifiers.org/pdbe/pdb:5jxf"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-8939007042fff6234769f080ca5c83c8",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 4,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "6xdc",
+    "tags": [
+     {
+      "name": "6xdc",
+      "uri": "http://identifiers.org/pdbe/pdb:6xdc"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-90e1fecd5ba940ca1b68bd93a076b5ce",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 8,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "6vr4",
+    "tags": [
+     {
+      "name": "6vr4",
+      "uri": "http://identifiers.org/pdbe/pdb:6vr4"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-a0b1d123772eb50acfa5e2ad1395a45f",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 4,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "exact": "6l2w",
+    "tags": [
+     {
+      "name": "6l2w",
+      "uri": "http://identifiers.org/pdbe/pdb:6l2w"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#biostudies-a00ece41e5fbef50b5cda30524827c29",
+    "type": "Accession Numbers",
+    "section": "Supplementary material (http://purl.obolibrary.org/obo/IAO_0000326)",
+    "provider": "Biostudies",
+    "frequency": 4,
+    "fileName": "41586_2021_3819_MOESM1_ESM.pdf"
+   },
+   {
+    "prefix": " target T1049 (PDB ",
+    "exact": "6Y4F",
+    "postfix": ", blue) compared wi",
+    "tags": [
+     {
+      "name": "6Y4F",
+      "uri": "http://identifiers.org/pdbe/pdb:6Y4F"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#europepmc-3c89558eadeb6b40514700fdbcf6fb77",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": " target T1044 (PDB ",
+    "exact": "6VR4",
+    "postfix": ")—a 2,180-residue ",
+    "tags": [
+     {
+      "name": "6VR4",
+      "uri": "http://identifiers.org/pdbe/pdb:6VR4"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#europepmc-62b6f45b4fd8fd5ad042c6e54d7e8953",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "ned homotrimer (PDB ",
+    "exact": "6SK0",
+    "postfix": ") is correctly predi",
+    "tags": [
+     {
+      "name": "6SK0",
+      "uri": "http://identifiers.org/pdbe/pdb:6SK0"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#europepmc-71d6a3823d33c9750d8da0b6e5c834ed",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "ionF1000Res.20209667",
+    "exact": "10.12688/f1000research.25097.1",
+    "postfix": "PMC733336132676184Th",
+    "tags": [
+     {
+      "name": "10.12688/f1000research.25097.1",
+      "uri": "http://identifiers.org/doi:10.12688/f1000research.25097.1"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC8371605#europepmc-8948ee31b30ef946bb6c0ddb8cf7e68f",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   }
+  ],
+  "fullTextIdList": [
+   "PMC8371605"
+  ]
+ },
+ {
+  "source": "MED",
+  "extId": "33024307",
+  "pmcid": "PMC7537588",
+  "annotations": [
+   {
+    "prefix": "Data Bank codes are ",
+    "exact": "2AJF",
+    "postfix": " for SARS-CoV RBD–",
+    "tags": [
+     {
+      "name": "2AJF",
+      "uri": "http://identifiers.org/pdbe/pdb:2AJF"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-08040388cc85abd3310549d1fad61482",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "CoV RBD–hACE2 and ",
+    "exact": "6VW1",
+    "postfix": " for SARS-CoV-2 RBD�",
+    "tags": [
+     {
+      "name": "6VW1",
+      "uri": "http://identifiers.org/pdbe/pdb:6VW1"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-6f5c30a497caeb7e640862a3c861aec8",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "GenBank entries are ",
+    "exact": "AY278488",
+    "postfix": " for SARS-CoV BJ01, ",
+    "tags": [
+     {
+      "name": "AY278488",
+      "uri": "http://identifiers.org/ebi/ena.embl:AY278488"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-28b136539298c073277cd14ab060983b",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   },
+   {
+    "prefix": " for SARS-CoV BJ01, ",
+    "exact": "MN996532",
+    "postfix": " for the bat SARSr-C",
+    "tags": [
+     {
+      "name": "MN996532",
+      "uri": "http://identifiers.org/ebi/ena.embl:MN996532"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-c3cfd0a80e41edc39fc2e15e344e8d29",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   },
+   {
+    "prefix": "t SARSr-CoV RaTG13, ",
+    "exact": "MT121216",
+    "postfix": " and MT072864 for th",
+    "tags": [
+     {
+      "name": "MT121216",
+      "uri": "http://identifiers.org/ebi/ena.embl:MT121216"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-2e478960dab4c9f394b0cdb819bf0a33",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   },
+   {
+    "prefix": "aTG13, MT121216 and ",
+    "exact": "MT072864",
+    "postfix": " for the GD pangolin",
+    "tags": [
+     {
+      "name": "MT072864",
+      "uri": "http://identifiers.org/ebi/ena.embl:MT072864"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-5cf0fd03bc1085efaa089c9fe3035194",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   },
+   {
+    "prefix": ", respectively, and ",
+    "exact": "KF367457",
+    "postfix": " for the bat SARSr-C",
+    "tags": [
+     {
+      "name": "KF367457",
+      "uri": "http://identifiers.org/ebi/ena.embl:KF367457"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-2cd1bda84900be57b9e36f631609b1e2",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   },
+   {
+    "prefix": "urveill.202025200131e32019636",
+    "exact": "10.2807/1560-7917.ES.2020.25.5.200131e",
+    "postfix": "PMC7014669 ",
+    "tags": [
+     {
+      "name": "10.2807/1560-7917.ES.2020.25.5.200131e",
+      "uri": "http://identifiers.org/doi:10.2807/1560-7917.ES.2020.25.5.200131e"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-b9ead413607ec45f05c42a52bec5123f",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   },
+   {
+    "prefix": "us resourceYi Chuan20204221222132102777",
+    "exact": "10.16288/j.yczz.20-030",
+    "postfix": " ",
+    "tags": [
+     {
+      "name": "10.16288/j.yczz.20-030",
+      "uri": "http://identifiers.org/doi:10.16288/j.yczz.20-030"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-60b11f01d6032bd1bb49698d2a43d6c4",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   },
+   {
+    "prefix": "urveill.202025200100532553059",
+    "exact": "10.2807/1560-7917.ES.2020.25.23.2001005",
+    "postfix": "PMC7403642 ",
+    "tags": [
+     {
+      "name": "10.2807/1560-7917.ES.2020.25.23.2001005",
+      "uri": "http://identifiers.org/doi:10.2807/1560-7917.ES.2020.25.23.2001005"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-05ea40679b7567e476f0c04442e4b3b5",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   },
+   {
+    "prefix": "J.202039e10511432246845",
+    "exact": "10.15252/embj.20105114",
+    "postfix": "PMC7232010 ",
+    "tags": [
+     {
+      "name": "10.15252/embj.20105114",
+      "uri": "http://identifiers.org/doi:10.15252/embj.20105114"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-4a6a77315799554f3e4d6e1fdb7369e9",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   },
+   {
+    "prefix": "urveill.202025200017032127123",
+    "exact": "10.2807/1560-7917.ES.2020.25.8.2000170",
+    "postfix": "PMC7055037 ",
+    "tags": [
+     {
+      "name": "10.2807/1560-7917.ES.2020.25.8.2000170",
+      "uri": "http://identifiers.org/doi:10.2807/1560-7917.ES.2020.25.8.2000170"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC7537588#europepmc-1ccaa6e3e645876d9980ff67b2d3fa68",
+    "type": "Accession Numbers",
+    "section": "References (http://purl.org/orb/References)",
+    "provider": "Europe PMC",
+    "subType": "DOI"
+   }
+  ],
+  "fullTextIdList": [
+   "PMC7537588"
+  ]
+ },
+ {
+  "source": "MED",
+  "extId": "25671081",
+  "pmcid": "PMC4309170",
+  "annotations": [
+   {
+    "prefix": "5 and His57 - PDBid ",
+    "exact": "1A0J",
+    "postfix": ") 22 (Motif1), we ch",
+    "tags": [
+     {
+      "name": "1A0J",
+      "uri": "http://identifiers.org/pdbe/pdb:1A0J"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-296cfc17ccc2a13688e407742860b6f8",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": " and His740 - PDBid:",
+    "exact": "1N1M",
+    "postfix": ") (Motif2) ( Table 1",
+    "tags": [
+     {
+      "name": "1N1M",
+      "uri": "http://identifiers.org/pdbe/pdb:1N1M"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-59d7333f8144cbddb24bb4257ba2a69f",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "dRmsd1Rmsd2TRYPSIN (",
+    "exact": "1A0J",
+    "postfix": ")D102,S195 H57,A56D ",
+    "tags": [
+     {
+      "name": "1A0J",
+      "uri": "http://identifiers.org/pdbe/pdb:1A0J"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-cdfc6aa18feecbc4147e67a76591f5f2",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "6.9 -209.100.5DPP4 (",
+    "exact": "1N1M",
+    "postfix": ")D708,S630 H740,V711",
+    "tags": [
+     {
+      "name": "1N1M",
+      "uri": "http://identifiers.org/pdbe/pdb:1N1M"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-f7d969abff75aa55ac012224d864674f",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "4 -273.20.50PI-PLC (",
+    "exact": "1PTD",
+    "postfix": ")D67,S234 H32,I68D P",
+    "tags": [
+     {
+      "name": "1PTD",
+      "uri": "http://identifiers.org/pdbe/pdb:1PTD"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-1def96eea9373205c6d420a7e4aadc99",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": " -284.80.61.1PLASE (",
+    "exact": "2OXE",
+    "postfix": ")D195,S171 H282,G235",
+    "tags": [
+     {
+      "name": "2OXE",
+      "uri": "http://identifiers.org/pdbe/pdb:2OXE"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-06674ae68624758e0ea4b53d41ba9400",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": " -158.80.50.4GPASE (",
+    "exact": "1HLG",
+    "postfix": ") Motif1D324,S153, H",
+    "tags": [
+     {
+      "name": "1HLG",
+      "uri": "http://identifiers.org/pdbe/pdb:1HLG"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-d71e4fbc0705c7024e7c677e58ed02b4",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": " -257.30.20.3GPASE (",
+    "exact": "1HLG",
+    "postfix": ") Motif2D324,S153 H3",
+    "tags": [
+     {
+      "name": "1HLG",
+      "uri": "http://identifiers.org/pdbe/pdb:1HLG"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-d18ddda8eb11512d8cfd7e244b618c10",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "5.3 -192.10.40.1QC (",
+    "exact": "3PB4",
+    "postfix": ")D170,S187, H168,G22",
+    "tags": [
+     {
+      "name": "3PB4",
+      "uri": "http://identifiers.org/pdbe/pdb:3PB4"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-d6c2b052fec3cb9b48064848eb6322a0",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "criptionCLASP Score1",
+    "exact": "2ANY",
+    "postfix": "Plasma kallikrein, l",
+    "tags": [
+     {
+      "name": "2ANY",
+      "uri": "http://identifiers.org/pdbe/pdb:2ANY"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-6bcc182bc57124bd0ba8d8ac3854871f",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "n, light chain0.0281",
+    "exact": "2OQ5",
+    "postfix": "Transmembrane protea",
+    "tags": [
+     {
+      "name": "2OQ5",
+      "uri": "http://identifiers.org/pdbe/pdb:2OQ5"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-db1848d7f5ccd52eeae705fac69ab088",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   },
+   {
+    "prefix": "se, serine 11E0.0371",
+    "exact": "3U0V",
+    "postfix": "Lysophospholipase-li",
+    "tags": [
+     {
+      "name": "3U0V",
+      "uri": "http://identifiers.org/pdbe/pdb:3U0V"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC4309170#europepmc-a752bb0f1e8e7626b327b95f3e83c2a8",
+    "type": "Accession Numbers",
+    "section": "Results (http://purl.org/orb/Results)",
+    "provider": "Europe PMC",
+    "subType": "PDBe"
+   }
+  ],
+  "fullTextIdList": [
+   "PMC4309170"
+  ]
+ },
+ {
+  "source": "MED",
+  "extId": "38827411",
+  "pmcid": "PMC11142626",
+  "annotations": [],
+  "fullTextIdList": [
+   "PMC11142626"
+  ]
+ },
+ {
+  "source": "MED",
+  "extId": "41918858",
+  "pmcid": "PMC13034868",
+  "annotations": [
+   {
+    "prefix": "le-cell sequencing (",
+    "exact": "GSE109308",
+    "postfix": ") and bulk transcrip",
+    "tags": [
+     {
+      "name": "GSE109308",
+      "uri": "http://identifiers.org/geo:GSE109308"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-e9d0fc8f88f329bdcb7937da0ccc87e9",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "ranscriptomic data (",
+    "exact": "GSE79460",
+    "postfix": ", GSE88945, GSE94919",
+    "tags": [
+     {
+      "name": "GSE79460",
+      "uri": "http://identifiers.org/geo:GSE79460"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-ae7f1d466adcc3ca6f491bb13730ac67",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "mic data (GSE79460, ",
+    "exact": "GSE88945",
+    "postfix": ", GSE94919, GSE10650",
+    "tags": [
+     {
+      "name": "GSE88945",
+      "uri": "http://identifiers.org/geo:GSE88945"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-c27f6ab65a7f543f635b6e017a393ede",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "GSE79460, GSE88945, ",
+    "exact": "GSE94919",
+    "postfix": ", GSE106500, GSE1098",
+    "tags": [
+     {
+      "name": "GSE94919",
+      "uri": "http://identifiers.org/geo:GSE94919"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-7b0784059056fa543fe6010f02355e7f",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "GSE88945, GSE94919, ",
+    "exact": "GSE106500",
+    "postfix": ", GSE109812, GSE1533",
+    "tags": [
+     {
+      "name": "GSE106500",
+      "uri": "http://identifiers.org/geo:GSE106500"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-a2fea528cc093c7138dc14283e1fc464",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "SE94919, GSE106500, ",
+    "exact": "GSE109812",
+    "postfix": ", GSE153385, and GSE",
+    "tags": [
+     {
+      "name": "GSE109812",
+      "uri": "http://identifiers.org/geo:GSE109812"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-6cbe5cfaa685dc0233e3acccc855d7da",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "E106500, GSE109812, ",
+    "exact": "GSE153385",
+    "postfix": ", and GSE156172) of ",
+    "tags": [
+     {
+      "name": "GSE153385",
+      "uri": "http://identifiers.org/geo:GSE153385"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-776aba0af69f30f237bd9a7eecf727a6",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "812, GSE153385, and ",
+    "exact": "GSE156172",
+    "postfix": ") of FAP patients fr",
+    "tags": [
+     {
+      "name": "GSE156172",
+      "uri": "http://identifiers.org/geo:GSE156172"
+     }
+    ],
+    "id": "http://europepmc.org/article/MED/41918858#europepmc-2c378f18965bcc50591a234ca258f17d",
+    "type": "Accession Numbers",
+    "section": "Abstract (http://purl.org/dc/terms/abstract)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "m the GEO database (",
+    "exact": "GSE109308",
+    "postfix": ") and used for the a",
+    "tags": [
+     {
+      "name": "GSE109308",
+      "uri": "http://identifiers.org/geo:GSE109308"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC13034868#europepmc-6a07b6c391a5f3b79f98536f85119bce",
+    "type": "Accession Numbers",
+    "section": "Methods (http://purl.org/orb/Methods)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "Bulk RNA-seq data (",
+    "exact": "GSE88945",
+    "postfix": ", GSE94919, GSE106500",
+    "tags": [
+     {
+      "name": "GSE88945",
+      "uri": "http://identifiers.org/geo:GSE88945"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC13034868#europepmc-7aed497d23f8ca38c1839364980c0ab0",
+    "type": "Accession Numbers",
+    "section": "Methods (http://purl.org/orb/Methods)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "seq data (GSE88945, ",
+    "exact": "GSE94919",
+    "postfix": ", GSE106500, GSE1533",
+    "tags": [
+     {
+      "name": "GSE94919",
+      "uri": "http://identifiers.org/geo:GSE94919"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC13034868#europepmc-ae97a00476a69f7d33270c8f274cc9f7",
+    "type": "Accession Numbers",
+    "section": "Methods (http://purl.org/orb/Methods)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   },
+   {
+    "prefix": "GSE88945, GSE94919, ",
+    "exact": "GSE106500",
+    "postfix": ", GSE153385, and GSE",
+    "tags": [
+     {
+      "name": "GSE106500",
+      "uri": "http://identifiers.org/geo:GSE106500"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC13034868#europepmc-411e77f08b9a074decc8d9b815512d7f",
+    "type": "Accession Numbers",
+    "section": "Methods (http://purl.org/orb/Methods)",
+    "provider": "Europe PMC",
+    "subType": "GEO"
+   }
+  ],
+  "fullTextIdList": [
+   "PMC13034868"
+  ]
+ },
+ {
+  "source": "MED",
+  "extId": "28818901",
+  "pmcid": "PMC5604774",
+  "annotations": [
+   {
+    "prefix": "nBank accession no. ",
+    "exact": "AP008937",
+    "postfix": ") showed that the L.",
+    "tags": [
+     {
+      "name": "AP008937",
+      "uri": "http://identifiers.org/ebi/ena.embl:AP008937"
+     }
+    ],
+    "id": "http://europepmc.org/article/PMC/PMC5604774#europepmc-934128f3bd7578a9c9156265d34c8320",
+    "type": "Accession Numbers",
+    "section": "Article (http://semanticscience.org/resource/SIO_001029)",
+    "provider": "Europe PMC",
+    "subType": "ENA"
+   }
+  ],
+  "fullTextIdList": [
+   "PMC5604774"
+  ]
+ }
+]

@@ -31,11 +31,15 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
       fetch_citations.py --with-licence ──▶ citation counts + licences for the batch
                         │
                         ▼
-      build_staged_documents.py ──▶ documents JSONL (schema 1.2.0) ──load_documents.py──▶ moros
+      fetch_annotations.py · fetch_datalinks.py · build_data_links.py ──▶ Europe PMC data links for the batch
+                        │
+                        ▼
+      build_staged_documents.py ──▶ documents JSONL (schema 1.4.0) ──load_documents.py──▶ moros
                                                                   ensure_indexes.py · verify_corpus.py
 
 positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
 moros ──fetch_citations.py --max-age-days N──▶ join_citations.py ──load_fields.py --mode citations──▶ moros
+moros ──export_corpus_keys.py──▶ fetch_epmc_metadata.py ──▶ fetch_annotations.py · fetch_datalinks.py ──▶ build_data_links.py ──load_fields.py --mode preprints | data_links──▶ moros
 ```
 
 Two runtimes, deliberately:
@@ -134,18 +138,26 @@ disk), and locked (a second run on the same events file exits naming the holder)
 
 ### 3. Build documents and load them
 
-Citations and licences are fetched for the batch by three keys (`pmid -> doi -> pmcid`), then the
-staged CSV and its events become documents through the same `schema.build_document()` every
-record in the corpus was built with.
+Citations and licences are fetched for the batch by three keys (`pmid -> doi -> pmcid`). The
+staged CSV already carries each record's Europe PMC identity, preprint server and data-links
+summary, read off the search response at no extra cost; the data links themselves are fetched for
+the batch and merged. Then the staged CSV and its events become documents through the same
+`schema.build_document()` every record in the corpus was built with.
 
 ```bash
 cd moros_pipeline/scripts
 python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv
 python3 join_citations.py --citations ../output/epmc_citations.csv \
     --with-licence --corpus-from-moros --output ../output/pid_licences.csv
+python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
+python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
+python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
+    --annotations ../output/incoming_new_annotations.jsonl --datalinks ../output/incoming_new_datalinks.jsonl \
+    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
-    --events ../output/incoming_new_classification_events.csv
+    --events ../output/incoming_new_classification_events.csv \
+    --data-links ../output/incoming_new_pid_data_links.csv
 #   -> ../../mongo_landscape_export/output/incoming_new_documents.jsonl
 
 python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
@@ -204,12 +216,39 @@ python3 load_fields.py --mode citations --input ../output/pid_citations.csv --li
 python3 load_fields.py --mode citations --input ../output/pid_citations.csv --confirm
 ```
 
-### 6. Cross-links — scaffold only
+### 6. Europe PMC identity, preprint servers and data links
+
+Schema v1.3.0 gives every document its Europe PMC identity (`source.epmc_source`,
+`identifiers.epmc_id`) and, for a preprint, its server (`publication_metadata.preprint_server`);
+v1.4.0 adds the `data_links` group: the datasets, accessions, data citations and supplementary
+files Europe PMC links to the paper. New records arrive with both. For the existing corpus, one
+free, retrospective pass, built to saturate the APIs rather than trickle:
+
+```bash
+cd moros_pipeline/scripts
+python3 ../../scripts/export_corpus_keys.py
+python3 fetch_epmc_metadata.py --limit 3000      # sample: prints calls/s and error rate
+python3 fetch_epmc_metadata.py                   # identity + summary, batched core search, ~3,400 calls
+python3 fetch_annotations.py --limit 3000
+python3 fetch_annotations.py --max-workers 128   # text-mined accessions, 8 ids per call
+python3 fetch_datalinks.py                       # Scholix residual: cross-references, data citations
+python3 build_data_links.py --report-only        # coverage, resource mix, unmapped names
+python3 build_data_links.py                      # -> pid_preprints.csv, pid_data_links.csv
+python3 migrate_v1_4_0.py                        # once: dry run, then --confirm
+python3 load_fields.py --mode preprints          # dry run -> --limit 500 --confirm -> --confirm
+python3 load_fields.py --mode data_links         # same
+```
+
+The Europe PMC routes, the resource catalogue and the throughput rules are in
+[`moros_pipeline/README.md`](moros_pipeline/README.md); the preprint rules (PPR-first, never
+`pick_best()`) in [`docs/preprint.md`](docs/preprint.md).
+
+### 7. Cross-links — scaffold only
 
 `identifiers.dome_registry`, `bioai_repo`, `huggingface`, `kaggle` and `zenodo` exist on every
-document and are null. [`cross_links/`](cross_links/README.md) holds the plan and a scaffold for
-filling them from Europe PMC data links, software links and repository APIs. Nothing there runs
-yet.
+document and are null. [`cross_links/`](cross_links/README.md) holds the plan for filling them,
+now largely by deriving them from `data_links` (a Zenodo DOI, a repository link) plus the
+repository APIs Europe PMC does not cover. Nothing there writes yet.
 
 ## Costs and timing
 
@@ -235,8 +274,8 @@ a run of that length started now stays off-peak, and when the next such window o
 | `schema/` | Alignment with the published schema in `dome-ml-observatory` ([README](schema/README.md)). |
 | `pricing/`, `scripts/cost_dashboard.py`, `COST_DASHBOARD.md` | Pricing as of a date, the generator, and the dashboard. |
 | `epmc_licensing/` | The original pmid-keyed licence table (13 MB), still read as a fallback by the document builder. |
-| `cross_links/` | Scaffold for the reserved external-identifier fields. |
-| `docs/` | Specifications for work not yet built. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0). |
+| `cross_links/` | Scaffold for the reserved external-identifier fields, to be derived from `data_links`. |
+| `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. |
 | `.claude/skills/`, [`SKILLS.md`](SKILLS.md) | Agent skills, one per process, plus the sequential refresh cycle. |
 | [`AGENTS.md`](AGENTS.md) | The rules: what may never be altered, how writes are kept safe, what has gone wrong before. |
 | [`ROADMAP.md`](ROADMAP.md) | Short. |

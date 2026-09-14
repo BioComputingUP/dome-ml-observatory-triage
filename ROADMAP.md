@@ -1,17 +1,20 @@
 # Roadmap
 
-1. **Preprint data through the pipeline.** Author schema v1.3.0 (`publication_metadata.
-   preprint_server`, `source.epmc_source`, `identifiers.epmc_id`), harvest the three on every run,
-   and backfill the ~56,863 existing preprint records, per [`preprint.md`](preprint.md). One cheap
-   `lite` fetch; clears the standing `check_alignment.py` drift.
-2. **Finalise schema versioning.** With v1.3.0 authored, settle the release procedure — who bumps,
+1. **Get Europe PMC's official data links (`/datalinks`).** Backfill loaded 2026-09-14 without them
+   (HTTP 500).
+   - Have: text-mined accessions (annotations API), plus an auto-built BioStudies `S-EPMC`
+     supplements link (not author data).
+   - Missing: data citations (DataCite/Crossref) and database-side links.
+   - Left: retest, `fetch_datalinks.py`, rebuild, reload; commit; restart `observatory-ws`.
+2. **Finalise schema versioning.** With v1.4.0 authored and released, settle the release procedure — who bumps,
    when, what a release carries — so the authored `SCHEMA_VERSION`, the published `schema/CURRENT`
    and the live `schema_version` stop drifting. `schema/check_alignment.py` is the arbiter.
 3. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
    skills in `.claude/skills/` exercised in tandem against the commands they document.
-4. **Cross links.** Build the fetch process for the reserved `identifiers.*` fields (Hugging Face,
-   DOME Registry, Zenodo, `bioai_repo`, Kaggle) per [`cross_links/README.md`](cross_links/README.md),
-   then add an `identifiers` write mode to `moros_write.py` with tests.
+4. **Cross links.** Derive `identifiers.zenodo` and `bioai_repo` from `data_links`, and build the
+   fetch process for the rest (Hugging Face, DOME Registry, Kaggle) per
+   [`cross_links/README.md`](cross_links/README.md), then add an `identifiers` write mode to
+   `moros_write.py` with tests.
 5. **Automated Zenodo bulk push.** Monthly GitHub Actions workflow: cursor-loop `GET /api/export`,
    gzip, deposit through the Zenodo API with a sidecar (count, size, sha256, `schema_version`) and
    the schema release. Reuse `DOME_zenodo_archive/download_dome_registry.py`, `ZENODO_TOKEN` from
@@ -29,8 +32,10 @@ Short list, unranked, to judge later:
 
 - Settle the refresh cadence (monthly or bimonthly) as stated policy, and make the skills, the
   front end's claimed update frequency and a visible processing-log provenance on the site agree.
-- Investigate Europe PMC data links and ELIXIR Core Data Resource / EBI resource relations as
-  corpus signals — adjacent to 3, wider than the `identifiers.*` fields.
+- ELIXIR Core Data Resource / EBI resource relations as corpus signals, now that `data_links`
+  records which resources each paper uses.
+- Self-hosted logos for the data-link resources (PDBe, UniProt, ENA, GEO, BioStudies, Dryad,
+  figshare, ...) in the sister repository; the cards use icon-font glyphs until then.
 - Enrich the remaining positives (~360k with an abstract; see `COST_DASHBOARD.md`), by journal
   cohorts, off-peak, weekends.
 - Decide whether `citation_count` needs an index (`ensure_indexes.py --measure-citation-sort`).

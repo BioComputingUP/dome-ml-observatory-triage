@@ -13,11 +13,13 @@ validated scripts and commands in this repository, exactly as `README.md` docume
 | `citations-refresh` | "refresh citation counts", monthly | no | via `moros-write` |
 | `cost-estimate` | before any paid step; "what would it cost", "update the dashboard", "best time to run" | no | no |
 | `schema-sync` | before a load; "is the schema aligned", "the vocab changed" | no | no |
-| `cross-links` | working on the reserved `identifiers.*` fields (scaffold) | no | not yet |
+| `data-links` | "fetch the data links", "backfill the preprint servers", "refresh data links" | no | via `moros-write` |
+| `cross-links` | working on the reserved `identifiers.*` fields, derived from `data_links` (scaffold) | no | not yet |
 | `refresh-cycle` | "do the monthly refresh", "run the whole pipeline" | asks first | asks first |
 
 The sequential order for a refresh: `triage-fetch` → (ask) → `classify` → `moros-write` (load,
-index, verify) → (ask) → `enrich` → `moros-write` (merge) → `citations-refresh` (optional).
+index, verify) → (ask) → `enrich` → `moros-write` (merge) → `citations-refresh` (optional) →
+`data-links` refresh (when due).
 `cost-estimate` runs inside every paid step; `schema-sync` runs before every load.
 
 Rules every skill follows: dry-run before confirm; `--limit` trial before a full write; pull the

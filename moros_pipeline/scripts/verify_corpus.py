@@ -34,9 +34,10 @@ import json
 from pathlib import Path
 
 from moros_client import Moros
+from link_identifiers import MONGO_MALFORMED_REGEX
 from moros_write import REPORT_DIR, new_run_id, utc_now_iso
 
-EXPECTED_SCHEMA_VERSION = "1.2.0"
+EXPECTED_SCHEMA_VERSION = "1.4.0"
 VALID_PROVENANCE = ("llm", "human_curated", "registry_confirmed")
 VALID_CLASSIFICATIONS = ("positive", "negative", "undeterminable")
 REQUIRED_INDEXES = ("_id_", "class_year_id", "positives_text")
@@ -180,6 +181,54 @@ def verify(moros: Moros, expect_count: int | None) -> tuple[Checks, dict]:
                f"{never:,} documents have never had a licence lookup -- run "
                f"fetch_citations.py --with-licence --targets moros:missing-licence")
 
+    # -- Europe PMC identity and preprint server (v1.3.0) -----------------
+    #
+    # Populated by `load_fields.py --mode preprints` off the `fetch_epmc_metadata.py` pass. Every
+    # document should carry epmc_id / epmc_source once that has run; a preprint without a server
+    # name afterwards is a record to investigate, not a null to accept (docs/preprint.md).
+    preprint_filter = {"content_filters.pub_types": {"$in": ["Preprint", "preprint"]}}
+    with_epmc_id = moros.count({"identifiers.epmc_id": {"$ne": None}})
+    epmc_sources = moros.histogram("source.epmc_source")
+    preprints = moros.count(preprint_filter)
+    preprints_no_server = moros.count({**preprint_filter,
+                                       "publication_metadata.preprint_server": None})
+    facts["epmc_identity"] = {"with_epmc_id": with_epmc_id, "epmc_source": epmc_sources,
+                              "preprints": preprints,
+                              "preprints_without_server": preprints_no_server}
+    checks.note("epmc_id coverage",
+                f"{with_epmc_id:,} of {total:,} ({with_epmc_id / total * 100:.2f}%); "
+                f"epmc_source {epmc_sources}")
+    checks.note("preprints without a preprint_server",
+                f"{preprints_no_server:,} of {preprints:,} preprints -- expected 0 once the "
+                f"preprints backfill has run")
+
+    # -- data links (v1.4.0) -----------------------------------------------
+    #
+    # `has_data: null` means never looked up (the summary pass has not reached the record);
+    # `fetched_at: null` means no link fetch yet. Both are coverage notes, not invariants: a
+    # partial backfill is a valid corpus state.
+    dl_looked_up = moros.count({"data_links.has_data": {"$ne": None}})
+    dl_has_data = moros.count({"data_links.has_data": True})
+    dl_fetched = moros.count({"data_links.fetched_at": {"$ne": None}})
+    dl_with_resources = moros.count({"data_links.resources.0": {"$exists": True}})
+    facts["data_links"] = {"looked_up": dl_looked_up, "has_data": dl_has_data,
+                           "fetched": dl_fetched, "with_resources": dl_with_resources}
+    checks.note("data links summary coverage",
+                f"{dl_looked_up:,} looked up, {dl_has_data:,} with Europe PMC data")
+    checks.note("data links fetched",
+                f"{dl_fetched:,} fetched, {dl_with_resources:,} carrying at least one resource")
+    # Europe PMC's text-mined strings carry the punctuation and words around them; stored verbatim
+    # they made links that 404 (1,513 documents on 2026-09-14). build_data_links.py repairs them and
+    # both loaders refuse them, so this must stay zero. ~2.5 s over the corpus.
+    malformed = moros.count({"$or": [
+        {"data_links.links.id": {"$regex": MONGO_MALFORMED_REGEX}},
+        {"data_links.links.url": {"$regex": MONGO_MALFORMED_REGEX}},
+    ]})
+    facts["data_links"]["malformed_documents"] = malformed
+    checks.add("no malformed data link identifiers", malformed == 0,
+               f"{malformed:,} documents carry a link id or url with stray punctuation, whitespace or "
+               f"non-ASCII -- rebuild with build_data_links.py and reload --mode data_links")
+
     # -- indexes ------------------------------------------------------------
     indexes = sorted(moros.indexes())
     facts["indexes"] = indexes
@@ -260,8 +309,8 @@ def main() -> None:
         print("     StatsService / CountService / JournalsService are 24h TTL.")
         print("  2. Re-run  python3 schema/generate_facet_stats.py --from-api <url>  in")
         print("     ../dome-ml-observatory, then check /api/stats reconciles.")
-        print("  3. Cut the schema v1.2.0 release there with the schema-version skill, and fix")
-        print("     the two About pages that still assert every classification is LLM-generated.")
+        print("  3. If SCHEMA_VERSION or a vocabulary changed: python3 schema/check_alignment.py")
+        print("     --live here, then cut the release there with the schema-version skill.")
 
         if checks.failures:
             raise SystemExit(f"\n{len(checks.failures)} invariant(s) FAILED -- see above.")

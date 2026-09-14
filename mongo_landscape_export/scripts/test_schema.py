@@ -50,7 +50,7 @@ def test_top_level_shape_and_id():
     assert doc["_id"] == "abc-123"
     assert set(doc.keys()) == {
         "_id", "schema_version", "identifiers", "publication_metadata", "source",
-        "content_filters", "llm_classification", "llm_enrichment",
+        "content_filters", "data_links", "llm_classification", "llm_enrichment",
     }
 
 
@@ -64,6 +64,7 @@ def test_identifiers_and_types():
     doc = build_document(BASE_ROW)
     assert doc["identifiers"] == {
         "pmid": "41466298", "pmcid": "PMC12829071", "doi": "10.1186/s13014-025-02784-8",
+        "epmc_id": None,
         "dome_registry": None, "bioai_repo": None, "huggingface": None,
         "kaggle": None, "zenodo": None,
     }
@@ -312,3 +313,100 @@ def test_authors_and_journal_are_deliberately_not_decoded():
     pub = build_document(row)["publication_metadata"]
     assert pub["authors"] == "Smith J &amp; Jones A"
     assert pub["journal"] == "Journal of &lt;i&gt;Things&lt;/i&gt;"
+
+
+# ---------------------------------------------------------------------------
+# v1.3.0: preprint fields (docs/preprint.md)
+# ---------------------------------------------------------------------------
+
+
+def test_preprint_fields_are_null_when_the_columns_are_absent():
+    """A staging row built before the capture pass has legitimately never had them looked up --
+    so the builder must not KeyError on their absence, unlike the always-present identifiers."""
+    doc = build_document(BASE_ROW)
+    assert doc["identifiers"]["epmc_id"] is None
+    assert doc["source"]["epmc_source"] is None
+    assert doc["publication_metadata"]["preprint_server"] is None
+
+
+def test_preprint_fields_are_carried_verbatim():
+    row = dict(BASE_ROW, epmc_id="PPR18364", epmc_source="PPR", preprint_server="bioRxiv")
+    doc = build_document(row)
+    assert doc["identifiers"]["epmc_id"] == "PPR18364"
+    assert doc["source"]["epmc_source"] == "PPR"
+    assert doc["publication_metadata"]["preprint_server"] == "bioRxiv"
+
+
+def test_a_medline_record_has_an_epmc_id_but_no_preprint_server():
+    row = dict(BASE_ROW, epmc_id="41466298", epmc_source="MED", preprint_server="")
+    doc = build_document(row)
+    assert doc["identifiers"]["epmc_id"] == "41466298"
+    assert doc["source"]["epmc_source"] == "MED"
+    assert doc["publication_metadata"]["preprint_server"] is None
+
+
+# ---------------------------------------------------------------------------
+# v1.4.0: data_links
+# ---------------------------------------------------------------------------
+
+
+def test_data_links_are_never_looked_up_when_the_columns_are_absent():
+    doc = build_document(BASE_ROW)
+    assert doc["data_links"] == {
+        "has_data": None, "tags": [], "accession_types": [], "db_cross_references": [],
+        "fetched_at": None, "sources": [], "link_count": None, "truncated": None,
+        "resources": [], "links": [],
+    }
+
+
+def test_data_links_summary_columns_are_parsed_from_the_search_record():
+    row = dict(BASE_ROW, has_data="Y", data_links_tags='["supporting_data", "altmetrics"]',
+               accession_types='["pdb", "doi"]', db_cross_references='["PDB"]')
+    doc = build_document(row)["data_links"]
+    assert doc["has_data"] is True
+    assert doc["tags"] == ["supporting_data", "altmetrics"]
+    assert doc["accession_types"] == ["pdb", "doi"]
+    assert doc["db_cross_references"] == ["PDB"]
+    assert doc["fetched_at"] is None  # the link fetch is a separate pass
+
+
+def test_has_data_n_is_a_real_answer_not_null():
+    """"Looked up, no data" must not collapse into "never looked up"."""
+    doc = build_document(dict(BASE_ROW, has_data="N"))["data_links"]
+    assert doc["has_data"] is False
+
+
+def test_data_links_detail_arrives_in_one_json_cell():
+    detail = {
+        "fetched_at": "2026-09-14T10:00:00+00:00",
+        "sources": ["epmc_annotations"],
+        "link_count": 2,
+        "truncated": False,
+        "resources": [{"resource": "pdb", "label": "Protein Data Bank in Europe",
+                       "category": "Protein Structures", "id_scheme": "PDBe",
+                       "publisher": "Europe PMC", "obtained_by": "tm_accession", "count": 2}],
+        "links": [{"resource": "pdb", "id": "6VW1", "url": "http://identifiers.org/pdbe/pdb:6VW1",
+                   "title": None, "obtained_by": "tm_accession", "relationship": "References",
+                   "section": "Article", "frequency": 3}],
+    }
+    import json as _json
+    doc = build_document(dict(BASE_ROW, data_links_json=_json.dumps(detail)))["data_links"]
+    assert doc["fetched_at"] == "2026-09-14T10:00:00+00:00"
+    assert doc["sources"] == ["epmc_annotations"]
+    assert doc["link_count"] == 2 and doc["truncated"] is False
+    assert doc["resources"] == detail["resources"]
+    assert doc["links"] == detail["links"]
+
+
+def test_a_fetch_that_found_nothing_is_dated_with_zero_links():
+    import json as _json
+    cell = _json.dumps({"fetched_at": "2026-09-14T10:00:00+00:00", "sources": ["epmc_datalinks"],
+                        "link_count": 0, "truncated": False, "resources": [], "links": []})
+    doc = build_document(dict(BASE_ROW, data_links_json=cell))["data_links"]
+    assert doc["fetched_at"] is not None
+    assert doc["link_count"] == 0 and doc["resources"] == [] and doc["links"] == []
+
+
+def test_data_links_json_must_be_an_object():
+    with pytest.raises(ValueError, match="JSON object"):
+        build_document(dict(BASE_ROW, data_links_json="[1, 2]"))

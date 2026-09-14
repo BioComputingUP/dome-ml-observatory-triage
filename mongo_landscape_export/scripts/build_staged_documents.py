@@ -55,6 +55,12 @@ DEFAULT_LICENSING = REPO_DIR / "epmc_licensing" / "output" / "epmc_pmid_licensin
 # `license: null` -- "never looked up" -- rather than a real answer.
 DEFAULT_LICENCE_FETCH = REPO_DIR / "moros_pipeline" / "output" / "epmc_licence_backfill.csv"
 DEFAULT_CITATIONS = REPO_DIR / "moros_pipeline" / "output" / "epmc_citations.csv"
+# The batch's merged data links (build_data_links.py --keys <staged> --metadata <staged>), keyed on
+# pid. Optional: a batch built without it gets `data_links.fetched_at: null` and is picked up by
+# the next data-links refresh, exactly like a citation that was not fetched in time.
+DEFAULT_DATA_LINKS = REPO_DIR / "moros_pipeline" / "output" / "pid_data_links.csv"
+DATA_LINKS_COLUMNS = ("has_data", "data_links_tags", "accession_types", "db_cross_references",
+                      "data_links_json")
 
 # What `build_document` reads off a row but the staged CSV has no source for.
 _STAGED_BLANKS = ("metadata_repair_sources",)
@@ -131,8 +137,21 @@ def resolve_licence(pmid: str, pmcid: str, doi: str, licensing: dict,
     return "", "", "False"
 
 
+def load_data_links(path: Path) -> dict[str, dict[str, str]]:
+    """pid -> the data_links staging columns, from `build_data_links.py`'s output."""
+    if not Path(path).exists():
+        return {}
+    index: dict[str, dict[str, str]] = {}
+    with Path(path).open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            pid = _blank(row.get("pid"))
+            if pid:
+                index[pid] = {k: row.get(k) or "" for k in DATA_LINKS_COLUMNS if k in row}
+    return index
+
+
 def build_row(staged: dict, event: dict, licensing: dict, citations: dict,
-              licence_fetch: dict | None = None) -> dict:
+              licence_fetch: dict | None = None, data_links: dict | None = None) -> dict:
     """Assembles exactly the keys `schema.build_document` reads. Owns no shape of its own."""
     pmid, pmcid, doi = _blank(staged.get("pmid")), _blank(staged.get("pmcid")), _blank(staged.get("doi"))
 
@@ -159,6 +178,9 @@ def build_row(staged: dict, event: dict, licensing: dict, citations: dict,
         "batch_id": _blank(event.get("batch_id")),
         "timestamp": _blank(event.get("timestamp")),
     })
+    # The staged row already carries the data-links summary off the search record; the merged
+    # file adds the link detail (and repeats the summary, identically) for the pids it covers.
+    row.update((data_links or {}).get(_blank(staged.get("pid")), {}))
     return row
 
 
@@ -172,7 +194,8 @@ def sha256_file(path: Path) -> str:
 
 def run(staged_path: Path, events_path: Path, licensing_path: Path, citations_path: Path,
         out_jsonl: Path, out_report: Path, report_only: bool,
-        licence_fetch_path: Path = DEFAULT_LICENCE_FETCH) -> None:
+        licence_fetch_path: Path = DEFAULT_LICENCE_FETCH,
+        data_links_path: Path = DEFAULT_DATA_LINKS) -> None:
     print(f"1. reading {staged_path.name} and {events_path.name} ...")
     with staged_path.open(newline="", encoding="utf-8", errors="replace") as f:
         staged_rows = list(csv.DictReader(f))
@@ -186,6 +209,10 @@ def run(staged_path: Path, events_path: Path, licensing_path: Path, citations_pa
               f"pmid-only table)")
     citations = load_citation_index(citations_path) if Path(citations_path).exists() else {}
     print(f"   {len(licensing):,} pmids with a licence, {len(citations):,} citation keys")
+    data_links = load_data_links(data_links_path)
+    print(f"   {len(data_links):,} pids with merged data links"
+          + ("" if data_links else " (none: run build_data_links.py on the batch, or let the "
+                                   "next data-links refresh pick them up)"))
 
     print("\n2. building documents ...")
     documents, errors = [], []
@@ -204,11 +231,13 @@ def run(staged_path: Path, events_path: Path, licensing_path: Path, citations_pa
             stats["duplicate_pid"] += 1
             continue
         seen.add(pid)
-        row = build_row(staged, event, licensing, citations, licence_fetch)
+        row = build_row(staged, event, licensing, citations, licence_fetch, data_links)
         if row["citation_count"]:
             stats["with_citation"] += 1
         if row["license_checked"] == "True":
             stats["with_licence"] += 1
+        if row.get("data_links_json"):
+            stats["with_data_links"] += 1
         try:
             documents.append(build_document(row))
             stats[row["classification"]] += 1
@@ -221,6 +250,7 @@ def run(staged_path: Path, events_path: Path, licensing_path: Path, citations_pa
             print(f"     {key:<16} {stats[key]:,}")
     print(f"     with a citation  {stats['with_citation']:,}")
     print(f"     with a licence   {stats['with_licence']:,}")
+    print(f"     with data links  {stats['with_data_links']:,}")
     if stats["unclassified"]:
         print(f"     NOT classified   {stats['unclassified']:,} (left out -- classify them first)")
     if stats["duplicate_pid"] or stats["no_pid"]:
@@ -268,6 +298,8 @@ def main() -> None:
     parser.add_argument("--licence-fetch", type=Path, default=DEFAULT_LICENCE_FETCH,
                         help="A --with-licence fetch output; preferred over the pmid-only table.")
     parser.add_argument("--citations", type=Path, default=DEFAULT_CITATIONS)
+    parser.add_argument("--data-links", type=Path, default=DEFAULT_DATA_LINKS,
+                        help="build_data_links.py's pid_data_links.csv for this batch.")
     parser.add_argument("--out-jsonl", type=Path, default=None)
     parser.add_argument("--out-report", type=Path, default=None)
     parser.add_argument("--report-only", action="store_true")
@@ -276,7 +308,7 @@ def main() -> None:
     out_jsonl = args.out_jsonl or (FOLDER_DIR / "output" / f"{args.staged.stem}_documents.jsonl")
     out_report = args.out_report or out_jsonl.with_suffix(".report.json")
     run(args.staged, args.events, args.licensing, args.citations, out_jsonl, out_report,
-        args.report_only, args.licence_fetch)
+        args.report_only, args.licence_fetch, args.data_links)
 
 
 if __name__ == "__main__":

@@ -38,7 +38,8 @@ def test_the_document_is_the_same_shape_as_every_other_path():
     shared builder, so the landscape, curated and incremental paths cannot drift apart."""
     doc = _doc()
     assert set(doc) == {"_id", "schema_version", "identifiers", "publication_metadata",
-                        "source", "content_filters", "llm_classification", "llm_enrichment"}
+                        "source", "content_filters", "data_links", "llm_classification",
+                        "llm_enrichment"}
     assert doc["schema_version"] == SCHEMA_VERSION
 
 
@@ -125,3 +126,50 @@ def test_unclassified_staged_records_are_left_out_not_guessed(tmp_path, capsys):
     docs = [json.loads(line) for line in out.read_text().splitlines()]
     assert [d["_id"] for d in docs] == [STAGED["pid"]]
     assert "NOT classified" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# v1.3.0 / v1.4.0: the staged row carries the Europe PMC identity and the data-links summary;
+# the merged file adds the link detail.
+# ---------------------------------------------------------------------------
+
+
+def test_a_staged_row_without_the_new_columns_still_builds_with_nulls():
+    doc = _doc()
+    assert doc["identifiers"]["epmc_id"] is None
+    assert doc["data_links"]["has_data"] is None and doc["data_links"]["fetched_at"] is None
+
+
+def test_the_identity_and_summary_ride_in_on_the_staged_row():
+    staged = dict(STAGED, epmc_id="34265844", preprint_server="", has_data="Y",
+                  data_links_tags='["supporting_data"]', accession_types='["pdb"]',
+                  db_cross_references='["PDB"]', has_tm_accessions="Y", has_db_xrefs="Y",
+                  has_suppl="Y")
+    doc = build_document(build_row(staged, EVENT, {}, {}))
+    assert doc["identifiers"]["epmc_id"] == "34265844"
+    assert doc["source"]["epmc_source"] == "MED"
+    assert doc["publication_metadata"]["preprint_server"] is None
+    assert doc["data_links"]["has_data"] is True
+    assert doc["data_links"]["accession_types"] == ["pdb"]
+    assert doc["data_links"]["fetched_at"] is None     # no merged file: not fetched yet
+
+
+def test_the_merged_data_links_file_adds_the_detail_by_pid():
+    detail = {"fetched_at": "2026-09-14T01:00:00+00:00", "sources": ["epmc_annotations"],
+              "link_count": 1, "truncated": False,
+              "resources": [{"resource": "pdb", "label": "Protein Data Bank in Europe",
+                             "category": "Protein Structures", "id_scheme": "PDBe",
+                             "publisher": "Europe PMC", "obtained_by": "tm_accession", "count": 1}],
+              "links": [{"resource": "pdb", "id": "6VW1", "url": None, "title": None,
+                         "obtained_by": "tm_accession", "relationship": "References",
+                         "section": "Article", "frequency": None}]}
+    merged = {STAGED["pid"]: {"has_data": "Y", "data_links_tags": '["supporting_data"]',
+                              "accession_types": '["pdb"]', "db_cross_references": "[]",
+                              "data_links_json": json.dumps(detail)}}
+    doc = build_document(build_row(STAGED, EVENT, {}, {}, None, merged))
+    assert doc["data_links"]["fetched_at"] == "2026-09-14T01:00:00+00:00"
+    assert doc["data_links"]["resources"][0]["resource"] == "pdb"
+    assert doc["data_links"]["links"][0]["id"] == "6VW1"
+    # a pid the merged file does not cover is untouched
+    other = build_document(build_row(dict(STAGED, pid="other"), EVENT, {}, {}, None, merged))
+    assert other["data_links"]["fetched_at"] is None

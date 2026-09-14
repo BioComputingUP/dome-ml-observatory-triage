@@ -1,9 +1,11 @@
 # Preprints: capturing the preprint server as real data
 
-**Status:** the Observatory's frontend and backend read three new fields as of schema v1.3.0.
-Nothing populates them yet. This document is the specification for the pipeline work that will,
-written to be executed cold and then moved into the processing/data-management repo
-(`dome-ml-observatory-triage`, or whatever succeeds it).
+**Status (2026-09-14):** built, not yet run against the corpus. `schema.py` authors the three
+fields (now at v1.4.0, which also adds `data_links`); `fetch_epmc_metadata.py` captures them with
+the PPR-first rule below, `build_data_links.py` writes `pid_preprints.csv`,
+`load_fields.py --mode preprints` loads it, and `build_incoming_documents.py` captures them for
+every new record. Run it with the `data-links` skill. The sections below are the specification the
+code follows; where they name a file, the implementation is noted inline.
 
 **Why it exists.** 56,863 corpus records are preprints, and every one of them has
 `publication_metadata.journal: null`. Europe PMC returns nothing in `journalTitle` for a `SRC:PPR`
@@ -82,7 +84,8 @@ allowlisted leaf paths only, and produces a rollback file. Concretely:
    identifiers.epmc_id
    ```
 2. Add a `preprint_row_to_update()` mapper in `load_fields.py` alongside
-   `citation_row_to_update()`, reading `output/pid_preprints.csv` keyed on `pid`.
+   `citation_row_to_update()`, reading `output/pid_preprints.csv` keyed on `pid`. (Built:
+   `build_data_links.py` writes that file from the metadata pass.)
 3. Run it the same way as the citations load:
    ```bash
    python3 load_fields.py --mode preprints                       # dry run
@@ -209,8 +212,36 @@ is precisely the kind of drift that a monthly automated archive introduces silen
 
 ---
 
+## 5b. The alignment check reports drift until this lands
+
+*Cleared 2026-09-14: `schema.py` authors 1.4.0, `dome-ml-observatory` publishes v1.4.0, and
+`check_alignment.py` reports `aligned`. The live corpus stays at 1.2.0 until `migrate_v1_4_0.py`
+runs. Kept for the record of why the drift existed.*
+
+`schema/check_alignment.py` in this repository compares the authored shape (`schema.py`), the
+sibling's published `schema/CURRENT` and the live `schema_version` on moros. Because the contract
+was published in `dome-ml-observatory` first, it reports, by design:
+
+```
+authored  SCHEMA_VERSION (schema.py):          1.2.0
+published CURRENT (dome-ml-observatory):       1.3.0
+DRIFT:
+  - version drift: authored 1.2.0 vs published 1.3.0
+  - fields published but not authored: identifiers.epmc_id,
+    publication_metadata.preprint_server, source.epmc_source
+```
+
+That is this work item, restated by a tool. It clears when section 3 is done: the three fields
+become authored, `SCHEMA_VERSION` moves on, and the next load makes the live corpus agree. Do not
+"fix" it by reverting the release there.
+
 ## 6. Traps, collected
 
+- **`bookOrReportDetails.publisher` is not always a preprint server.** Measured over the corpus on
+  2026-09-14, Europe PMC also fills it for 234 MEDLINE records (health-technology reports from the
+  NIHR Journals Library and CADTH), 93 EThOS theses (the awarding university) and 17 CTX records.
+  Take it as `preprint_server` only when `source` is `PPR`; `fetch_epmc_metadata.identity_fields`
+  and `build_data_links.py` both enforce that.
 - **`10.1101` is also a journal prefix.** Cold Spring Harbor Laboratory Press publishes Genome
   Research, Learning & Memory and the Cold Spring Harbor Perspectives titles on it. 588 corpus
   records carry that prefix *with* a real journal name. Never infer a preprint server for a record

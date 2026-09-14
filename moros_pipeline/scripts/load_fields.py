@@ -10,8 +10,9 @@ which upserts whole *new* documents through `mongoimport`. The split is delibera
   refresh must not blank an `llm_enrichment` group a later enrichment run has populated"). So this
   writes named leaf paths only, checked against `moros_write.WRITE_MODES`.
 
-Currently one mode. Adding another means adding its allowlist to `WRITE_MODES` and its row mapper
-below -- both in a diff someone reads, which is the point.
+Four modes (`citations`, `licences`, `preprints`, `data_links`). Adding another means adding its
+allowlist to `WRITE_MODES` and its row mapper below -- both in a diff someone reads, which is the
+point -- plus a `DEFAULT_INPUTS` entry and a `_coverage` headline field.
 
 `citations` reads `output/pid_citations.csv` (produced by `join_citations.py`, already keyed on the
 document `_id`) and writes `publication_metadata.citation_count` / `.citation_count_updated` /
@@ -22,6 +23,12 @@ number must not be able to relabel who decided the record.
     python3 load_fields.py --mode citations --limit 100 --confirm # real trial
     python3 load_fields.py --mode citations --confirm             # full load
 
+`preprints` reads `output/pid_preprints.csv` (from `build_data_links.py`, off the
+`fetch_epmc_metadata.py` pass) and writes `identifiers.epmc_id` / `source.epmc_source` /
+`publication_metadata.preprint_server`. `data_links` reads `output/pid_data_links.csv` (same
+builder) and writes the `data_links.*` leaves -- the summary columns and/or the link fields,
+whichever the row carries. Same three-step shape as above.
+
 To undo any run:
     python3 moros_write.py --rollback ../output/rollback/<run_id>.jsonl --confirm
 """
@@ -30,12 +37,14 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 from typing import Any, Iterator
 
 from moros_client import Moros
-from moros_write import SafeWriter, new_run_id
+from link_identifiers import malformed_links
+from moros_write import DATA_LINKS_LINK_FIELDS, SafeWriter, new_run_id
 
 csv.field_size_limit(sys.maxsize)
 
@@ -45,6 +54,8 @@ FOLDER_DIR = THIS_DIR.parent
 DEFAULT_INPUTS = {
     "citations": FOLDER_DIR / "output" / "pid_citations.csv",
     "licences": FOLDER_DIR / "output" / "pid_licences.csv",
+    "preprints": FOLDER_DIR / "output" / "pid_preprints.csv",
+    "data_links": FOLDER_DIR / "output" / "pid_data_links.csv",
 }
 
 
@@ -101,7 +112,91 @@ def licence_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | N
     return pid, update
 
 
-ROW_MAPPERS = {"citations": citation_row_to_update, "licences": licence_row_to_update}
+def preprint_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
+    """One `pid_preprints.csv` row -> `(_id, {leaf_path: value})`.
+
+    `epmc_id` and `epmc_source` are written together whenever Europe PMC answered for the record;
+    a row missing either yields no update, because a half identity is worse than none. The server
+    name is written only when Europe PMC gave one: a MED record legitimately has no
+    `bookOrReportDetails.publisher`, and its `preprint_server` already reads null, so a blank here
+    must produce *no* key rather than an explicit null (docs/preprint.md, "Idempotency").
+    """
+    pid = (row.get("pid") or "").strip()
+    epmc_id = (row.get("epmc_id") or "").strip()
+    epmc_source = (row.get("epmc_source") or "").strip()
+    if not pid or not epmc_id or not epmc_source:
+        return None
+    update: dict[str, Any] = {
+        "identifiers.epmc_id": epmc_id,
+        "source.epmc_source": epmc_source,
+    }
+    server = (row.get("preprint_server") or "").strip()
+    if server:
+        update["publication_metadata.preprint_server"] = server
+    return pid, update
+
+
+# Staging column -> data_links leaf, for the JSON-encoded list columns of the summary pass.
+_DATA_LINKS_LIST_COLUMNS = {
+    "data_links_tags": "tags",
+    "accession_types": "accession_types",
+    "db_cross_references": "db_cross_references",
+}
+
+
+def data_links_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
+    """One `pid_data_links.csv` row -> `(_id, {leaf_path: value})`.
+
+    Writes whichever `data_links` columns the row carries, so one mode serves both passes:
+
+    - the summary columns (`has_data` as Y/N, and three JSON-encoded lists) captured from the
+      Europe PMC search record. `"[]"` is a real answer ("looked up, none") and is written;
+    - the link fields, expanded from the `data_links_json` cell `build_data_links.py` writes,
+      restricted to `DATA_LINKS_LINK_FIELDS` so a stray key in the cell cannot reach the writer.
+
+    A row carrying neither yields no update. A blank `has_data` leaves the existing value alone,
+    exactly as a blank EPMC flag leaves `open_access` alone in the licence mapper.
+
+    **A malformed link identifier raises** (`link_identifiers.malformed_links`). `run()` maps every
+    row through here while counting, before it connects to moros, so a staging file built by an
+    older `build_data_links.py`, or edited by hand, is refused whole before anything is written.
+    """
+    pid = (row.get("pid") or "").strip()
+    if not pid:
+        return None
+    update: dict[str, Any] = {}
+    flag = (row.get("has_data") or "").strip().lower()
+    if flag in _TRUE:
+        update["data_links.has_data"] = True
+    elif flag in _FALSE:
+        update["data_links.has_data"] = False
+    for column, leaf in _DATA_LINKS_LIST_COLUMNS.items():
+        raw = (row.get(column) or "").strip()
+        if raw:
+            update[f"data_links.{leaf}"] = json.loads(raw)
+    raw = (row.get("data_links_json") or "").strip()
+    if raw:
+        detail = json.loads(raw)
+        bad = malformed_links(detail)
+        if bad:
+            raise ValueError(
+                f"pid {pid}: {len(bad)} malformed data link(s), first {bad[0]} -- rebuild the "
+                f"staging file with build_data_links.py, which is the only place identifiers are chosen"
+            )
+        for field in DATA_LINKS_LINK_FIELDS:
+            if field in detail:
+                update[f"data_links.{field}"] = detail[field]
+    if not update:
+        return None
+    return pid, update
+
+
+ROW_MAPPERS = {
+    "citations": citation_row_to_update,
+    "licences": licence_row_to_update,
+    "preprints": preprint_row_to_update,
+    "data_links": data_links_row_to_update,
+}
 
 
 def iter_updates(path: Path, mode: str, limit: int | None) -> Iterator[tuple[str, dict[str, Any]]]:
@@ -126,10 +221,14 @@ def run(mode: str, input_path: Path, confirm: bool, limit: int | None) -> None:
     if mode not in ROW_MAPPERS:
         raise SystemExit(f"unknown mode {mode!r} -- known: {sorted(ROW_MAPPERS)}")
     if not input_path.exists():
-        raise SystemExit(f"{input_path} does not exist -- run join_citations.py first")
+        raise SystemExit(f"{input_path} does not exist -- run the join/build step for this mode "
+                         f"first (join_citations.py or build_data_links.py)")
 
     run_id = new_run_id(f"load_{mode}")
-    total = count_rows(input_path, mode, limit)
+    try:
+        total = count_rows(input_path, mode, limit)
+    except ValueError as exc:
+        raise SystemExit(f"[{run_id}] refusing to load {input_path.name}, nothing written: {exc}")
     print(f"[{run_id}] {input_path.name}: {total:,} documents to update"
           + (f" (--limit {limit})" if limit else ""))
 
@@ -201,7 +300,9 @@ def _coverage(moros: Moros, mode: str) -> int:
     """How many documents already carry this mode's headline field. Reported before and after so a
     load's real effect is a number, not an assumption."""
     field = {"citations": "publication_metadata.citation_count",
-             "licences": "source.access.license"}[mode]
+             "licences": "source.access.license",
+             "preprints": "identifiers.epmc_id",
+             "data_links": "data_links.has_data"}[mode]
     return moros.count({field: {"$ne": None}})
 
 

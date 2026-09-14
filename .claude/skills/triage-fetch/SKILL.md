@@ -49,7 +49,11 @@ python3 build_incoming_documents.py --incoming ../output/incoming/<query-hash>
 ```
 
 Output: `../output/incoming_new.csv` (`pid, pmid, pmcid, doi, title, abstract, journal, year,
-...`). The `pid` is the deterministic UUID5 and becomes the document `_id`.
+...`). The `pid` is the deterministic UUID5 and becomes the document `_id`. Each row also carries
+the record's Europe PMC identity (`epmc_source`, `epmc_id`), its `preprint_server`, and the
+data-links summary (`has_data`, tags, accession types, cross-references, `has_tm_accessions`,
+`has_db_xrefs`, `has_suppl`), read off the same search response, so the batch load can fetch its
+data links without another metadata pass.
 
 ## Report, then stop
 

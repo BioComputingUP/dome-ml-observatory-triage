@@ -39,7 +39,9 @@ procedure someone has to remember:
 The allowlists are the interesting part. `citations` cannot reach `decision_provenance` — refreshing
 a number must not be able to relabel who decided a record. `enrichment` cannot reach
 `llm_classification` at all, which is what makes "enrichment is additive and cannot revise a
-verdict" a structural property rather than a claim about the prompt.
+verdict" a structural property rather than a claim about the prompt. `preprints` reaches exactly
+the three Europe PMC identity fields, and `data_links` only the `data_links.*` leaves — not
+`identifiers.*`, which a later, separate mode derives from them.
 
 Undo any field write:
 
@@ -59,6 +61,7 @@ scan with no error logged anywhere. "Search still works" is not evidence the ind
 | `moros_client.py` | The only module that opens a connection. Read-only by shape |
 | `moros_write.py` | The safe writer, plus `--rollback` replay |
 | `migrate_v1_2_0.py` | The in-place v1.1.0 → v1.2.0 shape bump, with a documented constant inverse |
+| `migrate_v1_4_0.py` | The in-place v1.2.0 → v1.4.0 shape bump (preprint fields + `data_links` at never-looked-up values), same constant-inverse pattern |
 | `fetch_citations.py` | Europe PMC `citedByCount`, three keyed passes, resumable, refresh-aware |
 | `join_citations.py` | Joins those counts onto document `_id`s |
 | `load_fields.py` | Partial `$set` of allowlisted paths on documents that already exist |
@@ -73,6 +76,13 @@ scan with no error logged anywhere. "Search still works" is not evidence the ind
 | `build_incoming_documents.py` | Reduces a fetched window to records moros has never seen |
 | `../../mongo_landscape_export/scripts/build_staged_documents.py` | Staged CSV + classification events -> documents JSONL |
 | `load_fields.py --mode licences` | Backfills `source.access.license` + `open_access` on documents already loaded |
+| `fetch_epmc_metadata.py` | Europe PMC identity, preprint server and data-links summary per record: batched `core` search, preprints keyed by DOI under `SRC:PPR` |
+| `fetch_annotations.py` | Text-mined accession numbers per record, 8 ids per call to the annotations API — the primary link source |
+| `fetch_datalinks.py` | Scholix `/datalinks` per record, for the residual text mining cannot cover (cross-references, data citations) |
+| `import_textmined_bulk.py` | Europe PMC's monthly text-mined FTP dump, joined locally: cross-check and fallback, zero API calls |
+| `datalinks_resources.py` | The resource catalogue: scheme / publisher / DOI prefix → a stable slug, label and category |
+| `build_data_links.py` | Merges every route per document (dedupe, caps, BioStudies derivation) → `pid_preprints.csv`, `pid_data_links.csv` |
+| `load_fields.py --mode preprints` / `--mode data_links` | Writes those two files through their allowlists |
 
 Tests: `cd scripts && python3 -m pytest .` — hermetic, no server, no network.
 
@@ -108,11 +118,21 @@ python3 join_citations.py --citations ../output/epmc_citations.csv \
 #    A later routine refresh wants citations ONLY -- licences do not change, and `lite` is
 #    lighter: python3 fetch_citations.py --max-age-days 30
 
+# 4b. Data links for the batch. The staged CSV already carries epmc_source / epmc_id and the
+#     data-links summary (build_incoming_documents.py read them off the core search), so no
+#     metadata pass is needed -- only the link fetches, then the merge.
+python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
+python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
+python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
+    --annotations ../output/incoming_new_annotations.jsonl --datalinks ../output/incoming_new_datalinks.jsonl \
+    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv
+
 # 5. Staged CSV + classification events -> documents, through the same schema.build_document()
 #    the landscape and curated paths use.
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
-    --events ../output/incoming_new_classification_events.csv
+    --events ../output/incoming_new_classification_events.csv \
+    --data-links ../output/incoming_new_pid_data_links.csv
 
 # 6. Load, index, verify.
 python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
@@ -239,3 +259,101 @@ silently re-create the exact gap this pipeline exists to close.
   of 25 Bioinformatics records came back as `parse_error` with `output_tokens` of *exactly* 6000 —
   truncated mid-JSON. Raising it to 16,000 took that to 0 of 25. Billing is per token generated,
   not per the ceiling.
+
+## Europe PMC data links and identity — the retrospective pass
+
+Four routes, each used for what it is best at, and every one run hot: `--max-workers` defaults to
+64, per-request timeouts are short, retries happen only on 429/5xx, and every `--limit` sample
+prints achieved calls/s and the error rate so the worker count for the full run is a measurement,
+not a guess. Raise workers between runs until errors appear.
+
+| Route | Endpoint | Batching | Targets | Calls for the corpus |
+|---|---|---|---|---|
+| Identity + summary | `/search`, `resultType=core` | 300 pmids / 120 DOIs / 200 pmcids per call | every document | ~3,400 |
+| Text-mined accessions | `annotations_api/annotationsByArticleIds` | 8 ids per call (hard limit) | `hasTMAccessionNumbers` Y (~50%) | ~53,000 |
+| Scholix residual | `/{source}/{id}/datalinks` | none (one GET per record) | db cross-refs or `related_data` (~1.6%) | ~13,300 |
+| FTP dump (optional) | `ftp.ebi.ac.uk/pub/databases/pmc/TextMinedTerms/` | whole files | local join | 0 |
+
+```bash
+cd scripts
+python3 ../../scripts/export_corpus_keys.py
+python3 fetch_epmc_metadata.py --limit 3000 && python3 fetch_epmc_metadata.py
+python3 fetch_annotations.py  --limit 3000 && python3 fetch_annotations.py --max-workers 128
+python3 fetch_datalinks.py    --limit 3000 && python3 fetch_datalinks.py
+python3 build_data_links.py --report-only     # unmapped schemes / DOI prefixes -> datalinks_resources.py
+python3 build_data_links.py
+python3 migrate_v1_4_0.py && python3 migrate_v1_4_0.py --confirm   # after the v1.4.0 release is cut
+python3 load_fields.py --mode preprints   && python3 load_fields.py --mode preprints --limit 500 --confirm && python3 load_fields.py --mode preprints --confirm
+python3 load_fields.py --mode data_links  && python3 load_fields.py --mode data_links --limit 500 --confirm && python3 load_fields.py --mode data_links --confirm
+python3 verify_corpus.py
+```
+
+Every fetch is resumable and `--max-age-days` refreshes only what has aged; data citations accrue,
+so a data-links refresh every six months is reasonable. `build_data_links.py` never writes a
+record's link detail until every route it was targeted for has answered, so `data_links.fetched_at`
+is never a claim of completeness for a half-fetched record; `--datalinks-scope none` builds without
+the Scholix route when that endpoint is down.
+
+Measured on 2026-09-14:
+
+- **The corpus metadata pass took 372 s.** 3,079 batched `core` calls at 96 workers: 8.3 calls/s,
+  ~2,200 records/s, zero failed calls. A 300-id `core` call takes ~11 s server-side, so
+  concurrency is the lever, not batch size. 486,160 records have `hasData`, 394,400 have text-mined
+  accessions.
+- **The corpus annotations pass took 186 s.** 48,668 calls of 8 ids at 128 workers: 262 calls/s,
+  zero failed calls; 389,338 records, 2,269,089 text-mined accessions, a 509 MB JSONL.
+- **A DOI-keyed chunk mostly cannot be attributed.** 90% of the plain `doi` pass came back as
+  PMC-source records carrying no `doi` field; the pmid, pmcid and preprint passes were ~100%.
+  The fetch asks every such key again: through the pmcid our corpus row holds, 200 per call
+  (10,471 keys in 53 calls), and one by one for the rest (26); 23 s in all. A single quoted-DOI
+  `core` query ran at ~3 calls/s at 64 workers, which is why the batched route goes first. Identity
+  coverage afterwards: every DOI and PMCID key answered, 10 PMIDs and 3 preprint DOIs that Europe
+  PMC has no record for.
+- **Europe PMC has more source codes than MED/PPR/PMC/AGR/PAT.** The corpus holds MED 764,679,
+  PPR 56,343, PMC 13,906, AGR 1,104, ETH 93 (theses) and CTX 21; schema v1.4.0 lists all of Europe
+  PMC's codes.
+- **Europe PMC's preprint server names agree with the verified DOI-prefix table** for 55,757 of the
+  56,337 preprints it answered. The rest are its own names for the F1000 gateways (`F1000Res`,
+  `Open Res Europe`, `Wellcome Open Res`, ...) and abbreviations (`NIHR Open Res`), which the
+  API-wins rule keeps, so those cards will read the abbreviated name.
+- **`hasData` and `dataLinksTagsList` exist only in `resultType=core`**, not `lite`. The corpus
+  search space has 514,655 of 889,637 records with `HAS_DATA:y` (58%); in a 1,182-record corpus
+  sample 50% had text-mined accessions, 1.3% curated cross-references, 35% supplementary files.
+- **The annotations API takes at most 8 article ids per call** (a ninth returns HTTP 400 with
+  "must contain between 1 and 8 values") and answered in 0.12–0.30 s.
+- **`/datalinks` returned HTTP 500 for every id tried**, including Europe PMC's own documented
+  example, after ~30 s each; `labsLinks` at 32 concurrent workers saw 27% timeouts. It was still
+  failing at the end of the corpus run (20 of 20 after retries), so the corpus build used
+  `--datalinks-scope none`. That is why the Scholix route is the residual and has short timeouts,
+  and why the build can run without it.
+- **`PMID:` is not a search field** (0 hits); `EXT_ID:` is, as `build_clause()` already does.
+- **A BioStudies supplementary entry needs no call**: a PMC article with supplementary files is
+  `S-EPMC<pmcid digits>`.
+- **The FTP dump is uneven**: in the 2026-08-31 snapshot eight files had content (doi 423 MB, gen
+  137 MB, nct, pdb, refseq, refsnp, rrid, uniprot) and most others were 0 bytes, so it is a
+  cross-check, not the primary route.
+- **A DOI in a reference list is a citation, not data.** Text-mined DOIs are kept only outside the
+  References section and only for a data-repository prefix (`datalinks_resources.DOI_PREFIXES`).
+- **`bookOrReportDetails.publisher` is a preprint server only on a PPR record.** Europe PMC fills it
+  for 234 MEDLINE health-technology reports (NIHR Journals Library, CADTH), 93 EThOS theses (the
+  university) and 17 CTX records as well; the pipeline keeps it only where the source is PPR.
+- **BioStudies' supplementary-file mining links some accessions to the resource's own site**, not
+  identifiers.org, and gives them no type: GISAID (`gisaid.org/EPI_ISL/`, 33,414 in the first
+  200,000 records), OMIM (`omim.org/entry/`, 9,556), Human Protein Atlas, PDBe.
+  `datalinks_resources.HOST_SCHEMES` types them by host; an untyped accession is otherwise dropped.
+- **The corpus merge took 169 s at a 591 MB peak** in 8 shards, over 509 MB of annotations.
+  Result: 846,703 of 846,716 documents with a Europe PMC identity, 56,866 preprints with a server,
+  307,148 documents with at least one linked resource, 1,106,450 links across 73 resources
+  (BioStudies 270,053 documents, ClinicalTrials.gov 25,137, GEO 20,379, ENA 17,830, PDB 16,743,
+  dbSNP 7,482, UniProt 7,005, Zenodo 6,320, ...), and 1,014,393 literature DOIs left out.
+- **Text-mined identifiers are not identifiers until cleaned, and a DOI is not a DOI until doi.org
+  says so.** Stored verbatim, the first load gave 1,513 documents links that 404
+  (`10.5281/zenodo.18675888.`, `10.6084/m9.figshare.24123303”.`, comma lists, `×` for `x`,
+  `zenodo.XXXXX`, free-text RRIDs). The rebuild through `link_identifiers.py` repaired 8,955
+  identifiers (7,914 RRIDs, 7,869 of all repairs taken from Europe PMC's own resolver URL; 438
+  Zenodo, 196 OSF, 147 figshare DOIs), confirmed 16,627 DOI candidates at `doi.org/api/handles`
+  in 100 s at 64 workers (166/s, no failures), dropped 395 DOIs doi.org does not have and 181
+  accessions nothing clean could be recovered from, and changed 3,504 documents. All 50 sampled
+  repaired DOIs resolved. Europe PMC's resolver URL is the better source for RRID and Orphanet
+  (clean in 1,809 of 1,883 dirty cases) but repeats the junk for DOIs (5,399 of 5,848), which is
+  why DOIs go to doi.org instead.

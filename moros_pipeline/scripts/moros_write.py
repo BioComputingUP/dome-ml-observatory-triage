@@ -68,6 +68,19 @@ _ENRICHED_FILTER_FIELDS = (
     "domain_tier1", "domain_tier2", "domain_tier3", "learning_paradigm", "model_family",
     "model_type",
 )
+# v1.3.0: the Europe PMC identity of the record and, for a preprint, its server.
+PREPRINT_FIELDS = (
+    "identifiers.epmc_id",
+    "source.epmc_source",
+    "publication_metadata.preprint_server",
+)
+# v1.4.0: the data_links group. The four summary leaves come from the search record; the six link
+# leaves (DATA_LINKS_LINK_FIELDS, mirrored in schema.py) from the link fetch, written together.
+DATA_LINKS_SUMMARY_FIELDS = ("has_data", "tags", "accession_types", "db_cross_references")
+DATA_LINKS_LINK_FIELDS = ("fetched_at", "sources", "link_count", "truncated", "resources", "links")
+_DATA_LINKS_PATHS = frozenset(
+    f"data_links.{f}" for f in DATA_LINKS_SUMMARY_FIELDS + DATA_LINKS_LINK_FIELDS
+)
 
 # Mode -> the exact leaf paths that mode may write. Adding a field to a document means adding it
 # here first, on purpose, in a diff someone reviews.
@@ -104,6 +117,17 @@ WRITE_MODES: dict[str, frozenset[str]] = {
         | {f"content_filters.{f}" for f in _ENRICHED_FILTER_FIELDS}
         | {f"llm_enrichment.{f}" for f in _ENRICHMENT_FIELDS}
     ),
+    # The in-place 1.2.0 -> 1.4.0 shape bump: the three v1.3.0 leaves and the ten data_links
+    # leaves, every one set to its "never looked up" value. Constant values, no per-document data.
+    "migrate_v1_4_0": frozenset({_SCHEMA_VERSION_PATH, *PREPRINT_FIELDS} | _DATA_LINKS_PATHS),
+    # The Europe PMC identity / preprint backfill (docs/preprint.md). Exactly the three v1.3.0
+    # leaves: it cannot reach `journal`, `pub_types` or anything that decides what a record is.
+    "preprints": frozenset({_SCHEMA_VERSION_PATH, *PREPRINT_FIELDS}),
+    # The data-links fetch. `resources` and `links` are arrays of objects and are leaves here on
+    # purpose: `$set` replaces each whole and the rollback snapshot restores each whole (dig()
+    # does not walk into arrays). Cannot reach `identifiers.*`: the derivation of
+    # identifiers.zenodo & co. from these links goes through its own mode, later and deliberately.
+    "data_links": frozenset({_SCHEMA_VERSION_PATH} | _DATA_LINKS_PATHS),
 }
 
 _ABSENT = object()

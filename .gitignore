@@ -17,6 +17,10 @@ moros_pipeline/.env
 moros_pipeline/output/*
 !moros_pipeline/output/coverage_ledger.json
 !moros_pipeline/output/.gitkeep
+# Pre-change backups of staging files, each with a .provenance.txt beside it saying what it is and
+# which loads it relates to. Hundreds of MB: GitHub rejects any file over 100 MB, so these are listed
+# explicitly and stay ignored even if the output/* rule above is ever narrowed.
+moros_pipeline/output/backups/
 
 # Built documents JSONL for each batch -- regenerable from the staged CSV + events.
 mongo_landscape_export/output/*

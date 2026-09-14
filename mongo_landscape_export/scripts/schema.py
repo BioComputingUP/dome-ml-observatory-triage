@@ -69,7 +69,19 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # HTML entities in title/abstract. All additive -- no existing field changed or removed, and
 # `llm_classification.classification` deliberately stays the single queryable classification field
 # so the `positives_text` partial index and observatory-ws's canUseTextIndex guard are untouched.
-SCHEMA_VERSION = "1.2.0"
+# 1.3.0 (authored 2026-09-14; published by dome-ml-observatory 2026-09-07): added
+# publication_metadata.preprint_server (Europe PMC's bookOrReportDetails.publisher, verbatim),
+# source.epmc_source (MED / PPR / PMC / AGR / PAT -- the authoritative "is this a preprint" test) and
+# identifiers.epmc_id (Europe PMC's own accession, the only way to build a correct
+# /article/{source}/{id} link for a preprint). Additive, all null until the capture pass runs --
+# see docs/preprint.md.
+# 1.4.0 (2026-09-14): added the data_links group -- Europe PMC's data links for the paper.
+# has_data / tags / accession_types / db_cross_references come from the core search record;
+# fetched_at / sources / link_count / truncated / resources[] / links[] from the annotations API,
+# the /datalinks endpoint and the derived BioStudies supplemental entry (build_data_links.py).
+# The first array-of-objects fields in the document: each array is one leaf for the write allowlist
+# and is replaced and rolled back whole. Additive -- no existing field changed or removed.
+SCHEMA_VERSION = "1.4.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
@@ -174,6 +186,16 @@ def _parse_json_list(value: Optional[str]) -> list:
     return json.loads(value)
 
 
+def _parse_json_object(value: Optional[str]) -> dict:
+    value = _none_if_blank(value)
+    if value is None:
+        return {}
+    parsed = json.loads(value)
+    if not isinstance(parsed, dict):
+        raise ValueError(f"expected a JSON object, got {type(parsed).__name__}")
+    return parsed
+
+
 def _resolve_open_access(is_open_access: str, license_checked: str, epmc_is_open_access: str) -> Optional[bool]:
     """EPMC's freshly-fetched flag wins when a real lookup happened (confirmed with Gavin,
     2026-08-28 -- 395/738,198 rows disagreed with the original pipeline value, and the EPMC value
@@ -204,6 +226,10 @@ def _identifiers(row: dict[str, str]) -> dict[str, Any]:
         "pmid": _none_if_blank(row["pmid"]),
         "pmcid": _none_if_blank(row["pmcid"]),
         "doi": _none_if_blank(row["doi"]),
+        # Europe PMC's own accession for the record the metadata came from ("PPR18364",
+        # "40703513", "PMC1234567"). `.get()`: a staging row built before the capture pass has
+        # legitimately never had it looked up (v1.3.0).
+        "epmc_id": _none_if_blank(row.get("epmc_id")),
         # External registry/repo cross-references -- not in the source CSV at all yet, always
         # null for now. Reserved so a future linking pass (e.g. DOME Registry submission
         # status, or scraping paper text for repo links) has a home with no schema migration.
@@ -226,6 +252,9 @@ def _publication_metadata(row: dict[str, str]) -> dict[str, Any]:
         "authors": _none_if_blank(row["authors"]),
         "year": _parse_year(row["year"]),
         "journal": _none_if_blank(row["journal"]),
+        # The preprint server's own name as Europe PMC gives it (bookOrReportDetails.publisher);
+        # null on journal articles and on preprints the capture pass has not reached (v1.3.0).
+        "preprint_server": _none_if_blank(row.get("preprint_server")),
         "citation_count": _parse_int(row["citation_count"]),
         "citation_count_updated": _none_if_blank(row.get("citation_count_updated")),
         "citation_source": _none_if_blank(row.get("citation_source")),
@@ -243,6 +272,10 @@ def _source(row: dict[str, str], decision_provenance: str) -> dict[str, Any]:
         # Who decided this record's classification. Never null -- a document with no answer here
         # would be exactly the ambiguity this field was added to remove.
         "decision_provenance": decision_provenance,
+        # Which Europe PMC index the record came from: MED, PPR, PMC, AGR, ETH, CTX, ... "PPR" is the
+        # authoritative preprint marker; `pub_types` containing "Preprint" is the proxy until this
+        # is populated (v1.3.0).
+        "epmc_source": _none_if_blank(row.get("epmc_source")),
         "access": {
             "open_access": _resolve_open_access(
                 row["is_open_access"], row["license_checked"], row["epmc_is_open_access"]
@@ -265,6 +298,45 @@ def _content_filters(row: dict[str, str]) -> dict[str, Any]:
         "learning_paradigm": [],
         "model_family": [],
         "model_type": [],
+    }
+
+
+# The data_links leaves the link fetch produces, carried in ONE JSON-encoded staging cell
+# (`data_links_json`, written by moros_pipeline/scripts/build_data_links.py) because they are
+# written together or not at all. The four summary leaves come as plain columns from the search
+# record instead. `moros_write.py::DATA_LINKS_LINK_FIELDS` mirrors this tuple.
+DATA_LINKS_LINK_FIELDS = ("fetched_at", "sources", "link_count", "truncated", "resources", "links")
+
+
+def _data_links(row: dict[str, str]) -> dict[str, Any]:
+    """Europe PMC's data links for the paper (v1.4.0). Every key is read with `.get()`, on the
+    same "null means never looked up" convention as the citation and licence fields:
+
+    - the four summary leaves are captured from the `core` search record (`hasData`,
+      `dataLinksTagsList`, `tmAccessionTypeList`, `dbCrossReferenceList`); a row built before the
+      pipeline captured them has legitimately never had them looked up, so `has_data` is None;
+    - the six link leaves come from a separate fetch (annotations API, /datalinks, the derived
+      BioStudies entry) and arrive together in `data_links_json`; `fetched_at` is None until it
+      runs, and a fetch that finds nothing sets `fetched_at`, `link_count: 0`, `resources: []`.
+
+    `resources` (one entry per linked resource, always complete) and `links` (the capped detail)
+    are arrays of objects -- the first in the document. Their element shape is owned by
+    `build_data_links.py`; this builder carries them through verbatim.
+    """
+    detail = _parse_json_object(row.get("data_links_json"))
+    link_count = detail.get("link_count")
+    truncated = detail.get("truncated")
+    return {
+        "has_data": _parse_bool(row.get("has_data")),
+        "tags": _parse_json_list(row.get("data_links_tags")),
+        "accession_types": _parse_json_list(row.get("accession_types")),
+        "db_cross_references": _parse_json_list(row.get("db_cross_references")),
+        "fetched_at": _none_if_blank(detail.get("fetched_at")),
+        "sources": list(detail.get("sources") or []),
+        "link_count": None if link_count is None else int(link_count),
+        "truncated": None if truncated is None else bool(truncated),
+        "resources": list(detail.get("resources") or []),
+        "links": list(detail.get("links") or []),
     }
 
 
@@ -354,6 +426,7 @@ def build_document(row: dict[str, str]) -> dict[str, Any]:
         "publication_metadata": _publication_metadata(row),
         "source": _source(row, PROVENANCE_LLM),
         "content_filters": _content_filters(row),
+        "data_links": _data_links(row),
         "llm_classification": _llm_classification(row),
         "llm_enrichment": _empty_enrichment(),
     }
@@ -380,6 +453,7 @@ def build_curated_document(row: dict[str, str]) -> dict[str, Any]:
         "publication_metadata": _publication_metadata(row),
         "source": _source(row, confidence),
         "content_filters": _content_filters(row),
+        "data_links": _data_links(row),
         "llm_classification": _curated_classification(row),
         "llm_enrichment": _empty_enrichment(),
     }
