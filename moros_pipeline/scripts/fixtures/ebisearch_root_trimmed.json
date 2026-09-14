@@ -1,0 +1,870 @@
+{
+ "domains": [
+  {
+   "id": "allebi",
+   "name": "All results",
+   "subdomains": [
+    {
+     "id": "nucleotideSequences",
+     "name": "Nucleotide sequences",
+     "subdomains": [
+      {
+       "id": "patentNucleotides",
+       "name": "Patent Nucleotides",
+       "subdomains": [
+        {
+         "id": "nrnl1",
+         "name": "NRNL1",
+         "indexInfos": [
+          {
+           "name": "Number of entries",
+           "value": "12349772"
+          },
+          {
+           "name": "Last modification date",
+           "value": "Thu Jun 25 13:59:00 BST 2026"
+          },
+          {
+           "name": "Update date",
+           "value": "Tue Oct 14 10:21:00 BST 2014"
+          }
+         ],
+         "fieldInfos": [
+          {
+           "id": "PATENT_NUMBER",
+           "name": "Patent Number",
+           "description": "References to Patent Abstracts",
+           "options": [
+            {
+             "name": "searchable",
+             "value": "true"
+            },
+            {
+             "name": "retrievable",
+             "value": "true"
+            },
+            {
+             "name": "sortable",
+             "value": "false"
+            },
+            {
+             "name": "facet",
+             "value": "false"
+            },
+            {
+             "name": "referenced domain",
+             "value": "europepmc"
+            },
+            {
+             "name": "referenced field",
+             "value": "patent_number"
+            },
+            {
+             "name": "type",
+             "value": "XREF"
+            },
+            {
+             "name": "topterms",
+             "value": "false"
+            },
+            {
+             "name": "default search field",
+             "value": "true"
+            }
+           ]
+          },
+          {
+           "id": "description",
+           "name": "description",
+           "description": "Description",
+           "options": [
+            {
+             "name": "searchable",
+             "value": "true"
+            },
+            {
+             "name": "retrievable",
+             "value": "true"
+            },
+            {
+             "name": "sortable",
+             "value": "false"
+            },
+            {
+             "name": "facet",
+             "value": "false"
+            },
+            {
+             "name": "type",
+             "value": "TEXT"
+            },
+            {
+             "name": "topterms",
+             "value": "false"
+            },
+            {
+             "name": "default search field",
+             "value": "true"
+            }
+           ]
+          },
+          {
+           "id": "id",
+           "name": "id",
+           "description": "Identifier",
+           "options": [
+            {
+             "name": "searchable",
+             "value": "true"
+            },
+            {
+             "name": "retrievable",
+             "value": "true"
+            },
+            {
+             "name": "sortable",
+             "value": "false"
+            },
+            {
+             "name": "facet",
+             "value": "false"
+            },
+            {
+             "name": "type",
+             "value": "KEYWORD"
+            },
+            {
+             "name": "topterms",
+             "value": "false"
+            },
+            {
+             "name": "default search field",
+             "value": "true"
+            }
+           ]
+          },
+          {
+           "id": "name",
+           "name": "name",
+           "description": "Name",
+           "options": [
+            {
+             "name": "searchable",
+             "value": "true"
+            },
+            {
+             "name": "retrievable",
+             "value": "true"
+            },
+            {
+             "name": "sortable",
+             "value": "false"
+            },
+            {
+             "name": "facet",
+             "value": "false"
+            },
+            {
+             "name": "type",
+             "value": "TEXT"
+            },
+            {
+             "name": "topterms",
+             "value": "false"
+            },
+            {
+             "name": "default search field",
+             "value": "true"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "proteinSequences",
+     "name": "Protein sequences",
+     "subdomains": [
+      {
+       "id": "uniprot",
+       "name": "UniProtKB",
+       "indexInfos": [
+        {
+         "name": "Number of entries",
+         "value": "149810139"
+        },
+        {
+         "name": "Last modification date",
+         "value": "Thu Jun 25 11:08:17 BST 2026"
+        },
+        {
+         "name": "Update date",
+         "value": "Fri Apr 03 22:15:00 BST 2026"
+        }
+       ],
+       "fieldInfos": [
+        {
+         "id": "DOI",
+         "name": "DOI",
+         "description": "DOI reference",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "DOI"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "PUBMED",
+         "name": "PUBMED",
+         "description": null,
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "id"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "description",
+         "name": "description",
+         "description": "Description (DE line of the flat file)",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "false"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "id",
+         "name": "id",
+         "description": "Identifier",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "KEYWORD"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "registries",
+     "name": "Catalogues & Registries",
+     "subdomains": [
+      {
+       "id": "biotools",
+       "name": "bio.tools",
+       "indexInfos": [
+        {
+         "name": "Number of entries",
+         "value": "34230"
+        },
+        {
+         "name": "Last modification date",
+         "value": "Thu Sep 10 02:10:21 BST 2026"
+        }
+       ],
+       "fieldInfos": [
+        {
+         "id": "DOI",
+         "name": "DOI",
+         "description": "DOI reference",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "DOI"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "PMCID",
+         "name": "PMID",
+         "description": "PMCID references",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "pmcid"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "PMID",
+         "name": "PMID",
+         "description": "PMID references",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "id"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "description",
+         "name": "description",
+         "description": "Description",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "id",
+         "name": "id",
+         "description": "Identifier",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "KEYWORD"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "name",
+         "name": "name",
+         "description": "Name",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "id": "dome-registry",
+       "name": "DOME Registry",
+       "indexInfos": [
+        {
+         "name": "Number of entries",
+         "value": "1279"
+        },
+        {
+         "name": "Last modification date",
+         "value": "Tue Jul 28 13:20:00 BST 2026"
+        }
+       ],
+       "fieldInfos": [
+        {
+         "id": "EUROPE_PMC",
+         "name": "EUROPE_PMC",
+         "description": "References to EuropePMC",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "europepmc"
+          },
+          {
+           "name": "referenced field",
+           "value": "id"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "PMC",
+         "name": "PMC",
+         "description": "References to PMC",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "referenced domain",
+           "value": "ncbigi"
+          },
+          {
+           "name": "referenced field",
+           "value": "PMC"
+          },
+          {
+           "name": "type",
+           "value": "XREF"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "description",
+         "name": "description",
+         "description": "Description",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "id",
+         "name": "id",
+         "description": "Local Unique Identifier pattern for the DOME Registry entry",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "KEYWORD"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "name",
+         "name": "name",
+         "description": "Name",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        },
+        {
+         "id": "title",
+         "name": "title",
+         "description": "Name of the DOME Registry entry (Publication title)",
+         "options": [
+          {
+           "name": "searchable",
+           "value": "true"
+          },
+          {
+           "name": "retrievable",
+           "value": "true"
+          },
+          {
+           "name": "sortable",
+           "value": "false"
+          },
+          {
+           "name": "facet",
+           "value": "false"
+          },
+          {
+           "name": "type",
+           "value": "TEXT"
+          },
+          {
+           "name": "topterms",
+           "value": "false"
+          },
+          {
+           "name": "default search field",
+           "value": "true"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

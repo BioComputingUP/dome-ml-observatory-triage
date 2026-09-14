@@ -357,3 +357,36 @@ Measured on 2026-09-14:
   repaired DOIs resolved. Europe PMC's resolver URL is the better source for RRID and Orphanet
   (clean in 1,809 of 1,883 dirty cases) but repeats the junk for DOIs (5,399 of 5,848), which is
   why DOIs go to doi.org instead.
+
+## EBI Search cross-references — evaluation, not loaded
+
+Roadmap item 1, step 1, while `/datalinks` answers HTTP 500: do EBI Search's cross-references (the
+entries in EBI's databases that cite a paper) add data links the annotations API does not? The
+fetches write raw staging only (`output/ebisearch_*`, gitignored); nothing is merged, added to the
+schema or loaded until the domains to keep are chosen.
+
+| Route | Endpoint | Batching | Targets | Measured 2026-09-14 |
+|---|---|---|---|---|
+| Discovery | `ebisearch/ws/rest/europepmc/entry/{pmid}/xref` | none | every positive PMID | 316,524 calls in 34 min at 256 workers (154/s), 49 connect timeouts |
+| Detail | `.../europepmc/entry/{pmid,...}/xref/{domain}?size=100` | 100 PMIDs per call | discovered pairs in domains not dumped | 965 calls in 266 s, 95,351 pairs, no failures |
+| Whole-domain dump | `ebisearch/ws/rest/{domain}?query=domain_source:{domain}` | 100 entries per page | the 63 citing domains of at most 100,000 entries | 924,858 entries in 9,282 calls |
+
+```bash
+cd scripts
+python3 fetch_ebisearch_domains.py --list && python3 fetch_ebisearch_domains.py
+python3 fetch_ebisearch_xrefs.py discover --limit 3000 && python3 fetch_ebisearch_xrefs.py discover --max-workers 256
+python3 fetch_ebisearch_xrefs.py detail
+```
+
+- **`size=100` is not optional.** Without it an xref answer carries one reference per entry
+  whatever its `referenceCount` (pdbekb for 33024307: 1 of 5). The detail fetch checks every entry
+  against the count and asks a short one again.
+- **EBI Search keys `europepmc` by PMID only**; PMC and PPR ids answer no domains. The positives
+  without a PMID (41,205, 88% preprints in a 1,000 sample) are reached only through the dumps:
+  DOI, PMCID and PPR queries against the eight large domains matched none of that sample.
+- **Paging stops at 100,000**: `start=100000` answers 200 with no entries, hence the dump cap.
+- **Discovery ran 79.7 calls/s at 128 workers and 154/s at 256**, with 0.015% connect timeouts; a
+  re-run recovered all but PMID 18575676, which answers 5xx every time.
+- **Index quirks the dump tolerates, each the same on every read**: physiome holds an entry with
+  no id; ega (EGAS00001006372) and biostudies-arrayexpress (E-MTAB-17162) index one entry twice.
+  `_manifest.json` records them per domain.
