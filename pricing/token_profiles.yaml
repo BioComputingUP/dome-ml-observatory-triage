@@ -1,37 +1,41 @@
-measured_on: 2026-09-03
-model_id: deepseek-v4-flash
-model_version: DeepSeek-V4-Flash-0731
-model_note: Token counts below were measured on V4-Flash. Since 2026-09-10 the same API id runs DeepSeek-V4.1-Flash;
-  re-measure from the first V4.1 events files (cost_dashboard.py --events-classification / --events-enrichment).
+measured_on: '2026-09-15'
+model_id: deepseek-flash
+model_version: DeepSeek-V4.1-Flash
+model_note: 'Measured on DeepSeek-V4.1-Flash, which answers the id deepseek-v4-flash
+  that the pipeline calls (since 2026-09-10). The earlier profile was V4-Flash: 8,698
+  in / 299 out for classification, 3,078 in / 5,877 out for enrichment.'
 classification:
   prompt_version: v1
   criteria_sha256: bd9d66dd892e6c0a231ac59ba102543ea6caa89db67fc1b914795501f4f60449
-  source: incremental batch classification events, n=13,499 (2026-09-03)
-  n_events: 13499
-  input_tokens: 8698
-  output_tokens: 299
+  source: practice refresh batch, n=6,216 (2026-09-15, V4.1)
+  n_events: 6216
+  input_tokens: 8667
+  output_tokens: 172
   record_tokens_estimate: 300
-  real_anchor_usd_per_record: 0.000304
-  real_anchor_source: billed, 7,600 records for $2.31 on 2026-08-21 (deepseek_real_cost_log.csv)
+  real_anchor_usd_per_record: 0.000199
+  real_anchor_source: billed, 6,216 records for $1.24 on 2026-09-15 (V4.1); V4-Flash
+    was $0.000304
   no_abstract_share: 0.051
   parse_error_rate: 0.002
-  last_incremental_batch_records: 13499
-  last_incremental_batch_positives: 7369
+  last_incremental_batch_records: 6216
+  last_incremental_batch_positives: 1791
 enrichment:
   prompt_version: e1
   vocab_sha256: 41db952f15118176fa27dac724eff9dff59714b62854859d9606ef440ee473c7
-  source: four-journal enrichment events, n=5,871 rows / 3,359 records (2026-09-03)
-  n_events: 5871
-  input_tokens: 3078
-  cache_hit_tokens: 2845
-  output_tokens: 5877
-  reasoning_tokens: 5752
+  source: practice refresh enrichment, n=200 (2026-09-15, V4.1)
+  n_events: 200
+  input_tokens: 3148
+  cache_hit_tokens: 2560
+  output_tokens: 1481
+  reasoning_tokens: 1336
   max_tokens: 16000
   truncation_rate: 0.015
   token_model_usd_per_1k: 4.07
-  token_model_note: Tokens x V4-Flash off-peak list price. Never confirmed against the balance, and it undershoots
-    what enrichment is billed at; do not cost a run with it.
-  planning_usd_per_1k: 10.0
-  planning_source: Billing experience, 3,000 records for about $30-40 (2026-09-15). Replace with a balance delta
-    from deepseek_real_cost_log.csv, and never set it below a billed figure.
+  token_model_note: Tokens x list price. On V4-Flash it gave $4.07 per 1,000 against
+    a bill of about $10, so it is never what a run is costed at.
+  planning_usd_per_1k: 1.8
+  planning_source: 'Billed V4.1 runs on 2026-09-15: $1.80 per 1,000 (100 Bioinformatics
+    records) and $1.00 per 1,000 (200 records of a refresh batch); the higher is kept.
+    V4-Flash was billed about $10 per 1,000. Cost varies with how long the population
+    makes the model think.'
   records_per_min_at_concurrency_800: 418

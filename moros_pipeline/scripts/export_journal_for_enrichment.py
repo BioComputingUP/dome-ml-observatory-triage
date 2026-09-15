@@ -38,8 +38,9 @@ DEFAULT_OUT_DIR = FOLDER_DIR / "output"
 
 OUTPUT_COLUMNS = ["record_id", "title", "abstract", "journal", "year"]
 
-# What an export is costed at before its input file exists. **$10 per 1,000 records** since
-# 2026-09-15: enrichment is billed at about that (3,000 records for $30-40). The previous 4.07 was
+# What an export is costed at before its input file exists. **$1.80 per 1,000 records**: the higher of
+# the two V4.1 runs billed on 2026-09-15 ($1.80 per 1,000 for 100 Bioinformatics records, $1.00 for 200
+# records of a refresh batch). V4-Flash was billed about $10 per 1,000, and the token model's 4.07 was
 # tokens x list price from 100 paired Bioinformatics records (5,947 output tokens per record, 98%
 # of them reasoning), never checked against the balance, and it let this gate admit about 2.5x the
 # spend its --max-usd said. Replace it only with a balance delta from
@@ -52,7 +53,7 @@ OUTPUT_COLUMNS = ["record_id", "title", "abstract", "journal", "year"]
 # 2026-09-03): `reasoning_effort: low` cost MORE than the default with 6x the violations; a
 # hierarchical domain rendering saved nothing; disabling thinking is 88% cheaper but agrees with the
 # production configuration on all six fields for 0% of records.
-USD_PER_1000_RECORDS = 10.0
+USD_PER_1000_RECORDS = 1.80
 
 
 def slugify(value: str) -> str:

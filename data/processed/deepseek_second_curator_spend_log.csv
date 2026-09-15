@@ -27,3 +27,5 @@ timestamp,step_name,tier,mode,n_records,estimated_usd,actual_usd,confirmed_by
 2026-08-28T10:36:43.967606+00:00,llm-classify.classify,flash,primary,5825,12.07,,gavinfarrell
 2026-09-03T20:14:48.169484+00:00,llm-classify.classify,flash,primary,13499,4.1,,gavinfarrell
 2026-09-15T21:35:24.154436+00:00,llm-classify.classify,flash,primary,1000,0.4,,gavinfarrell
+2026-09-15T22:19:39.922352+00:00,llm-classify.classify,flash,primary,50,0.02,,gavinfarrell
+2026-09-15T22:20:53.089796+00:00,llm-classify.classify,flash,primary,6166,2.0,,gavinfarrell
