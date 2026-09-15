@@ -1,12 +1,5 @@
 # Roadmap
 
-1. **Get Europe PMC's official data links (`/datalinks`).** Backfill loaded 2026-09-14 without them
-   (HTTP 500).
-   - Have: text-mined accessions (annotations API), plus an auto-built BioStudies `S-EPMC`
-     supplements link (not author data).
-   - Missing: data citations (DataCite/Crossref) and database-side links.
-   - Left: retest, `fetch_datalinks.py`, rebuild, reload; commit; restart `observatory-ws`.
-
 **FAIR metadata (items 6–7, plus Dublin Core and OAI-PMH):** plan in [`roadmap_FAIR.md`](roadmap_FAIR.md).
 6. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
    distribution, and where that description is served.
@@ -19,10 +12,9 @@
 
 3. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
    skills in `.claude/skills/` exercised in tandem against the commands they document.
-4. **Cross links.** Derive `identifiers.zenodo` and `bioai_repo` from `data_links`, and build the
-   fetch process for the rest (Hugging Face, DOME Registry, Kaggle) per
-   [`cross_links/README.md`](cross_links/README.md), then add an `identifiers` write mode to
-   `moros_write.py` with tests.
+4. **Cross links.** `identifiers.dome_registry` and the `identifiers` write mode are built with
+   v1.5.0. Left: derive `identifiers.zenodo` and `bioai_repo` from `data_links`, and build the
+   fetch process for Hugging Face and Kaggle per [`cross_links/README.md`](cross_links/README.md).
 5. **Automated Zenodo bulk push.** Monthly GitHub Actions workflow: cursor-loop `GET /api/export`,
    gzip, deposit through the Zenodo API with a sidecar (count, size, sha256, `schema_version`) and
    the schema release. Reuse `DOME_zenodo_archive/download_dome_registry.py`, `ZENODO_TOKEN` from

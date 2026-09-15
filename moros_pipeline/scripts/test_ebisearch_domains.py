@@ -181,3 +181,15 @@ def test_a_repeat_with_different_fields_fails_the_domain(tmp_path):
         fd.dump_domain(_PagedSession(250, copies={200: 150}, differ=True), LEAF, tmp_path, 4,
                        "now")
     assert list(tmp_path.iterdir()) == []
+
+
+def test_by_default_only_the_accepted_domains_are_dumped_but_a_named_one_always_is():
+    leaves = fd.leaf_domains(TREE)
+    assert [leaf["id"] for leaf in fd.select_domains(leaves, [], 100_000, {"biotools"})] == ["biotools"]
+    assert [leaf["id"] for leaf in fd.select_domains(leaves, ["uniprot"], 100_000, {"biotools"})] == [
+        "uniprot"]
+
+
+def test_the_repositorys_own_entry_link_is_asked_for_where_the_domain_has_one():
+    assert fd.fields_param(dict(LEAF, link_fields=["full_dataset_link"])) == (
+        "id,name,full_dataset_link,PUBMED")

@@ -81,7 +81,14 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # the /datalinks endpoint and the derived BioStudies supplemental entry (build_data_links.py).
 # The first array-of-objects fields in the document: each array is one leaf for the write allowlist
 # and is replaced and rolled back whole. Additive -- no existing field changed or removed.
-SCHEMA_VERSION = "1.4.0"
+# 1.5.0 (2026-09-14): EBI Search's database-side links join data_links for positives, and
+# identifiers.dome_registry is filled. No leaf path is added or removed: the change lives inside the
+# arrays, whose element shape build_data_links.py owns -- data_links.sources may carry "ebisearch";
+# resources[] gain `routes` (every route that found a link to the resource) and `browse_url`;
+# links[] gain `matched_by` (pmid | pmcid | doi) and `source_domain` (the EBI Search domain), and
+# obtained_by gains ebisearch_xref / ebisearch_domain. The new element keys are optional: a record
+# the merge withholds keeps its 1.4.0 elements until a later build completes it.
+SCHEMA_VERSION = "1.5.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
@@ -216,6 +223,14 @@ def _resolve_license(license_value: str, license_checked: str) -> Optional[str]:
     return None
 
 
+def _resolve_dome_registry(value: Optional[str], checked: Optional[str]) -> Optional[str]:
+    """`identifiers.dome_registry` on the licence convention: the DOME Registry entry id when one
+    names the paper, "" when the registry was looked up and none does, None when never looked up."""
+    if (checked or "").strip() == "True":
+        return (value or "").strip()
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Group builders -- shared by both public builders so their shapes cannot drift.
 # ---------------------------------------------------------------------------
@@ -230,10 +245,11 @@ def _identifiers(row: dict[str, str]) -> dict[str, Any]:
         # "40703513", "PMC1234567"). `.get()`: a staging row built before the capture pass has
         # legitimately never had it looked up (v1.3.0).
         "epmc_id": _none_if_blank(row.get("epmc_id")),
-        # External registry/repo cross-references -- not in the source CSV at all yet, always
-        # null for now. Reserved so a future linking pass (e.g. DOME Registry submission
-        # status, or scraping paper text for repo links) has a home with no schema migration.
-        "dome_registry": None,
+        # v1.5.0: the DOME Registry entry naming the paper, from the data-links build's EBI Search
+        # route (pid_identifiers.csv). "" = looked up, none names it; None = never looked up.
+        "dome_registry": _resolve_dome_registry(row.get("dome_registry"),
+                                                row.get("dome_registry_checked")),
+        # Reserved for the cross-links pass (cross_links/README.md): null until it runs.
         "bioai_repo": None,
         "huggingface": None,
         "kaggle": None,

@@ -32,24 +32,35 @@ python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv
 python3 join_citations.py --citations ../output/epmc_citations.csv \
     --with-licence --corpus-from-moros --output ../output/pid_licences.csv
 
-# 1b. Europe PMC data links for the batch. The staged CSV already carries epmc_source / epmc_id,
-#     the preprint server and the data-links summary; only the link fetches and the merge remain.
+# 1b. Data links for the batch. The staged CSV already carries epmc_source / epmc_id, the preprint
+#     server and the data-links summary; only the link fetches and the merge remain. Europe PMC for
+#     every record; EBI Search for the batch's positives (schema v1.5.0), which needs the events.
 python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
 python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
+python3 fetch_ebisearch_domains.py --max-age-days 30        # EBI Search: re-dumps only stale accepted domains
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv   # the batch's positives
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv --record-failures
+python3 fetch_ebisearch_xrefs.py detail
 python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
     --annotations ../output/incoming_new_annotations.jsonl --datalinks ../output/incoming_new_datalinks.jsonl \
-    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv
+    --classification-events ../output/incoming_new_classification_events.csv --shards 1 \
+    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv \
+    --out-identifiers ../output/incoming_new_pid_identifiers.csv
 #     (/datalinks down? add --datalinks-scope none; the next data-links refresh completes them)
 
 # 2. Documents, through the same schema.build_document() every record was built with.
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
-    --data-links ../output/incoming_new_pid_data_links.csv --report-only
+    --data-links ../output/incoming_new_pid_data_links.csv \
+    --identifiers ../output/incoming_new_pid_identifiers.csv --report-only
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
-    --data-links ../output/incoming_new_pid_data_links.csv
+    --data-links ../output/incoming_new_pid_data_links.csv \
+    --identifiers ../output/incoming_new_pid_identifiers.csv
 #    -> ../../mongo_landscape_export/output/incoming_new_documents.jsonl + .report.json
 
 # 3. Load. Pre-flight splits inserts from updates; for a new batch expect "all new".
@@ -95,11 +106,15 @@ only. A licence key EPMC cannot answer is written as `""` (looked up, none discl
 ```bash
 python3 load_fields.py --mode preprints  --input ../output/pid_preprints.csv   ...      # same shape
 python3 load_fields.py --mode data_links --input ../output/pid_data_links.csv  ...      # same shape
+python3 load_fields.py --mode identifiers --input ../output/pid_identifiers.csv ...     # same shape
 ```
 
 `preprints` writes `identifiers.epmc_id`, `source.epmc_source` and, only when Europe PMC gave one,
 `publication_metadata.preprint_server`. `data_links` writes the `data_links.*` leaves only; it
-cannot reach `identifiers.*`. Both files come from `build_data_links.py` (the `data-links` skill).
+cannot reach `identifiers.*`. `identifiers` writes `identifiers.dome_registry` (the DOME Registry
+entry, or `""` for a positive looked up with none); its allowlist is the five reserved identifier
+leaves and `schema_version`, so it cannot reach `data_links.*`, the Europe PMC identity or any
+verdict. All three files come from `build_data_links.py` (the `data-links` skill).
 `load_fields.py --mode data_links` and `load_documents.py` refuse, before connecting, any input
 whose link ids or URLs fail `link_identifiers.malformed_links()` ("refusing to load ... malformed
 data link"). That means the staging file is stale or was edited: rebuild it with
@@ -130,6 +145,17 @@ python3 migrate_v1_4_0.py --reverse --confirm   # only before any preprints / da
 
 Run only after `check_alignment.py` shows v1.4.0 published. Rollback is a constant inverse, not a
 snapshot, and `--reverse` refuses once real data has landed.
+
+```bash
+python3 migrate_v1_5_0.py            # 1.4.0 -> 1.5.0: the version stamp only
+python3 migrate_v1_5_0.py --confirm
+python3 migrate_v1_5_0.py --reverse --confirm   # only before any v1.5.0 data_links / identifiers load
+```
+
+v1.5.0 adds keys inside the `data_links` arrays and fills `identifiers.dome_registry`; both arrive
+through `load_fields.py`, so migrate first. `verify_corpus.py` fails on a document carrying v1.5.0
+link keys under an older version, and `--reverse` refuses once EBI Search links or a DOME Registry
+id have landed.
 
 ## After any confirmed write: the manual checklist
 

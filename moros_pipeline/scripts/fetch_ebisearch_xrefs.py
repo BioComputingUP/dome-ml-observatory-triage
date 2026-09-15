@@ -1,7 +1,7 @@
 """Fetches EBI Search's cross-references for corpus papers: the entries in EBI's databases that cite
 a paper -- a GEO series, an ENA project, a PDBe entry, a bio.tools tool, a DOME Registry review.
 That is the database side of a paper's data links, which text mining the paper itself cannot see.
-Evaluation stage: raw staging files only; nothing here touches the schema or moros.
+Raw staging files only; `build_data_links.py` merges them through `ebisearch_links.py`.
 
 EBI Search keys its `europepmc` entries by PMID alone (a PMC or PPR id answers with no domains), so
 both passes run over PMIDs:
@@ -27,16 +27,28 @@ Measured 2026-09-14:
   recorded, so a capped record says so.
 - Asking for a field a domain lacks returns an empty list, not an error.
 
-Domains dumped whole by `fetch_ebisearch_domains.py` are skipped by `detail` (the dump already holds
-every entry with its publication identifiers); `--include-dumped` asks them anyway, to cross-check.
+`discover` covers positives: the input's `classification` column, or for a staged batch (which has
+none) `--classification-events`. `detail` asks the accepted domains too large to dump
+(`ebisearch_resources.XREF_DOMAINS`); `--domain` names others and `--all-domains` asks every domain
+discovery listed (the evaluation). Domains dumped whole by `fetch_ebisearch_domains.py` are skipped
+(the dump already holds every entry with its publication identifiers); `--include-dumped` asks them
+anyway, to cross-check.
+
+A PMID EBI Search errors on every time (18575676, 2026-09-14) would withhold its paper's data links
+forever, since the merge waits for discovery. `discover --record-failures` writes a `failed` record
+for a PMID that still fails after the session's retries; the merge counts it as answered with no
+cross-references, and `--max-age-days` asks it again later.
 
 Records are raw and append-only. The latest line for a PMID (discover) or a domain and PMID
 (detail) wins, and an incomplete detail record is asked again on the next run.
 
     python3 fetch_ebisearch_xrefs.py discover --limit 3000        # sample: rate, errors, domains
     python3 fetch_ebisearch_xrefs.py discover --max-workers 256   # every positive PMID
+    python3 fetch_ebisearch_xrefs.py discover --record-failures   # a re-run: record what still fails
     python3 fetch_ebisearch_xrefs.py detail --limit 3000
     python3 fetch_ebisearch_xrefs.py detail
+    python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+        --classification-events ../output/incoming_new_classification_events.csv   # a batch
 """
 
 from __future__ import annotations
@@ -55,6 +67,8 @@ from typing import Callable, Iterable
 
 from tqdm import tqdm
 
+from classification_events import latest_verdicts
+from ebisearch_resources import XREF_DOMAINS
 from fetch_annotations import load_already_fetched
 from fetch_citations import _session
 
@@ -79,19 +93,29 @@ DEFAULT_DISCOVERY_WORKERS = 128
 DEFAULT_DETAIL_WORKERS = 64
 
 
-def load_targets(input_path: Path, classification: str | None) -> list[str]:
-    """PMIDs of the rows with `classification` (every row when None, or when the file has no
-    classification column), each once, in file order."""
+def load_targets(input_path: Path, classification: str | None,
+                 verdicts: dict[str, str] | None = None) -> list[str]:
+    """PMIDs of the rows with `classification` (every row when None), each once, in file order.
+    A row's verdict is its `classification` column, or `verdicts[pid]` when a batch's event log is
+    given (a staged CSV carries no column). Asking for a classification the input cannot supply
+    stops, rather than silently taking every row."""
     seen: set[str] = set()
     pmids: list[str] = []
     n = 0
     with input_path.open(newline="", encoding="utf-8", errors="replace") as f:
         reader = csv.DictReader(f)
-        filtered = classification is not None and "classification" in (reader.fieldnames or [])
+        if (classification is not None and verdicts is None
+                and "classification" not in (reader.fieldnames or [])):
+            raise SystemExit(
+                f"fetch_ebisearch_xrefs: {input_path.name} has no classification column -- pass "
+                f"--classification-events <the batch's events CSV>, or --classification all")
         for row in reader:
             n += 1
-            if filtered and (row.get("classification") or "").strip() != classification:
-                continue
+            if classification is not None:
+                verdict = (verdicts.get((row.get("pid") or "").strip()) if verdicts is not None
+                           else (row.get("classification") or "").strip())
+                if verdict != classification:
+                    continue
             pmid = (row.get("pmid") or "").strip()
             if pmid.isdigit() and pmid not in seen:
                 seen.add(pmid)
@@ -107,6 +131,17 @@ def fetch_discovery(session, pmid: str, fetched_at: str) -> dict:
     resp.raise_for_status()
     return {"source": SOURCE, "id": pmid, "fetched_at": fetched_at,
             "http_status": resp.status_code, "domains": (resp.json() or {}).get("domains") or []}
+
+
+def discover_or_fail(session, pmid: str, fetched_at: str) -> dict:
+    """Discovery for one PMID, or a `failed` record when it still fails after the session's own
+    retries. Written only under `--record-failures`: a transient failure must be asked again."""
+    try:
+        return fetch_discovery(session, pmid, fetched_at)
+    except Exception as exc:  # noqa: BLE001 -- recorded, by request, instead of raised
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        return {"source": SOURCE, "id": pmid, "fetched_at": fetched_at, "http_status": status,
+                "failed": True, "error": repr(exc)[:200], "domains": []}
 
 
 def _read_jsonl(path: Path) -> Iterable[dict]:
@@ -158,6 +193,14 @@ def detail_pairs(discovery: dict[str, dict], skip_domains: set[str],
             if int(d.get("referenceEntryCount") or 0) > 0:
                 pairs.append((domain, pmid))
     return sorted(pairs)
+
+
+def detail_domains(only_domains: list[str] | None, all_domains: bool) -> set[str] | None:
+    """The domains `detail` asks: those named, else the accepted domains too large to dump, else
+    (with `--all-domains`, for evaluation) every domain discovery listed."""
+    if only_domains:
+        return set(only_domains)
+    return None if all_domains else set(XREF_DOMAINS)
 
 
 def batches(pairs: Iterable[tuple[str, str]],
@@ -274,8 +317,9 @@ def _print_rate(name: str, stats: dict) -> None:
 
 
 def run_discover(input_path: Path, output_path: Path, classification: str | None,
-                 max_workers: int, limit: int | None, max_age_days: int | None) -> None:
-    pmids = load_targets(input_path, classification)
+                 max_workers: int, limit: int | None, max_age_days: int | None,
+                 verdicts: dict[str, str] | None = None, record_failures: bool = False) -> None:
+    pmids = load_targets(input_path, classification, verdicts)
     already = load_already_fetched(output_path, max_age_days)
     remaining = [p for p in pmids if (SOURCE, p) not in already]
     print(f"fetch_ebisearch_xrefs discover: {len(already):,} already fetched | "
@@ -289,33 +333,36 @@ def run_discover(input_path: Path, output_path: Path, classification: str | None
     session = _session(max_workers)
     papers: Counter = Counter()
     entries: Counter = Counter()
-    cited = 0
+    cited = failed = 0
 
     def tally(rec: dict) -> None:
-        nonlocal cited
+        nonlocal cited, failed
+        failed += bool(rec.get("failed"))
         hits = [d for d in rec["domains"] if int(d.get("referenceEntryCount") or 0) > 0]
         cited += bool(hits)
         for d in hits:
             papers[d["id"]] += 1
             entries[d["id"]] += int(d["referenceEntryCount"])
 
-    stats = _run_pool(remaining, lambda p: ([fetch_discovery(session, p, fetched_at)], 1),
+    fetch = discover_or_fail if record_failures else fetch_discovery
+    stats = _run_pool(remaining, lambda p: ([fetch(session, p, fetched_at)], 1),
                       output_path, "discover", max_workers, tally)
     session.close()
     _print_rate("discover", stats)
-    print(f"  papers cited by any domain: {cited:,} of {stats['written']:,}")
+    print(f"  papers cited by any domain: {cited:,} of {stats['written']:,}"
+          + (f"; {failed:,} recorded as failed" if failed else ""))
     for domain, n in papers.most_common(40):
         print(f"    {domain:<34} {n:>9,} papers {entries[domain]:>11,} entries")
 
 
 def run_detail(discovery_path: Path, output_path: Path, dumps_dir: Path, include_dumped: bool,
                only_domains: list[str] | None, max_workers: int, max_refs: int,
-               limit: int | None, max_age_days: int | None) -> None:
+               limit: int | None, max_age_days: int | None, all_domains: bool = False) -> None:
     discovery = latest_discovery(discovery_path)
     dumped = set()
     if not include_dumped and dumps_dir.exists():
         dumped = {p.stem for p in dumps_dir.glob("*.jsonl")}
-    pairs = detail_pairs(discovery, dumped, set(only_domains) if only_domains else None)
+    pairs = detail_pairs(discovery, dumped, detail_domains(only_domains, all_domains))
     done = load_done_pairs(output_path, max_age_days)
     remaining = [pair for pair in pairs if pair not in done]
     print(f"fetch_ebisearch_xrefs detail: {len(discovery):,} discovery records -> {len(pairs):,} "
@@ -359,6 +406,11 @@ def main() -> None:
     discover.add_argument("--output", type=Path, default=DEFAULT_DISCOVERY)
     discover.add_argument("--classification", default="positive",
                           help="Rows to take from the input; 'all' for every row.")
+    discover.add_argument("--classification-events", type=Path, default=None,
+                          help="A staged batch's classification event log, for an input with no "
+                               "classification column.")
+    discover.add_argument("--record-failures", action="store_true",
+                          help="Write a `failed` record for a PMID that still fails after retries.")
     discover.add_argument("--max-workers", type=int, default=DEFAULT_DISCOVERY_WORKERS)
     discover.add_argument("--limit", type=int, default=None)
     discover.add_argument("--max-age-days", type=int, default=None)
@@ -371,6 +423,8 @@ def main() -> None:
                         help="Ask domains already dumped whole too (a cross-check).")
     detail.add_argument("--domain", action="append", default=None,
                         help="Only this domain (repeatable).")
+    detail.add_argument("--all-domains", action="store_true",
+                        help="Every domain discovery listed, not only the accepted ones.")
     detail.add_argument("--max-workers", type=int, default=DEFAULT_DETAIL_WORKERS)
     detail.add_argument("--max-refs", type=int, default=DEFAULT_MAX_REFS,
                         help="References kept per PMID and domain; above 100 pages with `start`.")
@@ -379,12 +433,15 @@ def main() -> None:
 
     args = parser.parse_args()
     if args.command == "discover":
+        verdicts = latest_verdicts(args.classification_events) if args.classification_events else None
         run_discover(args.input, args.output,
                      None if args.classification == "all" else args.classification,
-                     args.max_workers, args.limit, args.max_age_days)
+                     args.max_workers, args.limit, args.max_age_days, verdicts,
+                     args.record_failures)
     else:
         run_detail(args.discovery, args.output, args.dumps_dir, args.include_dumped, args.domain,
-                   args.max_workers, args.max_refs, args.limit, args.max_age_days)
+                   args.max_workers, args.max_refs, args.limit, args.max_age_days,
+                   args.all_domains)
 
 
 if __name__ == "__main__":

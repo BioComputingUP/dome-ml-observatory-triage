@@ -5,7 +5,7 @@ built (`mongo_landscape_export/scripts/schema.py::_identifiers`):
 
 | Field | Meant to hold | Candidate sources to evaluate |
 |---|---|---|
-| `identifiers.dome_registry` | the DOME Registry entry id for this paper, if one exists | DOME Registry API (registry.dome-ml.org), matched by pmid / doi |
+| `identifiers.dome_registry` | the DOME Registry entry id for this paper, if one exists | **Filled from schema v1.5.0** by `moros_pipeline/scripts/build_data_links.py`, from the registry's EBI Search domain matched by PMID or PMCID, positives only ([`docs/data_links_sources.md`](../docs/data_links_sources.md) §7) |
 | `identifiers.bioai_repo` | a code repository for the method (GitHub / GitLab / Bitbucket URL) | Europe PMC full-text XML URL mining (OA records only); Europe PMC **data links** (`/MED/{pmid}/datalinks`) for software categories; bio.tools (`biotoolsID`, publication links); Papers with Code / OpenAlex `has_repo` style signals |
 | `identifiers.huggingface` | a Hugging Face model or dataset id | Hugging Face Hub API (`/api/models?search=`, model-card `arxiv:` / DOI tags), matched by DOI or arXiv id |
 | `identifiers.kaggle` | a Kaggle dataset or competition slug | no public paper-to-Kaggle linkage API; text mining of full text for `kaggle.com/` URLs |
@@ -20,16 +20,17 @@ rows in the table above are no longer a fetch for this folder: `identifiers.zeno
 `github`, `software_heritage`), and any link that resolves through Europe PMC should use
 `/article/{epmc_source}/{epmc_id}`.
 
-Nothing here runs yet. `fetch_cross_links.py` is an argparse shell with the structure the real
+Nothing in this folder runs yet; `identifiers.dome_registry` is filled by the data-links build
+instead. `fetch_cross_links.py` is an argparse shell with the structure the real
 script should keep; fill it in per source, one source per subcommand, each resumable and
 streaming like `fetch_citations.py`.
 
 ## Rules for building it out
 
-- **Read-only until a write mode exists.** `moros_write.py::WRITE_MODES` has no `identifiers` mode.
-  Add one deliberately (`identifiers.dome_registry`, `bioai_repo`, `huggingface`, `kaggle`,
-  `zenodo` and `schema_version` only), with tests, before any load. The writer then structurally
-  cannot reach anything else.
+- **One write mode, already in place.** `moros_write.py::WRITE_MODES["identifiers"]` allows
+  `identifiers.dome_registry`, `bioai_repo`, `huggingface`, `kaggle`, `zenodo` and
+  `schema_version` only, and `load_fields.py --mode identifiers` maps a `pid, <field>` CSV onto
+  it. A new field needs its column in that mapper, with tests, and nothing wider.
 - **`null` vs `""` keeps its meaning**: `null` is "never looked up"; `""` is "looked up, nothing
   found". Write the empty string for a confirmed miss or every future pass re-fetches it.
 - **Key by `pmid -> doi -> pmcid`** like the citation and licence fetches, and record which key and

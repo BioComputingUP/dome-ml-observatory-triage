@@ -120,19 +120,29 @@ python3 join_citations.py --citations ../output/epmc_citations.csv \
 
 # 4b. Data links for the batch. The staged CSV already carries epmc_source / epmc_id and the
 #     data-links summary (build_incoming_documents.py read them off the core search), so no
-#     metadata pass is needed -- only the link fetches, then the merge.
+#     metadata pass is needed -- only the link fetches, then the merge. Europe PMC for every
+#     record; EBI Search for the batch's positives (schema v1.5.0), which needs the events.
 python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
 python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
+python3 fetch_ebisearch_domains.py --max-age-days 30        # EBI Search: re-dumps only stale accepted domains
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv   # the batch's positives
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv --record-failures
+python3 fetch_ebisearch_xrefs.py detail
 python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
     --annotations ../output/incoming_new_annotations.jsonl --datalinks ../output/incoming_new_datalinks.jsonl \
-    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv
+    --classification-events ../output/incoming_new_classification_events.csv --shards 1 \
+    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv \
+    --out-identifiers ../output/incoming_new_pid_identifiers.csv
 
 # 5. Staged CSV + classification events -> documents, through the same schema.build_document()
 #    the landscape and curated paths use.
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
-    --data-links ../output/incoming_new_pid_data_links.csv
+    --data-links ../output/incoming_new_pid_data_links.csv \
+    --identifiers ../output/incoming_new_pid_identifiers.csv
 
 # 6. Load, index, verify.
 python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
@@ -358,24 +368,32 @@ Measured on 2026-09-14:
   (clean in 1,809 of 1,883 dirty cases) but repeats the junk for DOIs (5,399 of 5,848), which is
   why DOIs go to doi.org instead.
 
-## EBI Search cross-references — evaluation, not loaded
+## EBI Search data links — positives, schema v1.5.0
 
-Roadmap item 1, step 1, while `/datalinks` answers HTTP 500: do EBI Search's cross-references (the
-entries in EBI's databases that cite a paper) add data links the annotations API does not? The
-fetches write raw staging only (`output/ebisearch_*`, gitignored); nothing is merged, added to the
-schema or loaded until the domains to keep are chosen.
+EBI Search indexes the entries in EMBL-EBI's databases, and in several it mirrors, that name a
+paper. Where the entry is an asset from the paper (a deposit, the paper's bio.tools record, its
+DOME Registry report, its BioStudies supplementary files), `build_data_links.py` merges it into the
+paper's `data_links` beside the Europe PMC routes, for positives only, and fills
+`identifiers.dome_registry`. [`docs/data_links_sources.md`](../docs/data_links_sources.md) lists
+the accepted and refused domains, the dedupe rules and the provenance fields; the accept list is
+`scripts/ebisearch_resources.py`. Evaluated and decided 2026-09-14.
 
 | Route | Endpoint | Batching | Targets | Measured 2026-09-14 |
 |---|---|---|---|---|
 | Discovery | `ebisearch/ws/rest/europepmc/entry/{pmid}/xref` | none | every positive PMID | 316,524 calls in 34 min at 256 workers (154/s), 49 connect timeouts |
 | Detail | `.../europepmc/entry/{pmid,...}/xref/{domain}?size=100` | 100 PMIDs per call | discovered pairs in domains not dumped | 965 calls in 266 s, 95,351 pairs, no failures |
-| Whole-domain dump | `ebisearch/ws/rest/{domain}?query=domain_source:{domain}` | 100 entries per page | the 63 citing domains of at most 100,000 entries | 924,858 entries in 9,282 calls |
+| Whole-domain dump | `ebisearch/ws/rest/{domain}?query=domain_source:{domain}` | 100 entries per page | the 29 accepted domains of at most 100,000 entries | 356,888 entries in 3,585 calls, 523 s (evaluation: 63 citing domains, 924,858 entries in 9,282 calls) |
 
 ```bash
 cd scripts
-python3 fetch_ebisearch_domains.py --list && python3 fetch_ebisearch_domains.py
+python3 fetch_ebisearch_domains.py --list          # the citing domains
+python3 fetch_ebisearch_domains.py                 # the accepted ones, dumped whole (--all-citing: every one)
 python3 fetch_ebisearch_xrefs.py discover --limit 3000 && python3 fetch_ebisearch_xrefs.py discover --max-workers 256
-python3 fetch_ebisearch_xrefs.py detail
+python3 fetch_ebisearch_xrefs.py discover --record-failures   # a re-run: record what still fails
+python3 fetch_ebisearch_xrefs.py detail            # accepted domains over the cap (--all-domains: every one)
+python3 build_data_links.py --report-only          # EBI Search counts, rejected domains, unmatched values
+python3 build_data_links.py                        # -> pid_data_links.csv, pid_identifiers.csv
+python3 compare_data_links.py --old ../output/pid_data_links.v140.csv --new ../output/pid_data_links.csv
 ```
 
 - **`size=100` is not optional.** Without it an xref answer carries one reference per entry

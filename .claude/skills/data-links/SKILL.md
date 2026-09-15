@@ -1,19 +1,22 @@
 ---
 name: data-links
 description: >
-  Fetch and load Europe PMC's data links and each record's Europe PMC identity / preprint server
-  into moros: the metadata pass (epmc_id, epmc_source, preprint_server, the data-links summary),
-  the annotations API and /datalinks link fetches, the merge, the v1.4.0 migration and the
-  `preprints` / `data_links` field loads. Trigger on "data links", "fetch the data links",
-  "backfill the preprint servers", "fill epmc_id", "refresh data links", "link papers to their
-  datasets", "roadmap item 1". Free (Europe PMC); writes only through moros-write.
+  Fetch and load each record's data links and Europe PMC identity / preprint server into moros:
+  the metadata pass (epmc_id, epmc_source, preprint_server, the data-links summary), the Europe
+  PMC annotations API and /datalinks fetches, the EBI Search fetches for positives (deposits,
+  bio.tools, the DOME Registry), the merge, the v1.4.0 and v1.5.0 migrations and the `preprints` /
+  `data_links` / `identifiers` field loads. Trigger on "data links", "fetch the data links", "EBI
+  Search links", "DOME Registry links", "backfill the preprint servers", "fill epmc_id", "refresh
+  data links", "link papers to their datasets", "roadmap item 1". Free; writes only through
+  moros-write.
 ---
 
 # data-links
 
 Host Python from `moros_pipeline/scripts/`, on the VPN, with `moros_pipeline/.env`. Read
-`moros_pipeline/README.md` ("Europe PMC data links and identity") for the routes and what was
-measured, and `docs/preprint.md` for the preprint rules. New records get all of this inside the
+`moros_pipeline/README.md` ("Europe PMC data links and identity", "EBI Search data links") for the
+routes and what was measured, `docs/data_links_sources.md` for every accepted and refused source,
+and `docs/preprint.md` for the preprint rules. New records get all of this inside the
 batch load (`moros-write` A); this skill is the retrospective pass and the periodic refresh.
 
 ## Throughput is the point
@@ -31,7 +34,7 @@ calls. Both have headroom; start there or higher.
 
 ## Preconditions
 
-1. `python3 ../../schema/check_alignment.py` says authored 1.4.0 = published v1.4.0. If the
+1. `python3 ../../schema/check_alignment.py` says authored 1.5.0 = published v1.5.0. If the
    release is not cut, stop: `schema-sync` first.
 2. `python3 verify_corpus.py` — note the count and the schema_version histogram.
 
@@ -51,13 +54,23 @@ python3 fetch_annotations.py --max-workers 128
 python3 fetch_datalinks.py --limit 3000              # if every call fails with 500: the endpoint is down; skip, see below
 python3 fetch_datalinks.py
 
+# 2b. EBI Search, positives only. The accept list is ebisearch_resources.py.
+python3 fetch_ebisearch_domains.py                   # accepted domains under the 100,000-entry cap, dumped whole
+python3 fetch_ebisearch_xrefs.py discover --limit 3000
+python3 fetch_ebisearch_xrefs.py discover --max-workers 256
+python3 fetch_ebisearch_xrefs.py discover --record-failures   # a re-run: record what still fails
+python3 fetch_ebisearch_xrefs.py detail              # accepted domains over the cap, 100 PMIDs a call
+
 # 3. Merge. Read the report: unmapped schemes and DOI prefixes go into datalinks_resources.py first.
 python3 build_data_links.py --report-only
-python3 build_data_links.py                          # -> ../output/pid_preprints.csv, pid_data_links.csv
+python3 build_data_links.py                          # -> ../output/pid_preprints.csv, pid_data_links.csv, pid_identifiers.csv
+python3 compare_data_links.py --old <the previous pid_data_links.csv> --new ../output/pid_data_links.csv
 
-# 4. Once per corpus: the shape migration (dry run, then confirm)
+# 4. Once per corpus: the migrations (dry run, then confirm), oldest first
 python3 migrate_v1_4_0.py
 python3 migrate_v1_4_0.py --confirm
+python3 migrate_v1_5_0.py
+python3 migrate_v1_5_0.py --confirm
 
 # 5. The loads, through moros-write section C
 python3 load_fields.py --mode preprints
@@ -66,6 +79,9 @@ python3 load_fields.py --mode preprints --confirm
 python3 load_fields.py --mode data_links
 python3 load_fields.py --mode data_links --limit 500 --confirm
 python3 load_fields.py --mode data_links --confirm
+python3 load_fields.py --mode identifiers
+python3 load_fields.py --mode identifiers --limit 500 --confirm
+python3 load_fields.py --mode identifiers --confirm
 python3 verify_corpus.py
 ```
 
@@ -83,7 +99,9 @@ record whose DOIs could not be checked. Both loaders refuse a malformed link bef
 and `verify_corpus.py` fails on one. Never hand-edit identifiers in a staging file; fix
 `link_identifiers.py` and rebuild.
 
-Refresh: rerun steps 1–3 and 5 with `--max-age-days 180` on the fetches (data citations accrue).
+Refresh: rerun steps 1–3 and 5 with `--max-age-days 180` on the Europe PMC fetches (data citations
+accrue) and `--max-age-days 30` on `fetch_ebisearch_domains.py`. A dump refresh re-dates every
+in-scope record it covers.
 
 ## Check before loading
 
@@ -91,12 +109,19 @@ Refresh: rerun steps 1–3 and 5 with `--max-age-days 180` on the fetches (data 
   DOI, Research Square for `10.21203`. When the API and the table disagree, the API wins.
 - `--limit 500 --confirm`, then read five documents back: a preprint has `epmc_source: PPR` and
   `epmc_id: PPR...`; a MED record has `epmc_id == pmid`; a PDB paper has a `pdb` resource.
+- The report's EBI Search line shows 0 withheld, and its rejected domains are only kinds
+  `docs/data_links_sources.md` §3 refuses. A new domain name there is a decision, not a fix.
+- `compare_data_links.py` shows only the documented changes: EBI Search additions, `E-GEOD` links
+  moving to GEO, dbGaP versions dropped, `PXD` links moving to their partner host.
+- Read back a DOME Registry paper (`identifiers.dome_registry` set, one `dome_registry` resource
+  with route `ebisearch_domain`) and a bio.tools paper.
 - Re-running a completed load changes zero documents.
 
 ## Report
 
 Calls/s and error rate per route; records identified / missed; preprints with a server; records
 resolved / unresolved / with resources; identifiers repaired and links dropped (by reason); records
-waiting on doi.org; the top resources; run ids and rollback paths; the
+waiting on doi.org; the top resources; EBI Search records in scope / with links / withheld and
+DOME Registry ids written; run ids and rollback paths; the
 `verify_corpus.py` notes. Then the post-load checklist from `moros-write` (restart
 `observatory-ws`: the `data_resource` facet is boot-loaded).

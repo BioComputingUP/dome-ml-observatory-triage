@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+import ebisearch_resources as er
 import fetch_ebisearch_xrefs as fx
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -88,9 +89,29 @@ def test_targets_are_pmids_of_the_classification_once_each(tmp_path):
         "e,PMC3,,,positive\n", encoding="utf-8")
     assert fx.load_targets(csv_path, "positive") == ["1"]
     assert fx.load_targets(csv_path, None) == ["1", "2"]
-    no_column = tmp_path / "sample.csv"
-    no_column.write_text("pmid\n5\n6\n", encoding="utf-8")
-    assert fx.load_targets(no_column, "positive") == ["5", "6"]
+    staged = tmp_path / "incoming_new.csv"
+    staged.write_text("pid,pmid\na,5\nb,6\nc,7\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="classification"):
+        fx.load_targets(staged, "positive")               # never silently every row
+    assert fx.load_targets(staged, None) == ["5", "6", "7"]
+    assert fx.load_targets(staged, "positive", {"a": "positive", "b": "negative"}) == ["5"]
+
+
+def test_a_pmid_that_still_fails_is_recorded_as_failed_only_when_asked():
+    class _Down:
+        def get(self, *args, **kwargs):
+            raise RuntimeError("HTTP 500 after retries")
+
+    rec = fx.discover_or_fail(_Down(), "18575676", "now")
+    assert (rec["source"], rec["id"], rec["failed"], rec["domains"]) == ("MED", "18575676", True, [])
+    with pytest.raises(RuntimeError):
+        fx.fetch_discovery(_Down(), "18575676", "now")
+
+
+def test_detail_asks_the_accepted_large_domains_unless_told_otherwise():
+    assert fx.detail_domains(None, False) == set(er.XREF_DOMAINS)
+    assert fx.detail_domains(None, True) is None
+    assert fx.detail_domains(["geo"], False) == {"geo"}
 
 
 def test_the_discovery_record_keeps_the_domains_verbatim():

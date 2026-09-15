@@ -410,3 +410,13 @@ def test_a_fetch_that_found_nothing_is_dated_with_zero_links():
 def test_data_links_json_must_be_an_object():
     with pytest.raises(ValueError, match="JSON object"):
         build_document(dict(BASE_ROW, data_links_json="[1, 2]"))
+
+
+def test_dome_registry_is_null_until_looked_up_and_empty_when_no_entry_names_the_paper():
+    assert build_document(BASE_ROW)["identifiers"]["dome_registry"] is None
+    found = dict(BASE_ROW, dome_registry="3mm086r5pw", dome_registry_checked="True")
+    assert build_document(found)["identifiers"]["dome_registry"] == "3mm086r5pw"
+    none = dict(BASE_ROW, dome_registry="", dome_registry_checked="True")
+    assert build_document(none)["identifiers"]["dome_registry"] == ""
+    never = dict(BASE_ROW, dome_registry="3mm086r5pw", dome_registry_checked="False")
+    assert build_document(never)["identifiers"]["dome_registry"] is None

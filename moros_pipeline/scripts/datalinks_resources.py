@@ -47,6 +47,9 @@ SUPPLEMENTARY = "Supplementary Material"
 CODE = "Code & Notebooks"
 MODELS = "Models"
 OTHER = "Other"
+# v1.5.0: resources found through EBI Search (ebisearch_resources.py), not Europe PMC.
+SOFTWARE_REGISTRIES = "Software Registries"
+TRANSPARENCY = "Transparency Reports"
 
 RESOURCES: dict[str, Resource] = {r.slug: r for r in [
     Resource("ena", "European Nucleotide Archive", NUCLEOTIDE),
@@ -126,6 +129,20 @@ RESOURCES: dict[str, Resource] = {r.slug: r for r in [
     Resource("github", "GitHub", CODE),
     Resource("software_heritage", "Software Heritage", CODE),
     Resource("doi", "Data DOI", CITATIONS),
+    # v1.5.0: found through EBI Search's cross-references (ebisearch_resources.py).
+    Resource("biotools", "bio.tools", SOFTWARE_REGISTRIES),
+    Resource("dome_registry", "DOME Registry", TRANSPARENCY),
+    Resource("iprox", "iProX", PROTEOMICS),
+    Resource("jpost", "jPOST", PROTEOMICS),
+    Resource("panorama", "Panorama Public", PROTEOMICS),
+    Resource("massive", "MassIVE", PROTEOMICS),
+    Resource("node", "NODE", GENOMES),
+    Resource("eva", "European Variation Archive", VARIATION),
+    Resource("dgva", "DGVa", VARIATION),
+    Resource("expression_atlas", "Single Cell Expression Atlas", EXPRESSION),
+    Resource("fairdomhub", "FAIRDOMHub", MODELS),
+    Resource("physiome", "Physiome Model Repository", MODELS),
+    Resource("cellcollective", "Cell Collective", MODELS),
 ]}
 
 # Every spelling seen so far for a scheme / accession type / publisher, normalised by `_norm`.
@@ -169,6 +186,11 @@ ALIASES: dict[str, str] = {
     "chemblcompound": "chembl", "chembltarget": "chembl", "insdcgca": "ena_assembly",
     "egastudy": "ega", "egadataset": "ega", "euclinicaltrials": "eudract",
     "ebimetagenomics": "mgnify", "biomodelsdb": "biomodels",
+    # v1.5.0: the repository names of the resources EBI Search adds.
+    "biotools": "biotools", "domeregistry": "dome_registry", "iprox": "iprox", "jpost": "jpost",
+    "panoramapublic": "panorama", "massive": "massive", "europeanvariationarchive": "eva",
+    "dgva": "dgva", "fairdomhub": "fairdomhub", "physiomemodelrepository": "physiome",
+    "cellcollective": "cellcollective",
 }
 
 # DOI prefix -> resource, for a text-mined or cited DOI. Only data / code repositories belong

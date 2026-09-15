@@ -10,7 +10,14 @@ Inputs, all keyed by the record's Europe PMC identity:
 - `epmc_textmined_bulk.jsonl` (`import_textmined_bulk.py`, optional): the FTP dump, as a
   cross-check or a fallback for the annotations API;
 - and one link that needs no fetch: a record with supplementary files in PMC has a BioStudies
-  entry `S-EPMC<digits>` (derived from `has_suppl` and the pmcid; verified live 2026-09-14).
+  entry `S-EPMC<digits>` (derived from `has_suppl` and the pmcid; verified live 2026-09-14);
+- and, for positives (schema v1.5.0), EBI Search's database-side links: `ebisearch_xref_*.jsonl`
+  (`fetch_ebisearch_xrefs.py`) and `ebisearch_domains/` (`fetch_ebisearch_domains.py`), keyed on OUR
+  pmid / pmcid / doi and restricted to the accept list in `ebisearch_resources.py`
+  (`ebisearch_links.py` reads them). Every link, from every route, is filed under its home resource
+  before the dedupe (`ebisearch_resources.canonicalise_link`: an ArrayExpress `E-GEOD-n` is GEO
+  `GSEn`, a versioned dbGaP study is the study, a PXD goes to the partner hosting it), so two routes
+  naming one accession make one link, and the resource's `routes` lists both.
 
 Outputs:
 
@@ -22,6 +29,9 @@ Outputs:
   only once every route the record was *targeted* for has answered and every DOI it links to has
   been confirmed at doi.org, so `data_links.fetched_at` stays null (never fetched) rather than
   claiming completeness for a half-fetched record.
+- `pid_identifiers.csv` -> `load_fields.py --mode identifiers` (`pid, dome_registry`), written when
+  the EBI Search route runs: the DOME Registry entry naming the paper, `""` for an in-scope paper
+  with a PMID or PMCID and none, no row for a paper that cannot be looked up.
 
 **This is the only place a link identifier is chosen** (`link_identifiers.py` defines clean).
 Europe PMC's text-mined strings carry the punctuation, quotes and words around them; stored
@@ -46,7 +56,9 @@ therefore builds on a machine with a few GB free, at the cost of reading each in
 
     python3 build_data_links.py --report-only            # coverage, resource mix, repairs, drops
     python3 build_data_links.py                          # -> ../output/pid_preprints.csv, pid_data_links.csv
-    python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv
+    python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
+        --classification-events ../output/incoming_new_classification_events.csv --shards 1 \
+        --out-identifiers ../output/incoming_new_pid_identifiers.csv
 """
 
 from __future__ import annotations
@@ -65,7 +77,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
+from classification_events import latest_verdicts
 from datalinks_resources import describe, doi_prefix, is_reference_section, scheme_from_uri, slug
+from ebisearch_links import EbiRoute, paper_keys
+from ebisearch_resources import browse_url, canonicalise_link, resolve_pxd_hosts
 from fetch_citations import _session
 from fetch_datalinks import wanted as datalinks_targeted
 from fetch_epmc_metadata import metadata_key
@@ -92,6 +107,10 @@ DEFAULT_BULK = OUTPUT_DIR / "epmc_textmined_bulk.jsonl"
 DEFAULT_OUT_PREPRINTS = OUTPUT_DIR / "pid_preprints.csv"
 DEFAULT_OUT_DATA_LINKS = OUTPUT_DIR / "pid_data_links.csv"
 DEFAULT_HANDLES = OUTPUT_DIR / "doi_handles.csv"
+DEFAULT_EBISEARCH_DISCOVERY = OUTPUT_DIR / "ebisearch_xref_discovery.jsonl"
+DEFAULT_EBISEARCH_DETAIL = OUTPUT_DIR / "ebisearch_xref_detail.jsonl"
+DEFAULT_EBISEARCH_DOMAINS = OUTPUT_DIR / "ebisearch_domains"
+DEFAULT_OUT_IDENTIFIERS = OUTPUT_DIR / "pid_identifiers.csv"
 
 MAX_LINKS_PER_RESOURCE = 50
 MAX_LINKS_PER_DOCUMENT = 300
@@ -101,11 +120,19 @@ SOURCE_ANNOTATIONS = "epmc_annotations"
 SOURCE_DATALINKS = "epmc_datalinks"
 SOURCE_BULK = "epmc_textmined_bulk"
 SOURCE_DERIVED = "derived"
+SOURCE_EBISEARCH = "ebisearch"        # EBI Search's database-side links (v1.5.0, positives)
 
 PREPRINT_COLUMNS = ["pid", "epmc_source", "epmc_id", "preprint_server"]
 DATA_LINKS_COLUMNS = ["pid", "has_data", "data_links_tags", "accession_types",
                       "db_cross_references", "data_links_json"]
-LINK_KEYS = ("resource", "id", "url", "title", "obtained_by", "relationship", "section", "frequency")
+IDENTIFIER_COLUMNS = ["pid", "dome_registry"]
+# v1.5.0 added matched_by / source_domain: which of our identifiers an EBI Search entry named, and
+# the domain that asserted the link (both null for the Europe PMC routes).
+LINK_KEYS = ("resource", "id", "url", "title", "obtained_by", "relationship", "section", "frequency",
+             "matched_by", "source_domain")
+# v1.5.0 added routes (every route that found a link to the resource) and browse_url.
+RESOURCE_KEYS = ("resource", "label", "category", "id_scheme", "publisher", "obtained_by", "count",
+                 "routes", "browse_url")
 
 # doi.org's handle API: responseCode 1 = registered, 100 = not registered (measured 2026-09-14:
 # 464 lookups/s at 64 workers). Values-not-found (200) still means the handle exists.
@@ -131,6 +158,10 @@ class Stats:
         self.dropped: Counter = Counter()            # (reason, resource) -> links not stored
         self.from_resolver: int = 0
         self.doi_pending: int = 0
+        self.ebisearch_resources: Counter = Counter()     # documents where EBI Search added a link to each
+        self.ebisearch_confirmed: Counter = Counter()     # documents where EBI Search found a link already held
+        self.ebisearch_rejected: Counter = Counter()      # domains EBI Search listed that are not accepted
+        self.ebisearch_unclassified: Counter = Counter()  # (domain, field) values of no known shape
 
 
 # ---------------------------------------------------------------------------
@@ -465,21 +496,32 @@ def verify_doi_handles(candidates: set[str], cache_path: Path, workers: int, max
 # ---------------------------------------------------------------------------
 
 
-def assemble(links: list[dict], sources: list[str], fetched_at: str) -> dict:
+def assemble(links: list[dict], sources: list[str], fetched_at: str,
+             browse_urls: dict[str, str] | None = None) -> dict:
     """Dedupe on (resource, id), summarise per resource, cap the detail. Deterministic: resources
-    by descending count then slug, links in encounter order within a resource."""
+    by descending count then slug, links in encounter order within a resource.
+
+    The first route to find a link keeps it (`obtained_by`); a later route fills what the first
+    lacked and adds itself to the resource's `routes`, so a card can say both found it. A source
+    that counted more entries than it returned (`_unfetched`: an EBI Search entry list past its page
+    cap) raises `count` and `link_count` to the true totals and marks the block truncated."""
     merged: dict[tuple[str, str], dict] = {}
     for link in links:
         if link is None:
             continue
         key = (link["resource"], link["id"].lower())
+        routes = set(link.get("_routes") or ())
+        if link.get("obtained_by"):
+            routes.add(link["obtained_by"])
         if key in merged:
             kept = merged[key]
-            for field in ("url", "title"):           # a later route may know more
-                if not kept.get(field) and link.get(field):
+            for field in ("url", "title", "section", "frequency", "matched_by", "source_domain"):
+                if not kept.get(field) and link.get(field):     # a later route may know more
                     kept[field] = link[field]
+            kept["_routes"] |= routes
+            kept["_unfetched"] = max(kept.get("_unfetched", 0), link.get("_unfetched", 0))
             continue
-        merged[key] = dict(link)
+        merged[key] = dict(link, _routes=routes)
 
     by_resource: dict[str, list[dict]] = defaultdict(list)
     for link in merged.values():
@@ -487,9 +529,12 @@ def assemble(links: list[dict], sources: list[str], fetched_at: str) -> dict:
 
     ordered = sorted(by_resource.items(), key=lambda item: (-len(item[1]), item[0]))
     resources, detail, truncated = [], [], False
+    unfetched_total = 0
     for resource_slug, group in ordered:
         first = group[0]
         info = describe(resource_slug, first.get("_id_scheme") or first.get("_publisher"))
+        unfetched = sum(link.get("_unfetched", 0) for link in group)
+        unfetched_total += unfetched
         resources.append({
             "resource": resource_slug,
             "label": info.label,
@@ -498,10 +543,12 @@ def assemble(links: list[dict], sources: list[str], fetched_at: str) -> dict:
             "id_scheme": first.get("_id_scheme"),
             "publisher": first.get("_publisher"),
             "obtained_by": first.get("obtained_by"),
-            "count": len(group),
+            "count": len(group) + unfetched,
+            "routes": sorted(set().union(*(link["_routes"] for link in group))),
+            "browse_url": (browse_urls or {}).get(resource_slug),
         })
         kept = group[:MAX_LINKS_PER_RESOURCE]
-        truncated = truncated or len(kept) < len(group)
+        truncated = truncated or len(kept) < len(group) or bool(unfetched)
         for link in kept:
             if len(detail) >= MAX_LINKS_PER_DOCUMENT:
                 truncated = True
@@ -511,7 +558,7 @@ def assemble(links: list[dict], sources: list[str], fetched_at: str) -> dict:
     return {
         "fetched_at": fetched_at,
         "sources": sources,
-        "link_count": len(merged),
+        "link_count": len(merged) + unfetched_total,
         "truncated": truncated,
         "resources": resources,
         "links": detail,
@@ -611,7 +658,8 @@ def _metadata_for(row: dict, metadata: dict[tuple[str, str], dict]) -> dict | No
 
 def _process_row(row: dict, meta: dict | None, annotations: dict, datalinks: dict, bulk: dict,
                  datalinks_scope: str, stats: Stats, preprint_writer, data_writer,
-                 handles: dict[str, bool]) -> None:
+                 handles: dict[str, bool], ebi: EbiRoute | None = None,
+                 identifier_writer=None) -> None:
     pid = row["pid"].strip()
     stats.counts["documents"] += 1
     if meta is None:
@@ -648,7 +696,21 @@ def _process_row(row: dict, meta: dict | None, annotations: dict, datalinks: dic
     ann = annotations.get(identity) if identity else None
     dl = datalinks.get(identity) if identity else None
     bulk_rec = bulk.get(identity) if identity else None
-    routes_answered = (not targeted_ann or ann is not None) and (not targeted_dl or dl is not None)
+
+    # EBI Search (v1.5.0), keyed on OUR identifiers from the keys row. A record in scope whose EBI
+    # Search route has not fully answered is withheld like any other half-fetched record.
+    covered = ebi is not None and ebi.covers(pid)
+    ebi_links: list[dict] = []
+    ebi_answered, ebi_times = True, []
+    if covered:
+        stats.counts["ebisearch_covered"] += 1
+        ebi_links, ebi_answered, ebi_times = ebi.links_for(row.get("pmid"), row.get("pmcid"),
+                                                           row.get("doi"), stats)
+        if not ebi_answered:
+            stats.counts["unresolved_ebisearch"] += 1
+
+    routes_answered = ((not targeted_ann or ann is not None)
+                       and (not targeted_dl or dl is not None) and ebi_answered)
     if not routes_answered:
         stats.counts["unresolved"] += 1
     else:
@@ -678,10 +740,27 @@ def _process_row(row: dict, meta: dict | None, annotations: dict, datalinks: dic
         else:
             if not sources:
                 sources = [SOURCE_SEARCH]
+            if covered:
+                sources.append(SOURCE_EBISEARCH)
+                timestamps += ebi_times
+                links += ebi_links
+            # Every route's links filed under their home resource, so the dedupe sees one accession.
+            links = resolve_pxd_hosts([canonicalise_link(link) if isinstance(link, dict) else link
+                                       for link in links])
+            if covered:
+                _count_ebisearch(links, stats)
+            browse: dict[str, str] = {}
+            for resource_slug in {link["resource"] for link in links if isinstance(link, dict)}:
+                url = browse_url(resource_slug, row.get("pmid"))
+                if url:
+                    browse[resource_slug] = url
             dated = [t for t in timestamps if t]
-            detail = assemble(links, sources, max(dated) if dated else "")
+            detail = assemble(links, sources, max(dated) if dated else "", browse)
             assert_clean(pid, detail)
             out["data_links_json"] = json.dumps(detail, ensure_ascii=False)
+            if covered:
+                # Written with the links, never for a withheld record: both files say the same.
+                _write_identifier(identifier_writer, pid, row, ebi_links, stats)
             stats.counts["resolved"] += 1
             if detail["resources"]:
                 stats.counts["with_resources"] += 1
@@ -693,32 +772,122 @@ def _process_row(row: dict, meta: dict | None, annotations: dict, datalinks: dic
         data_writer.writerow(out)
 
 
+def _count_ebisearch(links: list, stats: Stats) -> None:
+    """Per resource, the documents where EBI Search added a link no Europe PMC route had, and those
+    where both found the same one. `links` are canonicalised and not yet deduplicated; only EBI
+    Search links carry a `source_domain`."""
+    def key(link: dict) -> tuple[str, str]:
+        return link["resource"], str(link["id"]).lower()
+    candidates = [link for link in links if isinstance(link, dict)]
+    held = {key(link) for link in candidates if not link.get("source_domain")}
+    ebi = [link for link in candidates if link.get("source_domain")]
+    if not ebi:
+        return
+    stats.counts["ebisearch_with_links"] += 1
+    gained = {link["resource"] for link in ebi if key(link) not in held}
+    if gained:
+        stats.counts["ebisearch_gaining"] += 1
+    stats.ebisearch_resources.update(gained)
+    stats.ebisearch_confirmed.update({link["resource"] for link in ebi if key(link) in held})
+
+
+def _write_identifier(writer, pid: str, row: dict, ebi_links: list[dict], stats: Stats) -> None:
+    """`identifiers.dome_registry` for one in-scope record: the DOME Registry entry naming the paper
+    (the first in sort order when several do; the card keeps them all), `""` when the paper could be
+    looked up -- a PMID or PMCID, the only keys the registry's EBI Search entries carry -- and none
+    names it, and no row for a paper that cannot be looked up at all. Counted without a writer too,
+    so `--report-only` reports what a build would write."""
+    ids = sorted({link["id"] for link in ebi_links if link["resource"] == "dome_registry"})
+    if ids:
+        value = ids[0]
+        stats.counts["dome_registry_ids"] += 1
+    elif paper_keys(row.get("pmid"), row.get("pmcid"), None):
+        value = ""
+    else:
+        return
+    if writer is not None:
+        writer.writerow({"pid": pid, "dome_registry": value})
+    stats.counts["identifiers_written"] += 1
+
+
 def _row_carries_metadata(row: dict) -> bool:
     return bool((row.get("epmc_id") or "").strip()) and "has_data" in row
+
+
+def in_scope_pids(keys_path: Path, scope: str, classification_events: Path | None) -> set[str] | None:
+    """The pids the EBI Search route covers: every row for `all`; for `positives`, the rows whose
+    verdict is positive -- the keys file's `classification` column, or a staged batch's event log
+    when one is given. A scope that cannot be decided stops the build rather than silently covering
+    nothing or everything."""
+    if scope == "all":
+        return None
+    verdicts = latest_verdicts(classification_events) if classification_events else None
+    positives: set[str] = set()
+    with keys_path.open(newline="", encoding="utf-8", errors="replace") as f:
+        reader = csv.DictReader(f)
+        if verdicts is None and "classification" not in (reader.fieldnames or []):
+            raise SystemExit(
+                f"build_data_links: --ebisearch-scope positives needs a classification, and "
+                f"{keys_path.name} has no classification column -- pass --classification-events "
+                f"<the batch's events CSV>, or --ebisearch-scope none")
+        for row in reader:
+            pid = (row.get("pid") or "").strip()
+            verdict = (verdicts.get(pid) if verdicts is not None
+                       else (row.get("classification") or "").strip())
+            if pid and verdict == "positive":
+                positives.add(pid)
+    return positives
 
 
 def build(keys_path: Path, metadata_path: Path, annotations_path: Path, datalinks_path: Path,
           bulk_path: Path, datalinks_scope: str, report_only: bool,
           out_preprints: Path, out_data_links: Path, shards: int = 1, *,
           handles_path: Path = DEFAULT_HANDLES, handle_workers: int = DEFAULT_HANDLE_WORKERS,
-          handle_max_age_days: int = DEFAULT_HANDLE_MAX_AGE_DAYS, session=None) -> Stats:
+          handle_max_age_days: int = DEFAULT_HANDLE_MAX_AGE_DAYS, session=None,
+          ebisearch_scope: str = "none",
+          ebisearch_discovery: Path = DEFAULT_EBISEARCH_DISCOVERY,
+          ebisearch_detail: Path = DEFAULT_EBISEARCH_DETAIL,
+          ebisearch_domains_dir: Path = DEFAULT_EBISEARCH_DOMAINS,
+          classification_events: Path | None = None,
+          out_identifiers: Path = DEFAULT_OUT_IDENTIFIERS,
+          require_all_dumps: bool = True) -> Stats:
+    """`ebisearch_scope` defaults to "none" for a library caller; the CLI defaults to "positives"."""
     stats = Stats()
+    ebi = None
+    if ebisearch_scope != "none":
+        in_scope = in_scope_pids(keys_path, ebisearch_scope, classification_events)
+        ebi = EbiRoute.load(keys_path, in_scope, ebisearch_discovery, ebisearch_detail,
+                            ebisearch_domains_dir, require_all_dumps=require_all_dumps)
+        stats.ebisearch_rejected = ebi.rejected
+        stats.ebisearch_unclassified = ebi.dumps.unclassified
+        covered = "every record" if in_scope is None else f"{len(in_scope):,} records"
+        print(f"build_data_links: EBI Search route ({ebisearch_scope}): {covered} in scope, "
+              f"{len(ebi.discovery):,} discovery / {len(ebi.detail):,} detail records, "
+              f"{len(ebi.dumps.fetched_at)} dumped domains", flush=True)
     candidates = collect_doi_candidates((annotations_path, bulk_path), datalinks_path)
     handles = verify_doi_handles(candidates, handles_path, handle_workers, handle_max_age_days,
                                  session)
 
-    preprint_sink = data_sink = None
-    preprint_writer = data_writer = None
+    sinks: list = []
+    preprint_writer = data_writer = identifier_writer = None
     tmp_p = out_preprints.with_suffix(out_preprints.suffix + ".tmp")
     tmp_d = out_data_links.with_suffix(out_data_links.suffix + ".tmp")
+    tmp_i = out_identifiers.with_suffix(out_identifiers.suffix + ".tmp")
     if not report_only:
         out_preprints.parent.mkdir(parents=True, exist_ok=True)
         preprint_sink = tmp_p.open("w", newline="", encoding="utf-8")
         data_sink = tmp_d.open("w", newline="", encoding="utf-8")
+        sinks += [preprint_sink, data_sink]
         preprint_writer = csv.DictWriter(preprint_sink, fieldnames=PREPRINT_COLUMNS)
         data_writer = csv.DictWriter(data_sink, fieldnames=DATA_LINKS_COLUMNS)
         preprint_writer.writeheader()
         data_writer.writeheader()
+        if ebi is not None:
+            out_identifiers.parent.mkdir(parents=True, exist_ok=True)
+            identifier_sink = tmp_i.open("w", newline="", encoding="utf-8")
+            sinks.append(identifier_sink)
+            identifier_writer = csv.DictWriter(identifier_sink, fieldnames=IDENTIFIER_COLUMNS)
+            identifier_writer.writeheader()
 
     try:
         for shard in range(shards):
@@ -755,24 +924,25 @@ def build(keys_path: Path, metadata_path: Path, annotations_path: Path, datalink
             bulk = load_jsonl(bulk_path, identities)
             for row, meta in zip(rows, metas):
                 _process_row(row, meta, annotations, datalinks, bulk, datalinks_scope, stats,
-                             preprint_writer, data_writer, handles)
+                             preprint_writer, data_writer, handles, ebi, identifier_writer)
             print(f"build_data_links: shard {shard + 1}/{shards}: {len(rows):,} documents, "
                   f"{len(metadata):,} metadata rows, {len(annotations):,} annotation / "
                   f"{len(datalinks):,} datalinks / {len(bulk):,} bulk records", flush=True)
             del rows, metas, metadata, annotations, datalinks, bulk
     finally:
-        if preprint_sink is not None:
-            preprint_sink.close()
-        if data_sink is not None:
-            data_sink.close()
+        for sink in sinks:
+            sink.close()
 
     if not report_only:
         os.replace(tmp_p, out_preprints)
         os.replace(tmp_d, out_data_links)
+        if ebi is not None:
+            os.replace(tmp_i, out_identifiers)
     return stats
 
 
-def render(stats: Stats, report_only: bool, out_preprints: Path, out_data_links: Path) -> None:
+def render(stats: Stats, report_only: bool, out_preprints: Path, out_data_links: Path,
+           out_identifiers: Path | None = None) -> None:
     c = stats.counts
     print(f"\nbuild_data_links: {c['documents']:,} documents")
     print(f"  no metadata yet        : {c['no_metadata']:,}  (run fetch_epmc_metadata.py)")
@@ -789,13 +959,38 @@ def render(stats: Stats, report_only: bool, out_preprints: Path, out_data_links:
     if stats.dropped:
         print("\n  links dropped (nothing clean recoverable, or DOI not registered at doi.org):")
         for (reason, resource), n in stats.dropped.most_common(25):
-            print(f"    {reason:<20} {resource:<22} {n:>8,}")
+            print(f"    {reason:<24} {resource:<22} {n:>8,}")
     if stats.repaired:
         print("\n  repaired identifiers by resource:", dict(stats.repaired.most_common(15)))
     if stats.resources:
         print("\n  resources (documents carrying each):")
         for name, n in stats.resources.most_common(40):
             print(f"    {name:<22} {n:>9,}   {describe(name).label} / {describe(name).category}")
+    if c["ebisearch_covered"]:
+        print(f"\n  EBI Search route       : {c['ebisearch_covered']:,} records in scope, "
+              f"{c['ebisearch_with_links']:,} with its links, {c['ebisearch_gaining']:,} gaining a link "
+              f"no Europe PMC route had; {c['unresolved_ebisearch']:,} withheld "
+              f"({c['ebisearch_waiting_discovery']:,} not discovered, {c['ebisearch_waiting_detail']:,} "
+              f"domain pairs without complete detail); {c['ebisearch_failed_discovery']:,} failed "
+              f"discovery records")
+        print(f"  identifiers.dome_registry: {c['dome_registry_ids']:,} entries, "
+              f"{c['identifiers_written'] - c['dome_registry_ids']:,} looked up with none")
+        if stats.ebisearch_resources:
+            print("\n  links EBI Search added (documents gaining a link to each resource):")
+            for name, n in stats.ebisearch_resources.most_common(40):
+                print(f"    {name:<22} {n:>9,}   {describe(name).label} / {describe(name).category}")
+        if stats.ebisearch_confirmed:
+            print("\n  links Europe PMC and EBI Search both found (documents, per resource):")
+            for name, n in stats.ebisearch_confirmed.most_common(20):
+                print(f"    {name:<22} {n:>9,}   {describe(name).label} / {describe(name).category}")
+        if stats.ebisearch_rejected:
+            print("\n  EBI Search domains rejected (not in ebisearch_resources.DOMAINS; papers listing each):")
+            for name, n in stats.ebisearch_rejected.most_common(30):
+                print(f"    {name:<34} {n:>9,}")
+        if stats.ebisearch_unclassified:
+            print("\n  dump publication values of no known shape (ignored):")
+            for (domain, field), n in stats.ebisearch_unclassified.most_common(15):
+                print(f"    {domain:<30} {field:<12} {n:>7,}")
     if stats.unmapped_scheme:
         print("\n  UNMAPPED schemes / publishers (add to datalinks_resources.ALIASES):")
         for name, n in stats.unmapped_scheme.most_common(30):
@@ -807,8 +1002,12 @@ def render(stats: Stats, report_only: bool, out_preprints: Path, out_data_links:
     if report_only:
         print("\nbuild_data_links: --report-only, nothing written.")
     else:
-        print(f"\nbuild_data_links: wrote {out_preprints} and {out_data_links}")
-        print("next: python3 load_fields.py --mode preprints   /   --mode data_links   (dry run first)")
+        written = [str(out_preprints), str(out_data_links)]
+        if c["ebisearch_covered"] and out_identifiers is not None:
+            written.append(str(out_identifiers))
+        print(f"\nbuild_data_links: wrote {', '.join(written)}")
+        print("next: python3 load_fields.py --mode preprints   /   --mode data_links"
+              + ("   /   --mode identifiers" if c["ebisearch_covered"] else "") + "   (dry run first)")
 
 
 def main() -> None:
@@ -838,12 +1037,30 @@ def main() -> None:
     parser.add_argument("--handle-max-age-days", type=int, default=DEFAULT_HANDLE_MAX_AGE_DAYS,
                         help="Re-ask doi.org about a DOI it said was not registered once the verdict "
                              "is this old. A registration is never re-asked.")
+    parser.add_argument("--ebisearch-scope", choices=("positives", "all", "none"), default="positives",
+                        help="Which records get EBI Search's database-side links (schema v1.5.0). "
+                             "'positives' reads the keys file's classification column, or "
+                             "--classification-events for a staged batch; 'none' builds without "
+                             "the route.")
+    parser.add_argument("--ebisearch-discovery", type=Path, default=DEFAULT_EBISEARCH_DISCOVERY)
+    parser.add_argument("--ebisearch-detail", type=Path, default=DEFAULT_EBISEARCH_DETAIL)
+    parser.add_argument("--ebisearch-domains", type=Path, default=DEFAULT_EBISEARCH_DOMAINS)
+    parser.add_argument("--classification-events", type=Path, default=None,
+                        help="A staged batch's classification event log: the verdicts that decide "
+                             "the EBI Search scope when the keys file carries none.")
+    parser.add_argument("--out-identifiers", type=Path, default=DEFAULT_OUT_IDENTIFIERS)
     args = parser.parse_args()
     stats = build(args.keys, args.metadata, args.annotations, args.datalinks, args.bulk,
                   args.datalinks_scope, args.report_only, args.out_preprints, args.out_data_links,
                   max(1, args.shards), handles_path=args.handles,
-                  handle_workers=args.handle_workers, handle_max_age_days=args.handle_max_age_days)
-    render(stats, args.report_only, args.out_preprints, args.out_data_links)
+                  handle_workers=args.handle_workers, handle_max_age_days=args.handle_max_age_days,
+                  ebisearch_scope=args.ebisearch_scope,
+                  ebisearch_discovery=args.ebisearch_discovery,
+                  ebisearch_detail=args.ebisearch_detail,
+                  ebisearch_domains_dir=args.ebisearch_domains,
+                  classification_events=args.classification_events,
+                  out_identifiers=args.out_identifiers)
+    render(stats, args.report_only, args.out_preprints, args.out_data_links, args.out_identifiers)
 
 
 if __name__ == "__main__":

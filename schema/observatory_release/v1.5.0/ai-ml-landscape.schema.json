@@ -1,0 +1,820 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://observatory.dome-ml.org/schema/v1.5.0/ai-ml-landscape.schema.json",
+  "title": "DOME Observatory AI/ML landscape record",
+  "description": "One document per screened publication. Source of truth for this shape is dome-ml-observatory-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside that repo (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
+  "type": "object",
+  "required": [
+    "_id",
+    "schema_version",
+    "identifiers",
+    "publication_metadata",
+    "source",
+    "content_filters",
+    "data_links",
+    "llm_classification",
+    "llm_enrichment"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Deterministic PID (UUID5, fixed namespace, pmcid>doi>pmid priority) minted per record -- the same paper always mints the same PID, so this is stable across re-runs and safe to use in URLs (/record/:pid)."
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "The shape of this document, e.g. \"1.1.0\" -- describes the document's structure, not the paper's content or any processing run. Bump only when this module's document shape changes; see schema/CHANGELOG.md."
+    },
+    "identifiers": {
+      "type": "object",
+      "description": "Every external identifier and cross-reference for this paper. pmid/pmcid/doi come from the source corpus; epmc_id from the Europe PMC capture; dome_registry from the data-links build (schema v1.5.0); bioai_repo, huggingface, kaggle and zenodo are reserved for a future linking pass and are always null today.",
+      "required": [
+        "pmid",
+        "pmcid",
+        "doi",
+        "epmc_id",
+        "dome_registry",
+        "bioai_repo",
+        "huggingface",
+        "kaggle",
+        "zenodo"
+      ],
+      "properties": {
+        "pmid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "PubMed ID, bare digits. Blank in ~8.2% of the source corpus."
+        },
+        "pmcid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "PubMed Central ID, e.g. \"PMC12283288\". Null when the paper has no PMC full text. Blank in ~24.5% of the source corpus."
+        },
+        "doi": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Digital Object Identifier, e.g. \"10.3389/fimmu.2025.1608262\". Blank in <1% of the source corpus."
+        },
+        "epmc_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Europe PMC's own accession for the record the metadata came from, e.g. \"PPR18364\" for a preprint or \"40703513\" for a MEDLINE record. Needed because a Europe PMC article URL is /article/{source}/{id}: for a preprint that is /article/PPR/PPR18364, and the pmid-based MED form is simply wrong. Null until the preprint/source capture pass runs -- see docs/preprint.md in dome-ml-observatory-triage."
+        },
+        "dome_registry": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The DOME Registry entry naming this paper: its id, e.g. \"88n4lxv68p\" (the page is https://registry.dome-ml.org/review/{id}). Found through EBI Search's dome-registry domain by the paper's PMID or PMCID, the only keys the registry's entries carry. \"\" = looked up, no entry names the paper; null = never looked up (a negative, or a paper with neither key). When several entries name one paper this holds the first in sort order and data_links carries them all. Filled for positives by dome-ml-observatory-triage's data-links build (schema v1.5.0)."
+        },
+        "bioai_repo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Reserved: cross-reference to a code/method repository. Always null until the linking pass runs."
+        },
+        "huggingface": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Reserved: cross-reference to a HuggingFace model/dataset. Always null until the linking pass runs."
+        },
+        "kaggle": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Reserved: cross-reference to a Kaggle dataset/notebook. Always null until the linking pass runs."
+        },
+        "zenodo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Reserved: cross-reference to a Zenodo deposition. Always null until the linking pass runs."
+        }
+      }
+    },
+    "publication_metadata": {
+      "type": "object",
+      "required": [
+        "title",
+        "abstract",
+        "authors",
+        "year",
+        "journal",
+        "preprint_server",
+        "citation_count",
+        "citation_count_updated",
+        "citation_source"
+      ],
+      "properties": {
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Paper title, plain text. Blank in <0.1% of the source corpus."
+        },
+        "abstract": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Paper abstract. Can contain embedded HTML-ish tags (e.g. \"<h4>Background</h4>\") -- render accordingly, don't assume plain text. Blank in ~5.4% of the source corpus."
+        },
+        "authors": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Comma-separated author list as one plain-text string, e.g. \"Liang L, Liang H, He M\". Blank in ~1.0% of the source corpus."
+        },
+        "year": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Publication year."
+        },
+        "journal": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Journal name, plain text. Null on 57,212 of 846,716 documents (6.8%), and 56,863 of those are preprints: Europe PMC returns no journalTitle for a SRC:PPR record, so a preprint has no journal by definition rather than by omission. Read preprint_server for those."
+        },
+        "preprint_server": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The preprint server this was posted to, as Europe PMC names it in bookOrReportDetails.publisher -- verbatim casing, e.g. \"bioRxiv\", \"medRxiv\", \"Research Square\", \"Preprints.org\". Null on journal articles, and null on preprints until the capture pass runs; until then consumers infer it from the DOI prefix (see docs/preprint.md in dome-ml-observatory-triage for the verified table). Mutually exclusive with journal in practice: 3 documents carry both."
+        },
+        "citation_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Times this paper has been cited, as counted by Europe PMC. Real since the 2026-09-03 load: 830,689 of 846,716 documents (98.11%) carry a count. Null means \"not available\" -- no Europe PMC record answered for this paper's identifiers -- and is distinct from a genuine 0, so anything displaying or sorting on it must handle the two differently."
+        },
+        "citation_count_updated": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "ISO-8601 UTC timestamp of when citation_count was fetched. A bare count that cannot be dated ages invisibly; this is what lets a refresh re-fetch only entries older than a chosen age. Null wherever citation_count is null."
+        },
+        "citation_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where citation_count came from -- \"europepmc\" on all 830,689 populated records. Null wherever citation_count is null."
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "abstract_source",
+        "metadata_repair_sources",
+        "decision_provenance",
+        "epmc_source",
+        "access"
+      ],
+      "properties": {
+        "abstract_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Which upstream source the abstract text came from -- observed values: europepmc (~93.5%), crossref, pubmed. Blank in ~5.4% of the source corpus."
+        },
+        "metadata_repair_sources": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Which repair pass(es) touched this row's metadata, e.g. \"ncbi_idconv\". Blank in ~91% of the source corpus (most rows needed no repair)."
+        },
+        "decision_provenance": {
+          "type": "string",
+          "enum": [
+            "llm",
+            "human_curated",
+            "registry_confirmed"
+          ],
+          "description": "WHO decided this record's llm_classification.classification. Never null -- a document with no answer here would be exactly the ambiguity this field exists to remove. Corpus-wide: 840,537 llm, 5,960 human_curated, 219 registry_confirmed. Deliberately a flat discriminator rather than a second classification field, so the existing partial text index and every query reading llm_classification.classification are untouched."
+        },
+        "epmc_source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "MED",
+            "PPR",
+            "PMC",
+            "AGR",
+            "PAT",
+            "CBA",
+            "CTX",
+            "ETH",
+            "HIR",
+            "NBK",
+            null
+          ],
+          "description": "Which Europe PMC index the record came from, as Europe PMC codes it: MED (MEDLINE), PPR (preprint servers), PMC (PubMed Central only), AGR (Agricola), PAT (patents), ETH (EThOS theses), CTX (CiteXplore), and Europe PMC's remaining codes CBA, HIR and NBK. The corpus query applies no SRC restriction; measured over the corpus 2026-09-14: MED 764,679, PPR 56,343, PMC 13,906, AGR 1,104, ETH 93, CTX 21. PPR is the authoritative test for \"is this a preprint\"; content_filters.pub_types containing \"Preprint\" is the proxy used until this field is populated. Null until the capture pass runs -- see docs/preprint.md in dome-ml-observatory-triage."
+        },
+        "access": {
+          "type": "object",
+          "required": [
+            "open_access",
+            "license",
+            "fulltext_available"
+          ],
+          "properties": {
+            "open_access": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "Whether the paper is open access. ~66% true across the source corpus."
+            },
+            "license": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "License string joined from the Europe PMC licensing lookup, e.g. \"cc by\". Null where no license lookup matched."
+            },
+            "fulltext_available": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "Whether full text (not just abstract) is available. ~74% true across the source corpus."
+            }
+          }
+        }
+      }
+    },
+    "content_filters": {
+      "type": "object",
+      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining six are the AI/ML enrichment pass's output -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags).",
+      "required": [
+        "mesh_headings",
+        "pub_types",
+        "keywords_author",
+        "domain_tier1",
+        "domain_tier2",
+        "domain_tier3",
+        "learning_paradigm",
+        "model_family",
+        "model_type"
+      ],
+      "properties": {
+        "mesh_headings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "MeSH headings assigned to the paper, e.g. [\"Humans\", \"Arthritis, Rheumatoid\"]. Populated for every record."
+        },
+        "pub_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Publication types, e.g. [\"research-article\", \"Journal Article\"]. Populated for every record."
+        },
+        "keywords_author": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Author-supplied keywords. Populated for every record (may be an empty array if the paper listed none)."
+        },
+        "domain_tier1": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "EDAM topic branch, tier 1 (broadest). Single-select -- max_tags: 1. See vocab/domain.json for the 13 controlled terms. Null until the enrichment pass runs on this record."
+        },
+        "domain_tier2": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "EDAM topic branch, tier 2. Multi-select -- max_tags: 2. See vocab/domain.json for the 121 controlled terms. Empty until the enrichment pass runs on this record."
+        },
+        "domain_tier3": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "EDAM topic branch, tier 3 (most specific). Multi-select -- max_tags: 3. See vocab/domain.json for the 125 controlled terms. Empty until the enrichment pass runs on this record."
+        },
+        "learning_paradigm": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
+        },
+        "model_family": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What kind of system/method family -- a cross-cutting, multi-label axis distinct from learning_paradigm (e.g. deep learning, large language model, ensemble learning). Multi-select -- max_tags: 3. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
+        },
+        "model_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The specific method(s) used, e.g. \"random forest\", \"XGBoost\". Deliberately OPEN free text, not a closed enum: vocab/model-type-seed.json's 76 canonical terms + aliases are coverage assurance and normalization only -- the canonical spelling is emitted on a match, otherwise the paper's own term is tagged verbatim. Empty until the enrichment pass runs on this record."
+        }
+      }
+    },
+    "data_links": {
+      "type": "object",
+      "description": "The datasets, database entries, software, transparency reports, data citations and supplementary files linked to the paper. Two layers with distinct null meanings. The summary (has_data, tags, accession_types, db_cross_references) is captured from the Europe PMC search record; has_data null means it was never captured. The links (fetched_at through links) come from a separate fetch: Europe PMC's annotations API (text-mined accessions), its /datalinks endpoint (Scholix: data citations, external links) and the derived BioStudies supplementary entry, and -- for positives, from schema v1.5.0 -- EBI Search, where a repository, bio.tools or the DOME Registry names the paper by its PMID, PMCID or DOI. Every link is filed under its home resource and deduplicated, so one accession is one link however many routes found it. fetched_at null means no fetch has run for this record, and a fetch that found nothing sets fetched_at with link_count 0 and empty arrays. Populated by dome-ml-observatory-triage's data-links pass; the accepted EBI Search domains are listed in its docs/data_links_sources.md.",
+      "required": [
+        "has_data",
+        "tags",
+        "accession_types",
+        "db_cross_references",
+        "fetched_at",
+        "sources",
+        "link_count",
+        "truncated",
+        "resources",
+        "links"
+      ],
+      "properties": {
+        "has_data": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Europe PMC's hasData flag for the record. Null = never captured; false = captured, Europe PMC holds no data links."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Europe PMC dataLinksTagsList values, e.g. [\"supporting_data\", \"related_data\", \"altmetrics\"]. Empty when none (or never captured -- read has_data)."
+        },
+        "accession_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Europe PMC tmAccessionTypeList: the kinds of accession text-mined from the article, e.g. [\"pdb\", \"geo\", \"doi\"]."
+        },
+        "db_cross_references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Europe PMC dbCrossReferenceList: curated database cross-references by name, e.g. [\"PDB\", \"EMBL\"]."
+        },
+        "fetched_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "ISO-8601 UTC timestamp of the most recent link fetch for this record. Null = no link fetch yet."
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "epmc_search",
+              "epmc_annotations",
+              "epmc_datalinks",
+              "epmc_textmined_bulk",
+              "derived",
+              "ebisearch"
+            ]
+          },
+          "description": "Which routes were consulted: epmc_annotations (Europe PMC annotations API), epmc_datalinks (the /datalinks Scholix endpoint), epmc_textmined_bulk (Europe PMC's monthly text-mined FTP dump), derived (the BioStudies supplementary entry), epmc_search alone when the search record showed nothing to fetch, and ebisearch (schema v1.5.0) when EBI Search was consulted for the paper -- present even when it found nothing."
+        },
+        "link_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "True number of distinct (resource, id) links before any cap. Null until fetched."
+        },
+        "truncated": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True when links was capped (50 per resource, 300 per record), or when a source counted more entries than it returned; resources[].count and link_count keep the true totals."
+        },
+        "resources": {
+          "type": "array",
+          "description": "One entry per linked resource, always complete even when links is capped -- the unit the record page renders a card for and /api/records filters on (?dl=).",
+          "items": {
+            "type": "object",
+            "required": [
+              "resource",
+              "label",
+              "category",
+              "id_scheme",
+              "publisher",
+              "obtained_by",
+              "count"
+            ],
+            "properties": {
+              "resource": {
+                "type": "string",
+                "description": "Stable resource key from the pipeline catalogue (datalinks_resources.py), e.g. \"pdb\", \"uniprot\", \"ena\", \"geo\", \"zenodo\", \"biostudies\", \"clinicaltrials\", and from schema v1.5.0 \"biotools\", \"dome_registry\", \"iprox\", \"massive\", \"eva\". An unlisted resource keeps a slug of its raw scheme or publisher name."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display name, e.g. \"Protein Data Bank in Europe\"."
+              },
+              "category": {
+                "type": "string",
+                "description": "Grouping after Europe PMC's own Data tab, e.g. \"Protein Structures\", \"Nucleotide Sequences\", \"Data Citations\", \"Supplementary Material\", and from schema v1.5.0 \"Software Registries\" (bio.tools) and \"Transparency Reports\" (DOME Registry); \"Other\" for an unlisted resource."
+              },
+              "id_scheme": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The identifier scheme as the first route named it: \"PDBe\", \"ENA\", \"DOI\", \"biotoolsID\", ..."
+              },
+              "publisher": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The publisher, provider or repository the first route recorded: \"Europe PMC\", \"PRIDE\", \"bio.tools\", ..."
+              },
+              "obtained_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "How the first link to this resource was found: tm_accession (text-mined from the article), tm_supplementary (from its supplementary files), ext_links (a data citation or external link), derived (the BioStudies entry), and from schema v1.5.0 ebisearch_xref (EBI Search's cross-reference for the paper's PMID) or ebisearch_domain (an entry in a whole-domain EBI Search dump naming the paper's PMID, PMCID or DOI). See routes for every route."
+              },
+              "count": {
+                "type": "integer",
+                "description": "True number of links to this resource, before any cap."
+              },
+              "routes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Schema v1.5.0: every route that found a link to this resource, sorted, from the obtained_by values -- e.g. [\"ebisearch_xref\", \"tm_accession\"] when the article mentions an accession and the repository names the paper. Absent on a record the v1.5.0 build has not reached."
+              },
+              "browse_url": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Schema v1.5.0: one page at the source listing every entry of this resource for the paper, where the source has one (NCBI GEO's Entrez link page); null otherwise. Absent on a record the v1.5.0 build has not reached."
+              }
+            }
+          }
+        },
+        "links": {
+          "type": "array",
+          "description": "Link detail, deduplicated on (resource, id) across routes -- one accession is one link however many routes found it -- and capped at 50 per resource / 300 per record.",
+          "items": {
+            "type": "object",
+            "required": [
+              "resource",
+              "id",
+              "url",
+              "title",
+              "obtained_by",
+              "relationship",
+              "section",
+              "frequency"
+            ],
+            "properties": {
+              "resource": {
+                "type": "string",
+                "description": "The resources[].resource this link belongs to."
+              },
+              "id": {
+                "type": "string",
+                "description": "The accession, entry id or DOI, e.g. \"6VW1\", \"GSE109308\", \"10.5061/dryad.dm57j\", \"PRJNA167815\", \"suba3\"."
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Resolvable URL: the entry's page at its repository, or an identifiers.org or doi.org URL; null when no verified URL exists for the entry."
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Target title where the route supplies one: a data citation's title, or the entry's name in its repository."
+              },
+              "obtained_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "tm_accession, tm_supplementary, ext_links, derived, ebisearch_xref or ebisearch_domain -- see resources[].obtained_by."
+              },
+              "relationship": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "DataCite / Scholix relationship of the target to the paper, e.g. \"References\", \"IsSupplementedBy\" (a deposit or supplementary file), \"IsReviewedBy\" (a DOME Registry entry), \"IsDescribedBy\" (a bio.tools entry)."
+              },
+              "section": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Where in the paper a text-mined accession was found, e.g. \"Article\", \"Abstract\", \"Supplementary material\"."
+              },
+              "frequency": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "Occurrences in the supplementary file, where Europe PMC reports it."
+              },
+              "matched_by": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "pmid",
+                  "pmcid",
+                  "doi",
+                  null
+                ],
+                "description": "Schema v1.5.0: which of the paper's identifiers the EBI Search entry named. Null for the Europe PMC routes. Absent on a record the v1.5.0 build has not reached."
+              },
+              "source_domain": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Schema v1.5.0: the EBI Search domain that asserted the link, e.g. \"sra-study\", \"dome-registry\", \"biotools\". Null for the Europe PMC routes. Absent on a record the v1.5.0 build has not reached."
+              }
+            }
+          }
+        }
+      }
+    },
+    "llm_classification": {
+      "type": "object",
+      "description": "The positive/negative/undeterminable screening decision and its provenance. Populated for every record. Most were decided by the LLM screening pass, but 6,179 carry a human or registry decision instead, in which case the six model-describing fields here are null and source.decision_provenance says so -- read that field, not this group's provider, to tell a machine decision from a human one.",
+      "required": [
+        "provider",
+        "model_tier",
+        "model_id",
+        "mode",
+        "classification",
+        "rationale",
+        "prompt_version",
+        "ruleset_sha256",
+        "batch_id",
+        "timestamp"
+      ],
+      "properties": {
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "LLM provider, e.g. \"deepseek\"."
+        },
+        "model_tier": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider-specific tier, e.g. \"flash\"."
+        },
+        "model_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Exact model id used, e.g. \"deepseek-v4-flash\"."
+        },
+        "mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Classification mode, e.g. \"primary\"."
+        },
+        "classification": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "positive",
+            "negative",
+            "undeterminable",
+            null
+          ],
+          "description": "The screening verdict: positive = genuine AI/ML methods paper. Corpus-wide (2026-09-03 refresh): 366,234 positive, 473,503 negative, 6,979 undeterminable."
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Free-text model rationale for the classification decision. Always LLM-generated -- surface this fact to users, don't present it as a human judgement."
+        },
+        "prompt_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Version tag of the prompt template used, e.g. \"v1\"."
+        },
+        "ruleset_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "sha256 of the criteria the classification was run against -- lets a later run detect if the criteria changed."
+        },
+        "batch_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Identifier of the classification batch/run this record's event came from."
+        },
+        "timestamp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "ISO-8601 UTC timestamp of the classification event."
+        }
+      }
+    },
+    "llm_enrichment": {
+      "type": "object",
+      "description": "Deliberately PARALLEL in shape to llm_classification (same provenance fields) -- this is the enrichment pass that populates content_filters.domain_tier1-3/learning_paradigm/model_family/model_type. Every field is present now (all null) rather than a single null placeholder, precisely so no schema migration is needed once this pass actually runs on a record.",
+      "required": [
+        "provider",
+        "model_tier",
+        "model_id",
+        "mode",
+        "rationale",
+        "prompt_version",
+        "ruleset_sha256",
+        "batch_id",
+        "timestamp",
+        "vocab_violations",
+        "parse_status",
+        "input_tokens",
+        "output_tokens",
+        "cache_hit_tokens",
+        "parse_fallback_used"
+      ],
+      "properties": {
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "LLM provider used for enrichment."
+        },
+        "model_tier": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider-specific tier used for enrichment."
+        },
+        "model_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Exact model id used for enrichment."
+        },
+        "mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Enrichment mode."
+        },
+        "rationale": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Free-text model rationale for the enrichment tags assigned."
+        },
+        "prompt_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Version tag of the enrichment prompt template used."
+        },
+        "ruleset_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "sha256 of the vocabulary/criteria the enrichment was run against."
+        },
+        "batch_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Identifier of the enrichment batch/run this record's event came from."
+        },
+        "timestamp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "ISO-8601 UTC timestamp of the enrichment event."
+        },
+        "vocab_violations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "description": "Any tag the model emitted that didn't match a controlled vocabulary term -- logged, not silently dropped."
+        },
+        "parse_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Whether the model's structured output parsed cleanly."
+        },
+        "input_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Input token count for the enrichment call."
+        },
+        "output_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Output token count for the enrichment call."
+        },
+        "cache_hit_tokens": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Cached input token count for the enrichment call."
+        },
+        "parse_fallback_used": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether a fallback parser had to be used to recover the model's output."
+        }
+      }
+    }
+  }
+}

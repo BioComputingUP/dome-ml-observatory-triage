@@ -98,7 +98,8 @@ def test_overlapping_routes_are_deduplicated_and_summarised():
     pdb = next(r for r in detail["resources"] if r["resource"] == "pdb")
     assert pdb == {"resource": "pdb", "label": "Protein Data Bank in Europe",
                    "category": "Protein Structures", "id_scheme": "PDBe", "publisher": "Europe PMC",
-                   "obtained_by": "tm_accession", "count": 1}
+                   "obtained_by": "tm_accession", "count": 1,
+                   "routes": ["ext_links", "tm_accession"], "browse_url": None}
     pdb_link = next(l for l in detail["links"] if l["resource"] == "pdb")
     assert pdb_link["title"] == "Spike RBD"          # the later route filled the missing title
     assert set(pdb_link) == set(bd.LINK_KEYS)          # no private keys leak into the document
@@ -440,3 +441,241 @@ def test_every_link_built_from_the_real_annotations_fixture_is_clean():
     built = [link for link in links if link is not None and link is not bd.PENDING]
     assert built and not any(link is bd.PENDING for link in links)
     assert malformed_links({"links": built}) == []
+
+
+def test_a_text_mined_arrayexpress_mirror_of_a_geo_series_is_filed_under_geo(tmp_path):
+    keys = tmp_path / "keys.csv"
+    _write_csv(keys, [{"pid": "p1", "pmid": "1", "pmcid": "", "doi": "", "is_preprint": "False"}])
+    metadata = tmp_path / "meta.csv"
+    _write_csv(metadata, [_meta("pmid", "1", "MED", "1")])
+    ann = tmp_path / "ann.jsonl"
+    _write_jsonl(ann, [{"source": "MED", "id": "1", "fetched_at": "2026-09-14T01:00:00+00:00",
+                        "status": "ok", "annotations": [
+                            _ann("E-GEOD-38402", "ArrayExpress",
+                                 "http://identifiers.org/arrayexpress:E-GEOD-38402"),
+                            _ann("GSE38402", "GEO", "http://identifiers.org/geo:GSE38402")]}])
+    missing = tmp_path / "missing.jsonl"
+    out_p, out_d = tmp_path / "p.csv", tmp_path / "d.csv"
+    bd.build(keys, metadata, ann, missing, missing, "none", False, out_p, out_d)
+    block = json.loads(next(csv.DictReader(out_d.open()))["data_links_json"])
+    assert [(r["resource"], r["count"]) for r in block["resources"]] == [("geo", 1)]
+    assert block["links"][0]["id"] == "GSE38402"
+
+
+# -- the EBI Search route (schema v1.5.0) ----------------------------------------------------------
+
+
+def _dump(dumps: Path, domain: str, entries: list[dict], fetched_at: str) -> None:
+    dumps.mkdir(parents=True, exist_ok=True)
+    _write_jsonl(dumps / f"{domain}.jsonl", [
+        {"domain": domain, "id": e["id"], "fields": e["fields"], "fetched_at": fetched_at}
+        for e in entries])
+    manifest_path = dumps / "_manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    manifest[domain] = {"fetched_at": fetched_at}
+    manifest_path.write_text(json.dumps(manifest))
+
+
+def _ebi_world(tmp_path, *, project_detail=True, classification_column=True, discovery_rows=None):
+    rows = [
+        {"pid": "p-ebi", "pmid": "23184988", "pmcid": "PMC3531127", "doi": "10.1093/nar/gks1151",
+         "is_preprint": "False", "classification": "positive"},
+        {"pid": "p-neg", "pmid": "23184989", "pmcid": "", "doi": "", "is_preprint": "False",
+         "classification": "negative"},
+        {"pid": "p-doi", "pmid": "", "pmcid": "", "doi": "10.1101/2020.01.01.000001",
+         "is_preprint": "True", "classification": "positive"},
+        {"pid": "p-none", "pmid": "30003", "pmcid": "", "doi": "", "is_preprint": "False",
+         "classification": "positive"},
+    ]
+    if not classification_column:
+        rows = [{k: v for k, v in r.items() if k != "classification"} for r in rows]
+    keys = tmp_path / "keys.csv"
+    _write_csv(keys, rows)
+    metadata = tmp_path / "meta.csv"
+    _write_csv(metadata, [
+        _meta("pmid", "23184988", "MED", "23184988", pmcid="PMC3531127", has_suppl="Y",
+              has_tm_accessions="N"),
+        _meta("pmid", "23184989", "MED", "23184989", has_tm_accessions="N"),
+        _meta("ppr_doi", "10.1101/2020.01.01.000001", "PPR", "PPR1", has_tm_accessions="N",
+              preprint_server="bioRxiv"),
+        _meta("pmid", "30003", "MED", "30003", has_tm_accessions="N"),
+    ])
+    discovery = tmp_path / "discovery.jsonl"
+    _write_jsonl(discovery, discovery_rows if discovery_rows is not None else [
+        {"source": "MED", "id": "23184988", "fetched_at": "2026-09-14T03:00:00+00:00",
+         "http_status": 200, "domains": [{"id": "biostudies-literature", "referenceEntryCount": 1},
+                                         {"id": "project", "referenceEntryCount": 1},
+                                         {"id": "uniprot", "referenceEntryCount": 5},
+                                         {"id": "biotools", "referenceEntryCount": 1}]},
+        {"source": "MED", "id": "30003", "fetched_at": "2026-09-14T03:00:00+00:00",
+         "http_status": 200, "domains": []},
+    ])
+    detail = tmp_path / "detail.jsonl"
+    records = [{"source": "MED", "id": "23184988", "domain": "biostudies-literature",
+                "fetched_at": "2026-09-14T04:00:00+00:00", "reference_count": 1, "truncated": False,
+                "complete": True, "references": [{"id": "S-EPMC3531127", "acc": "S-EPMC3531127",
+                                                   "fields": {"id": ["S-EPMC3531127"],
+                                                              "name": ["SUBA3"]}}]}]
+    if project_detail:
+        records.append({"source": "MED", "id": "23184988", "domain": "project",
+                        "fetched_at": "2026-09-14T04:00:00+00:00", "reference_count": 1,
+                        "truncated": False, "complete": True,
+                        "references": [{"id": "PRJNA167815",
+                                        "fields": {"id": ["PRJNA167815"],
+                                                   "name": ["Drosophila melanogaster"]}}]})
+    _write_jsonl(detail, records)
+    dumps = tmp_path / "dumps"
+    at = "2026-09-14T02:00:00+00:00"
+    _dump(dumps, "biotools", [
+        {"id": "suba3", "fields": {"id": ["suba3"], "name": ["SUBA3"], "PMID": ["23184988"],
+                                   "PMCID": ["PMC3531127"], "DOI": ["10.1093/nar/gks1151"]}},
+        {"id": "preprint-tool", "fields": {"id": ["preprint-tool"], "name": ["Tool"], "PMID": [],
+                                           "PMCID": [],
+                                           "DOI": ["https://doi.org/10.1101/2020.01.01.000001"]}},
+        {"id": "negative-tool", "fields": {"id": ["negative-tool"], "name": ["Neg"],
+                                           "PMID": ["23184989"], "PMCID": [], "DOI": []}},
+    ], at)
+    _dump(dumps, "dome-registry", [
+        {"id": "3mm086r5pw", "fields": {"id": ["3mm086r5pw"], "name": [], "title": ["SUBA3"],
+                                        "EUROPE_PMC": ["23184988"], "PMC": []}},
+        {"id": "negentry01", "fields": {"id": ["negentry01"], "name": [], "title": ["Neg"],
+                                        "EUROPE_PMC": ["23184989"], "PMC": []}},
+    ], at)
+    _dump(dumps, "biostudies-arrayexpress", [
+        {"id": "E-GEOD-38402", "fields": {"id": ["E-GEOD-38402"], "name": ["Zinc finger"],
+                                          "PUB_MED": ["23184988"], "DOI": []}},
+    ], at)
+    return keys, metadata, discovery, detail, dumps
+
+
+def _ebi_build(tmp_path, world, **over):
+    keys, metadata, discovery, detail, dumps = world
+    missing = tmp_path / "missing.jsonl"
+    out_p, out_d, out_i = tmp_path / "p.csv", tmp_path / "d.csv", tmp_path / "i.csv"
+    kwargs = dict(ebisearch_scope="positives", ebisearch_discovery=discovery,
+                  ebisearch_detail=detail, ebisearch_domains_dir=dumps, out_identifiers=out_i,
+                  require_all_dumps=False)
+    shards = over.pop("shards", 1)
+    kwargs.update(over)
+    stats = bd.build(keys, metadata, missing, missing, missing, "none", False, out_p, out_d, shards,
+                     **kwargs)
+    rows = {r["pid"]: r for r in csv.DictReader(out_d.open())}
+    identifiers = ({r["pid"]: r["dome_registry"] for r in csv.DictReader(out_i.open())}
+                   if out_i.exists() else {})
+    return stats, rows, identifiers
+
+
+def test_ebi_search_links_join_a_positive_and_merge_with_the_europe_pmc_routes(tmp_path):
+    from link_identifiers import malformed_links
+
+    stats, rows, identifiers = _ebi_build(tmp_path, _ebi_world(tmp_path))
+    block = json.loads(rows["p-ebi"]["data_links_json"])
+    assert block["sources"] == ["derived", "ebisearch"]
+    assert block["fetched_at"] == "2026-09-14T04:00:00+00:00"
+    assert malformed_links(block) == []
+    resources = {r["resource"]: r for r in block["resources"]}
+    assert set(resources) == {"biostudies", "bioproject", "biotools", "dome_registry", "geo"}
+    assert set(resources["geo"]) == set(bd.RESOURCE_KEYS)
+    # the derived S-EPMC entry and EBI Search's literature entry are one link
+    assert resources["biostudies"]["count"] == 1
+    assert resources["biostudies"]["routes"] == ["derived", "ebisearch_xref"]
+    assert resources["biostudies"]["obtained_by"] == "derived"
+    assert resources["geo"]["browse_url"] == (
+        "https://www.ncbi.nlm.nih.gov/gds?LinkName=pubmed_gds&from_uid=23184988")
+    assert resources["biotools"]["browse_url"] is None
+    links = {link["resource"]: link for link in block["links"]}
+    assert all(set(link) == set(bd.LINK_KEYS) for link in block["links"])
+    assert links["biostudies"]["matched_by"] == "pmid"
+    assert links["biostudies"]["source_domain"] == "biostudies-literature"
+    assert (links["geo"]["id"], links["geo"]["source_domain"]) == ("GSE38402", "biostudies-arrayexpress")
+    assert links["biotools"] == {
+        "resource": "biotools", "id": "suba3", "url": "https://bio.tools/suba3", "title": "SUBA3",
+        "obtained_by": "ebisearch_domain", "relationship": "IsDescribedBy", "section": None,
+        "frequency": None, "matched_by": "pmid", "source_domain": "biotools"}
+    assert links["dome_registry"]["url"] == "https://registry.dome-ml.org/review/3mm086r5pw"
+    assert links["dome_registry"]["relationship"] == "IsReviewedBy"
+    assert (links["bioproject"]["obtained_by"], links["bioproject"]["title"]) == (
+        "ebisearch_xref", "Drosophila melanogaster")
+    assert "uniprot" not in resources and stats.ebisearch_rejected == {"uniprot": 1}
+
+    # a negative is never covered, even when a registry names it
+    negative = json.loads(rows["p-neg"]["data_links_json"])
+    assert negative["sources"] == ["epmc_search"] and negative["resources"] == []
+    # a preprint known only by its DOI is reached through the dumps
+    preprint = json.loads(rows["p-doi"]["data_links_json"])
+    assert preprint["sources"] == ["epmc_search", "ebisearch"]
+    assert [(l["id"], l["matched_by"]) for l in preprint["links"]] == [("preprint-tool", "doi")]
+    # a positive EBI Search has nothing for says it was consulted
+    none = json.loads(rows["p-none"]["data_links_json"])
+    assert none["sources"] == ["epmc_search", "ebisearch"] and none["link_count"] == 0
+
+    assert identifiers == {"p-ebi": "3mm086r5pw", "p-none": ""}   # the DOI-only preprint: no row
+    # gained: a link no Europe PMC route had; confirmed: the S-EPMC entry both routes found
+    assert stats.ebisearch_resources == {"bioproject": 1, "biotools": 2, "dome_registry": 1, "geo": 1}
+    assert stats.ebisearch_confirmed == {"biostudies": 1}
+    assert (stats.counts["ebisearch_with_links"], stats.counts["ebisearch_gaining"]) == (2, 2)
+    assert stats.counts["unresolved"] == 0
+
+
+def test_a_positive_with_an_accepted_domain_not_yet_detailed_is_withheld(tmp_path):
+    stats, rows, identifiers = _ebi_build(tmp_path, _ebi_world(tmp_path, project_detail=False))
+    assert rows["p-ebi"]["data_links_json"] == "" and rows["p-ebi"]["has_data"] == "Y"
+    assert stats.counts["unresolved_ebisearch"] == 1 and stats.counts["unresolved"] == 1
+    # withheld links, and no identifier row either: the two files never disagree about a record
+    assert "p-ebi" not in identifiers and identifiers == {"p-none": ""}
+
+
+def test_a_positive_never_discovered_is_withheld_and_a_failed_discovery_answers_empty(tmp_path):
+    never = [{"source": "MED", "id": "30003", "fetched_at": "t", "http_status": 200, "domains": []}]
+    stats, rows, _ = _ebi_build(tmp_path, _ebi_world(tmp_path, discovery_rows=never))
+    assert rows["p-ebi"]["data_links_json"] == ""
+    assert stats.counts["ebisearch_waiting_discovery"] == 1
+
+    failed = never + [{"source": "MED", "id": "23184988", "fetched_at": "2026-09-14T03:00:00+00:00",
+                       "http_status": None, "failed": True, "domains": []}]
+    stats, rows, _ = _ebi_build(tmp_path, _ebi_world(tmp_path, discovery_rows=failed))
+    block = json.loads(rows["p-ebi"]["data_links_json"])
+    assert {r["resource"] for r in block["resources"]} == {"biostudies", "biotools", "dome_registry",
+                                                           "geo"}
+    assert stats.counts["ebisearch_failed_discovery"] == 1
+
+
+def test_report_only_counts_what_a_build_would_write_without_writing_it(tmp_path):
+    keys, metadata, discovery, detail, dumps = _ebi_world(tmp_path)
+    missing, out_i = tmp_path / "missing.jsonl", tmp_path / "i.csv"
+    stats = bd.build(keys, metadata, missing, missing, missing, "none", True, tmp_path / "p.csv",
+                     tmp_path / "d.csv", 1, ebisearch_scope="positives", ebisearch_discovery=discovery,
+                     ebisearch_detail=detail, ebisearch_domains_dir=dumps, out_identifiers=out_i,
+                     require_all_dumps=False)
+    assert not out_i.exists()
+    assert (stats.counts["dome_registry_ids"], stats.counts["identifiers_written"]) == (1, 2)
+    assert stats.ebisearch_confirmed == {"biostudies": 1}
+
+
+def test_the_positive_scope_needs_a_classification_from_the_keys_or_the_event_log(tmp_path):
+    world = _ebi_world(tmp_path, classification_column=False)
+    with pytest.raises(SystemExit, match="classification"):
+        _ebi_build(tmp_path, world)
+    events = tmp_path / "events.csv"
+    events.write_text("record_id,classification\np-ebi,positive\np-neg,negative\np-doi,parse_error\n",
+                      encoding="utf-8")
+    _, rows, identifiers = _ebi_build(tmp_path, world, classification_events=events)
+    assert json.loads(rows["p-ebi"]["data_links_json"])["sources"] == ["derived", "ebisearch"]
+    assert json.loads(rows["p-doi"]["data_links_json"])["sources"] == ["epmc_search"]
+    assert identifiers == {"p-ebi": "3mm086r5pw"}
+
+
+def test_sharding_changes_nothing_on_the_ebi_search_route(tmp_path):
+    world = _ebi_world(tmp_path)
+    one = _ebi_build(tmp_path, world, shards=1)
+    three = _ebi_build(tmp_path, world, shards=3)
+    assert one[1] == three[1] and one[2] == three[2]
+
+
+def test_without_the_ebi_search_route_no_identifiers_file_is_written(tmp_path):
+    keys, metadata, *_ = _ebi_world(tmp_path)
+    missing = tmp_path / "missing.jsonl"
+    out_i = tmp_path / "i.csv"
+    bd.build(keys, metadata, missing, missing, missing, "none", False, tmp_path / "p.csv",
+             tmp_path / "d.csv", out_identifiers=out_i)
+    assert not out_i.exists()

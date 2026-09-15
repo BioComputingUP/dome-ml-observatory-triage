@@ -81,6 +81,14 @@ DATA_LINKS_LINK_FIELDS = ("fetched_at", "sources", "link_count", "truncated", "r
 _DATA_LINKS_PATHS = frozenset(
     f"data_links.{f}" for f in DATA_LINKS_SUMMARY_FIELDS + DATA_LINKS_LINK_FIELDS
 )
+# v1.5.0: the reserved external cross-reference identifiers, written by the `identifiers` mode.
+IDENTIFIER_FIELDS = (
+    "identifiers.dome_registry",
+    "identifiers.bioai_repo",
+    "identifiers.huggingface",
+    "identifiers.kaggle",
+    "identifiers.zenodo",
+)
 
 # Mode -> the exact leaf paths that mode may write. Adding a field to a document means adding it
 # here first, on purpose, in a diff someone reviews.
@@ -125,9 +133,17 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     "preprints": frozenset({_SCHEMA_VERSION_PATH, *PREPRINT_FIELDS}),
     # The data-links fetch. `resources` and `links` are arrays of objects and are leaves here on
     # purpose: `$set` replaces each whole and the rollback snapshot restores each whole (dig()
-    # does not walk into arrays). Cannot reach `identifiers.*`: the derivation of
-    # identifiers.zenodo & co. from these links goes through its own mode, later and deliberately.
+    # does not walk into arrays). Cannot reach `identifiers.*`: those go through their own mode.
     "data_links": frozenset({_SCHEMA_VERSION_PATH} | _DATA_LINKS_PATHS),
+    # The in-place 1.4.0 -> 1.5.0 version stamp. v1.5.0's change lives inside the data_links arrays
+    # and in identifier values, which the `data_links` and `identifiers` modes write per document,
+    # so the migration sets nothing but the version.
+    "migrate_v1_5_0": frozenset({_SCHEMA_VERSION_PATH}),
+    # The external cross-reference identifiers (cross_links/README.md). The data-links build fills
+    # `dome_registry` from EBI Search's DOME Registry entries; the other four arrive with their own
+    # passes. Cannot reach data_links, the Europe PMC identity (`identifiers.epmc_id` is the
+    # `preprints` mode's) or anything that decides what a record is.
+    "identifiers": frozenset({_SCHEMA_VERSION_PATH, *IDENTIFIER_FIELDS}),
 }
 
 _ABSENT = object()

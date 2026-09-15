@@ -1,8 +1,13 @@
-"""Dumps whole the EBI Search domains whose entries cite publications, for every such domain small
-enough to page through, so papers can be matched locally on PMID, PMCID or DOI. That reaches what
-the per-PMID route in `fetch_ebisearch_xrefs.py` cannot: records known only by DOI or PMCID, and
-preprints, whose EBI Search `europepmc` entries carry no cross-references. Evaluation stage: raw
-staging files only; nothing here touches the schema or moros.
+"""Dumps whole the EBI Search domains whose entries cite publications, so papers can be matched
+locally on PMID, PMCID or DOI. That reaches what the per-PMID route in `fetch_ebisearch_xrefs.py`
+cannot: records known only by DOI or PMCID, and preprints, whose EBI Search `europepmc` entries
+carry no cross-references. Raw staging only; `build_data_links.py` merges them.
+
+By default only the accepted domains small enough to page through are dumped
+(`ebisearch_resources.DUMP_DOMAINS`); `--all-citing` dumps every citing domain under the cap (the
+2026-09-14 evaluation) and `--domain` names one. Each entry keeps its name/title and, where the
+domain has one, `full_dataset_link`: the repository's own URL for the entry, which a link prefers
+over a templated one.
 
     GET https://www.ebi.ac.uk/ebisearch/ws/rest?format=json
         the domain tree: each leaf's entry count, and every field whose `referenced domain` is
@@ -32,9 +37,10 @@ exactly as returned, through a temporary file, so a failed dump never leaves a p
 Search's index dates and `fetched_at`: the provenance a later merge needs. A domain already dumped
 is skipped unless it is older than `--max-age-days` or `--refresh` is given.
 
-    python3 fetch_ebisearch_domains.py --list                  # the citing domains, sizes, fields
+    python3 fetch_ebisearch_domains.py --list                  # the citing domains; * = dumped
+    python3 fetch_ebisearch_domains.py --max-age-days 30       # the accepted domains, when stale
+    python3 fetch_ebisearch_domains.py --refresh               # every accepted domain again
     python3 fetch_ebisearch_domains.py --domain dome-registry --domain biotools
-    python3 fetch_ebisearch_domains.py                         # every citing domain under the cap
 """
 
 from __future__ import annotations
@@ -49,6 +55,7 @@ from pathlib import Path
 
 import requests
 
+from ebisearch_resources import DUMP_DOMAINS
 from fetch_citations import _session
 
 THIS_DIR = Path(__file__).resolve().parent
@@ -66,6 +73,7 @@ PUBLICATION_FIELD_NAMES = frozenset({
 })
 EXCLUDED_FIELD_PREFIXES = ("PATENT",)
 LABEL_FIELDS = ("name", "title")
+LINK_FIELDS = ("full_dataset_link",)
 PAGE_SIZE = 100
 SHORT_PAGE_RETRIES = 2
 DEFAULT_MAX_ENTRIES = 100_000
@@ -118,6 +126,7 @@ def leaf_domains(tree: dict) -> list[dict]:
                 "entries": entries,
                 "publication_fields": publication_fields(domain),
                 "label_fields": [f for f in LABEL_FIELDS if f in retrievable],
+                "link_fields": [f for f in LINK_FIELDS if f in retrievable],
                 "index_updated": info.get("Update date"),
                 "index_modified": info.get("Last modification date"),
             })
@@ -126,9 +135,10 @@ def leaf_domains(tree: dict) -> list[dict]:
     return leaves
 
 
-def select_domains(leaves: list[dict], wanted: list[str], max_entries: int) -> list[dict]:
-    """The domains named (whatever their size), else every citing domain under the cap, smallest
-    first."""
+def select_domains(leaves: list[dict], wanted: list[str], max_entries: int,
+                   accepted: frozenset[str] | set[str] | None = None) -> list[dict]:
+    """The domains named (whatever their size), else every citing domain under the cap -- only the
+    `accepted` ones when given -- smallest first."""
     citing = [leaf for leaf in leaves if leaf["publication_fields"]]
     if wanted:
         by_id = {leaf["id"]: leaf for leaf in citing}
@@ -136,12 +146,14 @@ def select_domains(leaves: list[dict], wanted: list[str], max_entries: int) -> l
         if missing:
             print(f"fetch_ebisearch_domains: not a citing domain: {', '.join(missing)}")
         return [by_id[w] for w in wanted if w in by_id]
-    return sorted((leaf for leaf in citing if leaf["entries"] <= max_entries),
+    return sorted((leaf for leaf in citing if leaf["entries"] <= max_entries
+                   and (accepted is None or leaf["id"] in accepted)),
                   key=lambda leaf: leaf["entries"])
 
 
 def fields_param(leaf: dict) -> str:
-    return ",".join(dict.fromkeys(["id", *leaf["label_fields"], *leaf["publication_fields"]]))
+    return ",".join(dict.fromkeys(["id", *leaf["label_fields"], *leaf.get("link_fields", []),
+                                   *leaf["publication_fields"]]))
 
 
 def reduce_page(payload: dict, domain: str) -> list[dict]:
@@ -270,7 +282,8 @@ def is_fresh(manifest: dict, out_dir: Path, domain: str, max_age_days: int | Non
 
 
 def run(out_dir: Path, wanted: list[str], max_entries: int, max_workers: int,
-        max_age_days: int | None, refresh: bool, list_only: bool, tree_path: Path | None) -> None:
+        max_age_days: int | None, refresh: bool, list_only: bool, tree_path: Path | None,
+        accepted_only: bool = True) -> None:
     session = _session(max_workers)
     if tree_path is not None:
         tree = json.loads(tree_path.read_text(encoding="utf-8"))
@@ -281,7 +294,8 @@ def run(out_dir: Path, wanted: list[str], max_entries: int, max_workers: int,
     leaves = leaf_domains(tree)
     citing = sorted((leaf for leaf in leaves if leaf["publication_fields"]),
                     key=lambda leaf: leaf["entries"])
-    selected = select_domains(leaves, wanted, max_entries)
+    selected = select_domains(leaves, wanted, max_entries,
+                              DUMP_DOMAINS if accepted_only else None)
     print(f"fetch_ebisearch_domains: {len(leaves)} leaf domains, {len(citing)} cite publications; "
           f"{len(selected)} selected ({sum(leaf['entries'] for leaf in selected):,} entries)")
     if list_only:
@@ -334,9 +348,11 @@ def main() -> None:
     parser.add_argument("--list", action="store_true", help="List the citing domains and stop.")
     parser.add_argument("--tree", type=Path, default=None,
                         help="A saved copy of the domain tree instead of fetching it.")
+    parser.add_argument("--all-citing", action="store_true",
+                        help="Every citing domain under the cap, not only the accepted ones.")
     args = parser.parse_args()
     run(args.out_dir, args.domain, args.max_entries, args.max_workers, args.max_age_days,
-        args.refresh, args.list, args.tree)
+        args.refresh, args.list, args.tree, accepted_only=not args.all_citing)
 
 
 if __name__ == "__main__":

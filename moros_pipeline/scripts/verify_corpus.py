@@ -37,7 +37,7 @@ from moros_client import Moros
 from link_identifiers import MONGO_MALFORMED_REGEX
 from moros_write import REPORT_DIR, new_run_id, utc_now_iso
 
-EXPECTED_SCHEMA_VERSION = "1.4.0"
+EXPECTED_SCHEMA_VERSION = "1.5.0"
 VALID_PROVENANCE = ("llm", "human_curated", "registry_confirmed")
 VALID_CLASSIFICATIONS = ("positive", "negative", "undeterminable")
 REQUIRED_INDEXES = ("_id_", "class_year_id", "positives_text")
@@ -228,6 +228,23 @@ def verify(moros: Moros, expect_count: int | None) -> tuple[Checks, dict]:
     checks.add("no malformed data link identifiers", malformed == 0,
                f"{malformed:,} documents carry a link id or url with stray punctuation, whitespace or "
                f"non-ASCII -- rebuild with build_data_links.py and reload --mode data_links")
+
+    # -- EBI Search links and the DOME Registry identifier (v1.5.0) ---------------
+    #
+    # Coverage notes, and one invariant: a document carrying v1.5.0 link keys under another
+    # schema_version was loaded before migrate_v1_5_0.py ran (load_fields never writes the version).
+    with_ebisearch = moros.count({"data_links.sources": "ebisearch"})
+    dome_found = moros.count({"identifiers.dome_registry": {"$nin": [None, ""]}})
+    dome_none = moros.count({"identifiers.dome_registry": ""})
+    facts["data_links"]["ebisearch"] = with_ebisearch
+    facts["dome_registry"] = {"found": dome_found, "looked_up_none": dome_none}
+    checks.note("EBI Search route", f"{with_ebisearch:,} documents had EBI Search consulted")
+    checks.note("identifiers.dome_registry",
+                f"{dome_found:,} with a DOME Registry entry, {dome_none:,} looked up with none")
+    early = moros.count({"data_links.links.matched_by": {"$exists": True},
+                         "schema_version": {"$ne": EXPECTED_SCHEMA_VERSION}})
+    checks.add("no v1.5.0 link keys under an older schema_version", early == 0,
+               f"{early:,} documents -- run migrate_v1_5_0.py")
 
     # -- indexes ------------------------------------------------------------
     indexes = sorted(moros.indexes())

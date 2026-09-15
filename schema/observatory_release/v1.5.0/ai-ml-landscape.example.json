@@ -1,11 +1,12 @@
 {
   "_id": "8b720ad0-8cf7-5304-a016-3b15feae2815",
-  "schema_version": "1.1.0",
+  "schema_version": "1.5.0",
   "identifiers": {
     "pmid": "40703513",
     "pmcid": "PMC12283288",
     "doi": "10.3389/fimmu.2025.1608262",
-    "dome_registry": null,
+    "epmc_id": "40703513",
+    "dome_registry": "",
     "bioai_repo": null,
     "huggingface": null,
     "kaggle": null,
@@ -17,7 +18,10 @@
     "authors": "Liang L, Liang H, He M, Zhang H, Ke P.",
     "year": 2025,
     "journal": "Frontiers in immunology",
-    "citation_count": null
+    "preprint_server": null,
+    "citation_count": 1,
+    "citation_count_updated": "2026-09-03T13:49:11.247182+00:00",
+    "citation_source": "europepmc"
   },
   "source": {
     "abstract_source": "europepmc",
@@ -26,7 +30,9 @@
       "open_access": true,
       "license": "cc by",
       "fulltext_available": true
-    }
+    },
+    "decision_provenance": "llm",
+    "epmc_source": "MED"
   },
   "content_filters": {
     "mesh_headings": [
@@ -59,6 +65,128 @@
     "learning_paradigm": [],
     "model_family": [],
     "model_type": []
+  },
+  "data_links": {
+    "has_data": true,
+    "tags": [
+      "supporting_data"
+    ],
+    "accession_types": [
+      "geo",
+      "doi"
+    ],
+    "db_cross_references": [],
+    "fetched_at": "2026-09-14T17:15:37.828411+00:00",
+    "sources": [
+      "epmc_annotations",
+      "derived",
+      "ebisearch"
+    ],
+    "link_count": 6,
+    "truncated": false,
+    "resources": [
+      {
+        "resource": "geo",
+        "label": "Gene Expression Omnibus",
+        "category": "Gene Expression",
+        "id_scheme": "GEO",
+        "publisher": "Europe PMC",
+        "obtained_by": "tm_accession",
+        "count": 5,
+        "routes": [
+          "tm_accession"
+        ],
+        "browse_url": "https://www.ncbi.nlm.nih.gov/gds?LinkName=pubmed_gds&from_uid=40703513"
+      },
+      {
+        "resource": "biostudies",
+        "label": "BioStudies",
+        "category": "Supplementary Material",
+        "id_scheme": "BioStudies",
+        "publisher": "BioStudies",
+        "obtained_by": "derived",
+        "count": 1,
+        "routes": [
+          "derived",
+          "ebisearch_xref"
+        ],
+        "browse_url": null
+      }
+    ],
+    "links": [
+      {
+        "resource": "geo",
+        "id": "GSE12021",
+        "url": "http://identifiers.org/geo:GSE12021",
+        "title": null,
+        "obtained_by": "tm_accession",
+        "relationship": "References",
+        "section": "Introduction",
+        "frequency": null,
+        "matched_by": null,
+        "source_domain": null
+      },
+      {
+        "resource": "geo",
+        "id": "GSE55457",
+        "url": "http://identifiers.org/geo:GSE55457",
+        "title": null,
+        "obtained_by": "tm_accession",
+        "relationship": "References",
+        "section": "Introduction",
+        "frequency": null,
+        "matched_by": null,
+        "source_domain": null
+      },
+      {
+        "resource": "geo",
+        "id": "GSE55235",
+        "url": "http://identifiers.org/geo:GSE55235",
+        "title": null,
+        "obtained_by": "tm_accession",
+        "relationship": "References",
+        "section": "Introduction",
+        "frequency": null,
+        "matched_by": null,
+        "source_domain": null
+      },
+      {
+        "resource": "geo",
+        "id": "GPL96",
+        "url": "http://identifiers.org/geo:GPL96",
+        "title": null,
+        "obtained_by": "tm_accession",
+        "relationship": "References",
+        "section": "Methods",
+        "frequency": null,
+        "matched_by": null,
+        "source_domain": null
+      },
+      {
+        "resource": "geo",
+        "id": "GSE159117",
+        "url": "http://identifiers.org/geo:GSE159117",
+        "title": null,
+        "obtained_by": "tm_accession",
+        "relationship": "References",
+        "section": "Methods",
+        "frequency": null,
+        "matched_by": null,
+        "source_domain": null
+      },
+      {
+        "resource": "biostudies",
+        "id": "S-EPMC12283288",
+        "url": "https://www.ebi.ac.uk/biostudies/studies/S-EPMC12283288",
+        "title": "Supplementary material",
+        "obtained_by": "derived",
+        "relationship": "IsSupplementedBy",
+        "section": null,
+        "frequency": null,
+        "matched_by": "pmid",
+        "source_domain": "biostudies-literature"
+      }
+    ]
   },
   "llm_classification": {
     "provider": "deepseek",

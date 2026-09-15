@@ -10,7 +10,7 @@ which upserts whole *new* documents through `mongoimport`. The split is delibera
   refresh must not blank an `llm_enrichment` group a later enrichment run has populated"). So this
   writes named leaf paths only, checked against `moros_write.WRITE_MODES`.
 
-Four modes (`citations`, `licences`, `preprints`, `data_links`). Adding another means adding its
+Five modes (`citations`, `licences`, `preprints`, `data_links`, `identifiers`). Adding another means adding its
 allowlist to `WRITE_MODES` and its row mapper below -- both in a diff someone reads, which is the
 point -- plus a `DEFAULT_INPUTS` entry and a `_coverage` headline field.
 
@@ -29,6 +29,10 @@ number must not be able to relabel who decided the record.
 builder) and writes the `data_links.*` leaves -- the summary columns and/or the link fields,
 whichever the row carries. Same three-step shape as above.
 
+`identifiers` reads `output/pid_identifiers.csv` (same builder, when its EBI Search route runs) and
+writes the reserved cross-reference identifiers the row carries -- today `identifiers.dome_registry`.
+Run it after `migrate_v1_5_0.py`.
+
 To undo any run:
     python3 moros_write.py --rollback ../output/rollback/<run_id>.jsonl --confirm
 """
@@ -38,13 +42,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Iterator
 
 from moros_client import Moros
 from link_identifiers import malformed_links
-from moros_write import DATA_LINKS_LINK_FIELDS, SafeWriter, new_run_id
+from moros_write import DATA_LINKS_LINK_FIELDS, IDENTIFIER_FIELDS, SafeWriter, new_run_id
 
 csv.field_size_limit(sys.maxsize)
 
@@ -56,6 +61,7 @@ DEFAULT_INPUTS = {
     "licences": FOLDER_DIR / "output" / "pid_licences.csv",
     "preprints": FOLDER_DIR / "output" / "pid_preprints.csv",
     "data_links": FOLDER_DIR / "output" / "pid_data_links.csv",
+    "identifiers": FOLDER_DIR / "output" / "pid_identifiers.csv",
 }
 
 
@@ -191,11 +197,39 @@ def data_links_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] 
     return pid, update
 
 
+_CLEAN_IDENTIFIER_RE = re.compile(r"^[\x21-\x7e]+$")
+
+
+def identifiers_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
+    """One `pid_identifiers.csv` row -> `(_id, {leaf_path: value})`.
+
+    Writes each reserved identifier column the row carries. `""` is written: it means "looked up,
+    none found", which the schema distinguishes from null ("never looked up") exactly as it does
+    for a licence, so the next pass does not look the paper up again forever. A column the file
+    lacks is left alone. A value with whitespace or anything outside printable ASCII raises, and
+    `run()` maps every row before connecting, so such a file is refused whole."""
+    pid = (row.get("pid") or "").strip()
+    if not pid:
+        return None
+    update: dict[str, Any] = {}
+    for path in IDENTIFIER_FIELDS:
+        column = path.split(".", 1)[1]
+        if row.get(column) is None:
+            continue
+        value = row[column].strip()
+        if value and not _CLEAN_IDENTIFIER_RE.match(value):
+            raise ValueError(f"pid {pid}: {column} {value!r} is not a clean identifier -- rebuild "
+                             f"the file with build_data_links.py")
+        update[path] = value
+    return (pid, update) if update else None
+
+
 ROW_MAPPERS = {
     "citations": citation_row_to_update,
     "licences": licence_row_to_update,
     "preprints": preprint_row_to_update,
     "data_links": data_links_row_to_update,
+    "identifiers": identifiers_row_to_update,
 }
 
 
@@ -302,7 +336,8 @@ def _coverage(moros: Moros, mode: str) -> int:
     field = {"citations": "publication_metadata.citation_count",
              "licences": "source.access.license",
              "preprints": "identifiers.epmc_id",
-             "data_links": "data_links.has_data"}[mode]
+             "data_links": "data_links.has_data",
+             "identifiers": "identifiers.dome_registry"}[mode]
     return moros.count({field: {"$ne": None}})
 
 

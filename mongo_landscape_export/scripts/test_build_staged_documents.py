@@ -173,3 +173,23 @@ def test_the_merged_data_links_file_adds_the_detail_by_pid():
     # a pid the merged file does not cover is untouched
     other = build_document(build_row(dict(STAGED, pid="other"), EVENT, {}, {}, None, merged))
     assert other["data_links"]["fetched_at"] is None
+
+
+def test_the_identifiers_file_fills_dome_registry_by_pid_and_marks_it_looked_up():
+    def dome(identifiers):
+        return build_document(build_row(STAGED, EVENT, {}, {}, None, None, identifiers))[
+            "identifiers"]["dome_registry"]
+
+    assert dome({STAGED["pid"]: "3mm086r5pw"}) == "3mm086r5pw"
+    assert dome({STAGED["pid"]: ""}) == ""
+    assert dome({"another-pid": "3mm086r5pw"}) is None
+    assert dome(None) is None
+
+
+def test_load_identifiers_keeps_a_confirmed_miss(tmp_path):
+    from build_staged_documents import load_identifiers
+
+    path = tmp_path / "ids.csv"
+    path.write_text("pid,dome_registry\np1,3mm086r5pw\np2,\n", encoding="utf-8")
+    assert load_identifiers(path) == {"p1": "3mm086r5pw", "p2": ""}
+    assert load_identifiers(tmp_path / "missing.csv") == {}

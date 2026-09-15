@@ -31,15 +31,15 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
       fetch_citations.py --with-licence ──▶ citation counts + licences for the batch
                         │
                         ▼
-      fetch_annotations.py · fetch_datalinks.py · build_data_links.py ──▶ Europe PMC data links for the batch
+      fetch_annotations.py · fetch_datalinks.py · fetch_ebisearch_*.py · build_data_links.py ──▶ data links for the batch
                         │
                         ▼
-      build_staged_documents.py ──▶ documents JSONL (schema 1.4.0) ──load_documents.py──▶ moros
+      build_staged_documents.py ──▶ documents JSONL (schema 1.5.0) ──load_documents.py──▶ moros
                                                                   ensure_indexes.py · verify_corpus.py
 
 positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
 moros ──fetch_citations.py --max-age-days N──▶ join_citations.py ──load_fields.py --mode citations──▶ moros
-moros ──export_corpus_keys.py──▶ fetch_epmc_metadata.py ──▶ fetch_annotations.py · fetch_datalinks.py ──▶ build_data_links.py ──load_fields.py --mode preprints | data_links──▶ moros
+moros ──export_corpus_keys.py──▶ fetch_epmc_metadata.py ──▶ fetch_annotations.py · fetch_datalinks.py · fetch_ebisearch_*.py ──▶ build_data_links.py ──load_fields.py --mode preprints | data_links | identifiers──▶ moros
 ```
 
 Two runtimes, deliberately:
@@ -141,7 +141,7 @@ disk), and locked (a second run on the same events file exits naming the holder)
 Citations and licences are fetched for the batch by three keys (`pmid -> doi -> pmcid`). The
 staged CSV already carries each record's Europe PMC identity, preprint server and data-links
 summary, read off the search response at no extra cost; the data links themselves are fetched for
-the batch and merged. Then the staged CSV and its events become documents through the same
+the batch and merged (Europe PMC for every record, EBI Search for the positives). Then the staged CSV and its events become documents through the same
 `schema.build_document()` every record in the corpus was built with.
 
 ```bash
@@ -151,13 +151,22 @@ python3 join_citations.py --citations ../output/epmc_citations.csv \
     --with-licence --corpus-from-moros --output ../output/pid_licences.csv
 python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
 python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
+python3 fetch_ebisearch_domains.py --max-age-days 30        # EBI Search: re-dumps only stale accepted domains
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv   # the batch's positives
+python3 fetch_ebisearch_xrefs.py discover --input ../output/incoming_new.csv \
+    --classification-events ../output/incoming_new_classification_events.csv --record-failures
+python3 fetch_ebisearch_xrefs.py detail
 python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../output/incoming_new.csv \
     --annotations ../output/incoming_new_annotations.jsonl --datalinks ../output/incoming_new_datalinks.jsonl \
-    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv
+    --classification-events ../output/incoming_new_classification_events.csv --shards 1 \
+    --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv \
+    --out-identifiers ../output/incoming_new_pid_identifiers.csv
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
-    --data-links ../output/incoming_new_pid_data_links.csv
+    --data-links ../output/incoming_new_pid_data_links.csv \
+    --identifiers ../output/incoming_new_pid_identifiers.csv
 #   -> ../../mongo_landscape_export/output/incoming_new_documents.jsonl
 
 python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
@@ -232,23 +241,37 @@ python3 fetch_epmc_metadata.py                   # identity + summary, batched c
 python3 fetch_annotations.py --limit 3000
 python3 fetch_annotations.py --max-workers 128   # text-mined accessions, 8 ids per call
 python3 fetch_datalinks.py                       # Scholix residual: cross-references, data citations
-python3 build_data_links.py --report-only        # coverage, resource mix, unmapped names
-python3 build_data_links.py                      # -> pid_preprints.csv, pid_data_links.csv
+python3 fetch_ebisearch_domains.py               # EBI Search: accepted domains, dumped whole
+python3 fetch_ebisearch_xrefs.py discover --max-workers 256   # EBI Search: which domains name each positive
+python3 fetch_ebisearch_xrefs.py detail          # EBI Search: the entries, for domains too large to dump
+python3 build_data_links.py --report-only        # coverage, resource mix, unmapped names, rejected domains
+python3 build_data_links.py                      # -> pid_preprints.csv, pid_data_links.csv, pid_identifiers.csv
 python3 migrate_v1_4_0.py                        # once: dry run, then --confirm
+python3 migrate_v1_5_0.py                        # once, after it: dry run, then --confirm
 python3 load_fields.py --mode preprints          # dry run -> --limit 500 --confirm -> --confirm
 python3 load_fields.py --mode data_links         # same
+python3 load_fields.py --mode identifiers        # same
 ```
+
+Schema v1.5.0 adds, for positives only, the links EBI Search's databases hold for the paper:
+deposits in ENA, GEO, PRIDE, PDBe and two dozen more repositories, the paper's bio.tools record,
+and its DOME Registry report, which also fills `identifiers.dome_registry`. They merge into the
+same `data_links` block with no duplicate link, and each link records the route that found it.
+[`docs/data_links_sources.md`](docs/data_links_sources.md) lists every accepted and refused
+source.
 
 The Europe PMC routes, the resource catalogue and the throughput rules are in
 [`moros_pipeline/README.md`](moros_pipeline/README.md); the preprint rules (PPR-first, never
 `pick_best()`) in [`docs/preprint.md`](docs/preprint.md).
 
-### 7. Cross-links — scaffold only
+### 7. Cross-links
 
-`identifiers.dome_registry`, `bioai_repo`, `huggingface`, `kaggle` and `zenodo` exist on every
-document and are null. [`cross_links/`](cross_links/README.md) holds the plan for filling them,
-now largely by deriving them from `data_links` (a Zenodo DOI, a repository link) plus the
-repository APIs Europe PMC does not cover. Nothing there writes yet.
+`identifiers.dome_registry` is filled from schema v1.5.0 by the data-links build, from the DOME
+Registry's EBI Search entries, for positives. `bioai_repo`, `huggingface`, `kaggle` and `zenodo`
+exist on every document and are null. [`cross_links/`](cross_links/README.md) holds the plan for
+filling them, largely by deriving them from `data_links` (a Zenodo DOI, a repository link) plus
+the repository APIs Europe PMC does not cover. Nothing there writes yet; the `identifiers` write
+mode they will load through exists.
 
 ## Costs and timing
 
@@ -274,8 +297,8 @@ a run of that length started now stays off-peak, and when the next such window o
 | `schema/` | Alignment with the published schema in `dome-ml-observatory` ([README](schema/README.md)). |
 | `pricing/`, `scripts/cost_dashboard.py`, `COST_DASHBOARD.md` | Pricing as of a date, the generator, and the dashboard. |
 | `epmc_licensing/` | The original pmid-keyed licence table (13 MB), still read as a fallback by the document builder. |
-| `cross_links/` | Scaffold for the reserved external-identifier fields, to be derived from `data_links`. |
-| `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. |
+| `cross_links/` | Scaffold for the reserved external-identifier fields other than `dome_registry`, to be derived from `data_links`. |
+| `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. [`data_links_sources.md`](docs/data_links_sources.md) lists every data-link source, accepted or refused (schema v1.5.0). |
 | `.claude/skills/`, [`SKILLS.md`](SKILLS.md) | Agent skills, one per process, plus the sequential refresh cycle. |
 | [`AGENTS.md`](AGENTS.md) | The rules: what may never be altered, how writes are kept safe, what has gone wrong before. |
 | [`ROADMAP.md`](ROADMAP.md) | Short. |

@@ -171,6 +171,12 @@ field.
   and confirming every DOI at doi.org); `load_fields.py --mode data_links` and `load_documents.py`
   refuse a file with a malformed link before connecting; `verify_corpus.py` fails if one is in
   moros. Keep all four in place, and extend `link_identifiers.py` rather than cleaning anywhere else.
+- **An EBI Search cross-reference answer without `size` carries one reference per entry, whatever
+  its `referenceCount`** (2026-09-14: pdbekb for PMID 33024307 returned 1 of 5), and EBI Search
+  returns curation databases beside real deposits. `fetch_ebisearch_xrefs.py detail` checks every
+  entry against its count; `moros_pipeline/scripts/ebisearch_resources.py` is the only accept list
+  for EBI Search domains, and [`docs/data_links_sources.md`](docs/data_links_sources.md) must
+  agree with it. EBI Search links go to positives only and pass the same four gates.
 
 ## Provenance of this repository
 

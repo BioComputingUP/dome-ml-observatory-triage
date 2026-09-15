@@ -10,6 +10,7 @@ live database agree. Read-only everywhere. Exit 1 on drift.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
 import re
@@ -19,6 +20,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SCHEMA_PY = REPO / "mongo_landscape_export" / "scripts" / "schema.py"
 TEMPLATE = REPO / "mongo_landscape_export" / "schema" / "ai_ml_landscape.schema.json"
+# Owns the element shape of data_links.links[] and .resources[] (LINK_KEYS, RESOURCE_KEYS).
+BUILD_DATA_LINKS = REPO / "moros_pipeline" / "scripts" / "build_data_links.py"
 VOCABS = {
     "domain.json": REPO / "curation_criteria" / "domain_vocab.json",
     "modelling-branch.json": REPO / "curation_criteria" / "modelling_branch_vocab.json",
@@ -54,6 +57,25 @@ def jsonschema_paths(schema: dict, prefix="") -> set[str]:
         else:
             out.add(f"{prefix}{k}")
     return out
+
+
+def authored_tuple(name: str) -> tuple[str, ...]:
+    """A tuple-of-strings constant read out of build_data_links.py without importing it (its imports
+    need the pipeline's dependencies; this check needs none)."""
+    tree = ast.parse(BUILD_DATA_LINKS.read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name
+                                                for t in node.targets):
+            return tuple(ast.literal_eval(node.value))
+    raise SystemExit(f"{name} not found in {BUILD_DATA_LINKS}")
+
+
+def element_keys(schema: dict, array: str) -> tuple[set[str], set[str]]:
+    """(declared, required) item keys of data_links.<array> in a published JSON Schema. The leaf
+    comparison stops at an array, so without this the element shape could drift unseen."""
+    group = ((schema.get("properties") or {}).get("data_links") or {}).get("properties") or {}
+    items = (group.get(array) or {}).get("items") or {}
+    return set(items.get("properties") or {}), set(items.get("required") or [])
 
 
 def main() -> int:
@@ -93,7 +115,8 @@ def main() -> int:
         schema_json = release / "ai-ml-landscape.schema.json"
         if schema_json.exists() and TEMPLATE.exists():
             here_paths = template_paths(json.loads(TEMPLATE.read_text(encoding="utf-8")))
-            there_paths = jsonschema_paths(json.loads(schema_json.read_text(encoding="utf-8")))
+            published = json.loads(schema_json.read_text(encoding="utf-8"))
+            there_paths = jsonschema_paths(published)
             only_here = sorted(here_paths - there_paths)
             only_there = sorted(there_paths - here_paths)
             print(f"field paths: authored {len(here_paths)}, published {len(there_paths)}")
@@ -101,6 +124,17 @@ def main() -> int:
                 problems.append("fields authored but not published: " + ", ".join(only_here))
             if only_there:
                 problems.append("fields published but not authored: " + ", ".join(only_there))
+            for array, constant in (("links", "LINK_KEYS"), ("resources", "RESOURCE_KEYS")):
+                declared, required = element_keys(published, array)
+                if not declared:
+                    continue
+                built = set(authored_tuple(constant))
+                if built - declared:
+                    problems.append(f"data_links.{array}[] keys built but not published: "
+                                    + ", ".join(sorted(built - declared)))
+                if required - built:
+                    problems.append(f"data_links.{array}[] keys published as required but not built: "
+                                    + ", ".join(sorted(required - built)))
         else:
             problems.append(f"published schema JSON or authored template missing ({schema_json}, {TEMPLATE})")
 
