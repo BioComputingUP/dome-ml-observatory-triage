@@ -24,7 +24,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +34,11 @@ THIS_DIR = Path(__file__).resolve().parent
 FOLDER_DIR = THIS_DIR.parent
 DEFAULT_CONFIG = FOLDER_DIR / "config" / "search_space.yaml"
 DEFAULT_LEDGER = FOLDER_DIR / "output" / "coverage_ledger.json"
+
+# Europe PMC's first-index date, which an index window searches on (see SearchSpace.index_query), and
+# the far end of the publication-date range for papers dated in the future.
+INDEX_DATE_FIELD = "FIRST_IDATE"
+FUTURE_DATED_UNTIL = "2100-12-31"
 
 
 @dataclass
@@ -69,6 +74,21 @@ class SearchSpace:
         exactly -- `({terms}) AND ({DATE_FIELD}:[from TO to])` -- so windows fetched by the old
         hardcoded path and by this one are directly comparable."""
         clause = f"({self.term_clause()}) AND ({self.date_field}:[{date_from} TO {date_to}])"
+        if self.sources:
+            clause += " AND (" + " OR ".join(f"SRC:{s}" for s in self.sources) + ")"
+        return clause
+
+    def index_query(self, since: str, up_to: str, future_dated_from: str | None = None) -> str:
+        """Everything Europe PMC first indexed from `since` to `up_to`, whatever its publication
+        date: new papers, papers indexed late for an earlier year, and papers dated in the future.
+        With `future_dated_from`, also every paper whose publication date is on or after that day --
+        used once, when a chain of index windows starts after a year window, for papers indexed
+        before that fetch but dated after its end, which neither kind of window would otherwise
+        return. Same terms and sources as `query`, so it belongs to the same search space and hash."""
+        date_clause = f"{INDEX_DATE_FIELD}:[{since} TO {up_to}]"
+        if future_dated_from:
+            date_clause += f" OR {self.date_field}:[{future_dated_from} TO {FUTURE_DATED_UNTIL}]"
+        clause = f"({self.term_clause()}) AND ({date_clause})"
         if self.sources:
             clause += " AND (" + " OR ".join(f"SRC:{s}" for s in self.sources) + ")"
         return clause
@@ -151,6 +171,47 @@ class CoverageLedger:
             "fetched_at": _now(), "loaded_to_moros": None, "loaded_at": None, "path": path,
         })
 
+    def index_windows(self, space: SearchSpace) -> list[dict[str, Any]]:
+        item = self.entry(space)
+        return list(item.get("index_windows", [])) if item else []
+
+    def record_index_window(
+        self, space: SearchSpace, since: str, up_to: str, fetched: int, path: str,
+        future_dated_from: str | None = None,
+    ) -> None:
+        item = self.entry(space, create=True)
+        assert item is not None
+        windows = item.setdefault("index_windows", [])
+        fields = {"fetched": fetched, "fetched_at": _now(), "path": path,
+                  "future_dated_from": future_dated_from}
+        for window in windows:
+            if window["from"] == since and window["to"] == up_to:
+                window.update(fields)
+                return
+        windows.append({"from": since, "to": up_to, **fields})
+
+    def indexed_through(self, space: SearchSpace) -> str | None:
+        """The last day up to which every record Europe PMC had indexed has been fetched. A year
+        window returns what was indexed by the day it ran; an index window, what was indexed by its
+        `to` or by the day it ran, whichever is earlier. None before any fetch."""
+        days = [w["fetched_at"][:10] for w in (self.entry(space) or {}).get("windows", [])
+                if w.get("fetched_at")]
+        days += [min(w["to"], w["fetched_at"][:10]) for w in self.index_windows(space)
+                 if w.get("fetched_at")]
+        return max(days) if days else None
+
+    def future_dated_from(self, space: SearchSpace) -> str | None:
+        """Before the first index window: the day after the end of the most recently fetched year
+        window. Papers indexed before that fetch but dated after its end are in no window yet.
+        Once an index window exists it has already fetched them, so None."""
+        if self.index_windows(space):
+            return None
+        windows = [w for w in (self.entry(space) or {}).get("windows", []) if w.get("fetched_at")]
+        if not windows:
+            return None
+        latest = max(windows, key=lambda w: (w["fetched_at"], w["to"]))
+        return (date.fromisoformat(latest["to"]) + timedelta(days=1)).isoformat()
+
     def record_loaded(self, space: SearchSpace, date_from: str, date_to: str, loaded: int) -> None:
         item = self.entry(space, create=True)
         assert item is not None
@@ -178,6 +239,34 @@ def missing_years(space: SearchSpace, ledger: CoverageLedger, up_to: date) -> li
     if up_to.year not in years:
         years.append(up_to.year)  # the current year is never "done"
     return sorted(set(years))
+
+
+def plan_index_window(space: SearchSpace, ledger: CoverageLedger, up_to: date,
+                      indexed_since: str) -> tuple[str, str | None]:
+    """(since, future_dated_from) for an index-date fetch, or SystemExit when it would leave a gap.
+
+    `indexed_since` is a date or "last" (the ledger's `indexed_through`). A since later than that
+    day would skip whatever was indexed in between, so it is refused; an earlier one only overlaps,
+    and the moros dedupe drops what is already loaded. Every year before `up_to` must have been
+    fetched at least once: an index window only adds to coverage that exists."""
+    through = ledger.indexed_through(space)
+    if through is None:
+        raise SystemExit("nothing has been fetched for this query yet -- run the year windows first "
+                         "(fetch_search_space.py --up-to today)")
+    first = int(space.coverage_start[:4])
+    never = [y for y in range(first, up_to.year) if y not in ledger.covered_years(space)]
+    if never:
+        raise SystemExit(f"years never fetched for this query: {never[:10]}"
+                         f"{' ...' if len(never) > 10 else ''} -- run without --indexed-since first")
+    since = through if indexed_since == "last" else date.fromisoformat(indexed_since).isoformat()
+    if since > through:
+        raise SystemExit(f"--indexed-since {since} starts after {through}, the last day already "
+                         f"covered: records indexed in between would never be fetched. Use 'last' or "
+                         f"an earlier date.")
+    if since > up_to.isoformat():
+        raise SystemExit(f"nothing to fetch: everything Europe PMC indexed is already covered up to "
+                         f"{since}, past --up-to {up_to.isoformat()}")
+    return since, ledger.future_dated_from(space)
 
 
 def _now() -> str:

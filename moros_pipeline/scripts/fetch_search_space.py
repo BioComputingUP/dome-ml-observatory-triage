@@ -22,6 +22,14 @@ interrupted run resumes rather than restarting.
     python3 fetch_search_space.py --show-query          # what would be searched, and its hash
     python3 fetch_search_space.py --dry-run             # which windows are missing
     python3 fetch_search_space.py --up-to today
+
+Re-fetching the current year returns every paper of the year again (192,432 on 2026-09-15) to find
+the few thousand moros lacks, and it never returns a paper Europe PMC indexes late for an earlier
+year. `--indexed-since` fetches instead what Europe PMC first indexed since the last fetch, whatever
+its publication date (about 5,000 a week), into its own folder:
+
+    python3 fetch_search_space.py --indexed-since last --up-to today --dry-run
+    python3 fetch_search_space.py --indexed-since last --up-to today
 """
 
 from __future__ import annotations
@@ -36,6 +44,7 @@ from coverage_ledger import (
     DEFAULT_LEDGER,
     CoverageLedger,
     SearchSpace,
+    plan_index_window,
     missing_years,
 )
 from epmc_search import EpmcSearch
@@ -81,8 +90,63 @@ def _ledger_path(out: Path) -> str:
         return str(out)
 
 
+# A window that returns fewer records than Europe PMC's own hitCount stopped paging early. The run of
+# 2026-09-03 recorded 148,815 records for 2026-01-01..09-03 while the same query returned 191,536 on
+# 2026-09-15, most of them indexed and unrevised before 09-03, and nothing noticed. Records indexed
+# while a fetch runs can push the count up slightly, never down, so only a shortfall fails.
+COMPLETENESS_TOLERANCE = 0.002
+
+
+def check_complete(fetched: int, expected: int, label: str) -> None:
+    """SystemExit when a window returned fewer records than Europe PMC reported for it."""
+    if fetched < expected * (1 - COMPLETENESS_TOLERANCE):
+        raise SystemExit(
+            f"\nINCOMPLETE: {label} returned {fetched:,} records but Europe PMC reports {expected:,}. "
+            f"Paging stopped early; the window is NOT recorded as fetched and no .done marker is "
+            f"written. Re-run the same command.")
+
+
+def run_indexed(space: SearchSpace, ledger: CoverageLedger, incoming_dir: Path, up_to: date,
+                indexed_since: str, dry_run: bool) -> None:
+    """One index window: what Europe PMC first indexed from `since` to `up_to`, plus, the first time,
+    the papers dated after the last year window. Written to its own folder so the batch builder reads
+    only this window, not the year files beside it."""
+    since, future_from = plan_index_window(space, ledger, up_to, indexed_since)
+    query = space.index_query(since, up_to.isoformat(), future_from)
+    client = EpmcSearch()
+    try:
+        expected = client.count(query)
+        print(f"\nindex window: first indexed {since} .. {up_to.isoformat()}"
+              + (f", plus papers dated from {future_from} (first index window)" if future_from else ""))
+        print(f"  query   : {query}")
+        print(f"  records : {expected:,}")
+        if dry_run:
+            print("\nDRY RUN -- nothing fetched. Re-run without --dry-run to fetch this window.")
+            return
+        out_dir = incoming_dir / space.sha256()[:12] / f"indexed_{since}_{up_to.isoformat()}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out = out_dir / "records.jsonl"
+        tmp = out.with_suffix(".jsonl.tmp")
+        n = 0
+        with tmp.open("w", encoding="utf-8") as f:
+            for record in client.search(query):
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                n += 1
+        check_complete(n, expected, f"index window {since}..{up_to.isoformat()}")
+        tmp.replace(out)
+    finally:
+        client.close()
+    ledger.record_index_window(space, since, up_to.isoformat(), fetched=n, path=_ledger_path(out),
+                               future_dated_from=future_from)
+    ledger.save()
+    print(f"{n:,} records -> {out}")
+    print(f"\nledger -> {ledger.path}")
+    print(f"next: python3 build_incoming_documents.py --incoming {out_dir}")
+
+
 def run(config_path: Path, ledger_path: Path, incoming_dir: Path, up_to: date,
-        dry_run: bool, show_query: bool, ignore_cross_check: bool) -> None:
+        dry_run: bool, show_query: bool, ignore_cross_check: bool,
+        indexed_since: str | None = None) -> None:
     space = SearchSpace.load(config_path)
     ledger = CoverageLedger(ledger_path)
 
@@ -124,6 +188,10 @@ def run(config_path: Path, ledger_path: Path, incoming_dir: Path, up_to: date,
             ledger.save()
             covered = ledger.covered_years(space)
 
+    if indexed_since is not None:
+        run_indexed(space, ledger, incoming_dir, up_to, indexed_since, dry_run)
+        return
+
     years = missing_years(space, ledger, up_to)
     print(f"\nto fetch, up to {up_to.isoformat()}: {len(years)} window(s)")
     for year in years:
@@ -150,12 +218,14 @@ def run(config_path: Path, ledger_path: Path, incoming_dir: Path, up_to: date,
                 print(f"{year}: .done marker present, skipping")
                 continue
             query = space.query(start, end)
+            expected = client.count(query)
             tmp = out.with_suffix(".jsonl.tmp")
             n = 0
             with tmp.open("w", encoding="utf-8") as f:
                 for record in client.search(query):
                     f.write(json.dumps(record, ensure_ascii=False) + "\n")
                     n += 1
+            check_complete(n, expected, f"{year} ({start}..{end})")
             tmp.replace(out)
             done.write_text(f"{n}\n", encoding="utf-8")
             ledger.record_window(space, start, end, fetched=n, path=_ledger_path(out))
@@ -178,10 +248,14 @@ def main() -> None:
     parser.add_argument("--show-query", action="store_true")
     parser.add_argument("--ignore-cross-check", action="store_true",
                         help="Adopt an existing corpus: record its years as covered, unfetched.")
+    parser.add_argument("--indexed-since", default=None,
+                        help="YYYY-MM-DD, or 'last' (the last day already covered): fetch what Europe "
+                             "PMC first indexed from then to --up-to, whatever its publication date, "
+                             "instead of re-fetching the current year.")
     args = parser.parse_args()
     up_to = date.today() if args.up_to == "today" else date.fromisoformat(args.up_to)
     run(args.config, args.ledger, args.incoming, up_to, args.dry_run, args.show_query,
-        args.ignore_cross_check)
+        args.ignore_cross_check, args.indexed_since)
 
 
 if __name__ == "__main__":

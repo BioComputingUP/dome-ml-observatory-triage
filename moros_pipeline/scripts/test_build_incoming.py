@@ -49,3 +49,20 @@ def test_a_medline_record_has_no_server_and_n_flags():
                                  "journalTitle": "Nature"})
     assert row["preprint_server"] == "" and row["epmc_id"] == "1"
     assert row["has_data"] == "N" and row["data_links_tags"] == "[]"
+
+
+def test_a_paper_that_gained_a_pmcid_is_not_new():
+    """Its _id changed because pmcid outranks doi in the minting rule; its doi is already held."""
+    rows = [{"pid": "new-id", "pmcid": "PMC13520244", "doi": "10.1186/S12873-026-01647-Z", "pmid": "42310553"},
+            {"pid": "really-new", "pmcid": "", "doi": "10.1/x", "pmid": "1"}]
+    known = {"pmcid": {}, "doi": {"10.1186/s12873-026-01647-z": "old-id"}, "pmid": {"42310553": "old-id"}}
+    new, already = bi.drop_known_identifiers(rows, known)
+    assert [r["pid"] for r in new] == ["really-new"]
+    assert already == [{"pid": "new-id", "existing_id": "old-id", "pmcid": "PMC13520244",
+                        "doi": "10.1186/S12873-026-01647-Z", "pmid": "42310553"}]
+
+
+def test_empty_identifiers_never_match():
+    rows = [{"pid": "a", "pmcid": "", "doi": "", "pmid": ""}]
+    new, already = bi.drop_known_identifiers(rows, {"pmcid": {"": "x"}, "doi": {"": "x"}, "pmid": {"": "x"}})
+    assert [r["pid"] for r in new] == ["a"] and already == []

@@ -105,6 +105,52 @@ def epmc_record_to_row(record: dict) -> dict | None:
     }
 
 
+IDENTITY_FIELDS = ("pmcid", "doi", "pmid")
+
+
+def _norm_id(field: str, value) -> str:
+    value = str(value or "").strip()
+    return value.lower() if field in ("doi", "pmcid") else value
+
+
+def known_identifiers(moros: Moros, rows: list[dict], batch_size: int = 5_000) -> dict[str, dict[str, str]]:
+    """For each identity field, which of these rows' values moros already holds, mapped to the
+    `_id` holding it. Batched `$in` on `identifiers.<field>`, read-only."""
+    known: dict[str, dict[str, str]] = {f: {} for f in IDENTITY_FIELDS}
+    for field in IDENTITY_FIELDS:
+        values = sorted({str(r.get(field) or "").strip() for r in rows if str(r.get(field) or "").strip()})
+        for i in range(0, len(values), batch_size):
+            chunk = values[i:i + batch_size]
+            if field in ("doi", "pmcid"):
+                chunk = sorted(set(chunk) | {v.lower() for v in chunk} | {v.upper() for v in chunk})
+            cursor = moros.collection.find({f"identifiers.{field}": {"$in": chunk}},
+                                           {"_id": 1, f"identifiers.{field}": 1}, max_time_ms=300_000)
+            for doc in cursor:
+                value = (doc.get("identifiers") or {}).get(field)
+                if value:
+                    known[field][_norm_id(field, value)] = doc["_id"]
+    return known
+
+
+def drop_known_identifiers(rows: list[dict], known: dict[str, dict[str, str]]) -> tuple[list[dict], list[dict]]:
+    """Splits rows new by `_id` into (genuinely new, already in the corpus under another `_id`).
+
+    The `_id` is minted from pmcid > doi > pmid, so a paper that gains a PMCID after it was loaded
+    mints a different `_id` and passes the `_id` check as new. On 2026-09-15 that was 2,361 of 45,271
+    "new" records. Loading them would duplicate the paper, so a row whose pmcid, doi or pmid is
+    already held is set aside with the `_id` that holds it."""
+    new, already = [], []
+    for row in rows:
+        holder = next((known[f][_norm_id(f, row.get(f))] for f in IDENTITY_FIELDS
+                       if _norm_id(f, row.get(f)) and _norm_id(f, row.get(f)) in known[f]), None)
+        if holder:
+            already.append({"pid": row["pid"], "existing_id": holder,
+                            **{f: row.get(f) or "" for f in IDENTITY_FIELDS}})
+        else:
+            new.append(row)
+    return new, already
+
+
 def iter_incoming(incoming_dir: Path):
     files = sorted(incoming_dir.glob("*.jsonl"))
     if not files:
@@ -136,9 +182,19 @@ def run(incoming_dir: Path, out_path: Path) -> None:
     with Moros.from_env() as moros:
         print(f"checking against {moros.describe()}")
         existing = moros.existing_ids(tqdm(list(rows), desc="dedupe vs moros", unit="id"))
+        new_by_id = [row for pid, row in rows.items() if pid not in existing]
+        new_rows, under_older_id = drop_known_identifiers(new_by_id, known_identifiers(moros, new_by_id))
 
-    new_rows = [row for pid, row in rows.items() if pid not in existing]
-    print(f"\n{len(existing):,} already in the corpus, {len(new_rows):,} genuinely new")
+    print(f"\n{len(existing):,} already in the corpus, {len(under_older_id):,} already in it under an "
+          f"older _id (matched by pmcid, doi or pmid), {len(new_rows):,} genuinely new")
+    if under_older_id:
+        side = out_path.with_name(out_path.stem + "_known_under_older_id.csv")
+        side.parent.mkdir(parents=True, exist_ok=True)
+        with side.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["pid", "existing_id", *IDENTITY_FIELDS])
+            writer.writeheader()
+            writer.writerows(under_older_id)
+        print(f"  set aside, not staged: {side}")
     if not new_rows:
         print("nothing new to classify -- the corpus is already current for these windows.")
         return
@@ -155,11 +211,15 @@ def run(incoming_dir: Path, out_path: Path) -> None:
         writer.writerows(sorted(new_rows, key=lambda r: r["pid"]))
     os.replace(tmp, out_path)
     print(f"\nwrote {len(new_rows):,} new records -> {out_path}")
+    try:
+        container_input = f"/app/{out_path.resolve().relative_to(FOLDER_DIR.parent)}"
+    except ValueError:  # --out outside the repository: the container cannot see it
+        container_input = "<copy it under moros_pipeline/output/ first; the container sees only the repository>"
     print(f"""
 next:
   1. classify them (paid -- project the cost first):
        docker compose run --rm pipeline dome-triage llm-classify classify \\
-           --scope staged_file --input /app/{out_path.relative_to(FOLDER_DIR.parent)} \\
+           --scope staged_file --input {container_input} \\
            --tier flash --estimated-usd <X> --confirm
   2. fetch citations for them:  python3 fetch_citations.py --input {out_path}
   3. build documents, then:     python3 load_documents.py --input <jsonl> --confirm
