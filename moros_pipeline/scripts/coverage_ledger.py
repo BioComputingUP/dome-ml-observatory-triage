@@ -119,9 +119,22 @@ class CoverageLedger:
         return [(w["from"], w["to"]) for w in item["windows"]]
 
     def covered_years(self, space: SearchSpace) -> set[int]:
+        """Every year some window touches -- what the cross-check against moros asks about."""
         years: set[int] = set()
         for start, end in self.covered_windows(space):
             years.update(range(int(start[:4]), int(end[:4]) + 1))
+        return years
+
+    def complete_years(self, space: SearchSpace) -> set[int]:
+        """Years some window covers whole, 1 January to 31 December. A refresh run with --up-to
+        before 31 December leaves a window that stops partway through its year; counting that year
+        as done would leave the rest of it unfetched once the calendar turns, because only the
+        current year is re-fetched."""
+        years: set[int] = set()
+        for start, end in self.covered_windows(space):
+            first = int(start[:4]) + (0 if start[5:] == "01-01" else 1)
+            last = int(end[:4]) - (0 if end[5:] == "12-31" else 1)
+            years.update(range(first, last + 1))
         return years
 
     def record_window(
@@ -160,7 +173,7 @@ def missing_years(space: SearchSpace, ledger: CoverageLedger, up_to: date) -> li
     years, matching the per-year checkpointing `bulk_match.py` already uses -- except the current
     year, which is always re-fetched because it is still filling up."""
     first = int(space.coverage_start[:4])
-    covered = ledger.covered_years(space)
+    covered = ledger.complete_years(space)
     years = [y for y in range(first, up_to.year + 1) if y not in covered]
     if up_to.year not in years:
         years.append(up_to.year)  # the current year is never "done"

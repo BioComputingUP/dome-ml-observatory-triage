@@ -116,3 +116,24 @@ def test_marking_an_unfetched_window_as_loaded_is_an_error(tmp_path):
     ledger = CoverageLedger(tmp_path / "ledger.json")
     with pytest.raises(KeyError):
         ledger.record_loaded(space, "2021-01-01", "2021-12-31", loaded=5)
+
+
+def test_a_year_fetched_only_partway_is_fetched_again_once_it_has_ended(tmp_path):
+    """A refresh with --up-to before 31 December leaves a partial window. When the calendar turns,
+    the rest of that year must still be fetched rather than skipped as covered."""
+    space = _space(tmp_path)
+    ledger = CoverageLedger(tmp_path / "ledger.json")
+    for year in (2020, 2021, 2022):
+        ledger.record_window(space, f"{year}-01-01", f"{year}-12-31", fetched=1, path="x")
+    ledger.record_window(space, "2023-01-01", "2023-12-15", fetched=1, path="x")
+    assert missing_years(space, ledger, date(2024, 1, 20)) == [2023, 2024]
+
+
+def test_a_partial_year_still_counts_for_the_cross_check(tmp_path):
+    """The cross-check against moros asks whether a year was fetched at all, so a partial window must
+    not make moros look ahead of the ledger."""
+    space = _space(tmp_path)
+    ledger = CoverageLedger(tmp_path / "ledger.json")
+    ledger.record_window(space, "2023-01-01", "2023-09-03", fetched=1, path="x")
+    assert ledger.covered_years(space) == {2023}
+    assert ledger.complete_years(space) == set()
