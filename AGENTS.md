@@ -25,7 +25,8 @@ purpose.
      `e1`, vocab sha256 `41db952f…`);
    - `mongo_landscape_export/scripts/schema.py` (`SCHEMA_VERSION`, the document shape) and
      `pid.py` (the UUID5 `_id` rule);
-   - `moros_pipeline/scripts/moros_write.py` (`WRITE_MODES`, the per-mode field allowlists);
+   - `moros_pipeline/scripts/moros_write.py` (`WRITE_MODES`, the per-mode field allowlists, and
+     `STAMPS_RECORD_MODIFIED`, the modes that move `record_modified`);
    - the parsers, the resumption keys and the event-log columns.
    `python3 prompts/render_prompts.py --check` fails if a prompt no longer renders to its recorded
    hash; run it before and after touching anything above.
@@ -74,8 +75,8 @@ purpose.
    `docker compose run --rm pipeline pytest --ignore=tests/test_curate_page.py` (that one file
    drives the inert Streamlit app and cannot resolve its script path from this repository root).
    Every operational test must pass; if one fails, stop and report rather than patching validated
-   code. The two host suites are `(cd moros_pipeline/scripts && python3 -m pytest .)` and
-   `(cd mongo_landscape_export/scripts && python3 -m pytest .)`. Rebuilding the
+   code. The three host suites are `(cd moros_pipeline/scripts && python3 -m pytest .)`,
+   `(cd mongo_landscape_export/scripts && python3 -m pytest .)` and `(cd schema && python3 -m pytest .)`. Rebuilding the
    image leaves the previous one dangling at ~7 GB; run `docker image prune -f` after a few builds
    and check `df -h /`. Never `docker system prune -a` without asking.
 
@@ -137,6 +138,12 @@ before any load and whenever a skill in either repository touches the schema; bo
 The `positives_text` index is partial on `llm_classification.classification == "positive"` and
 `observatory-ws` gates `$text` queries on exactly that field: keep it the single classification
 field.
+
+**The release procedure** -- what counts as a release (the shape or any vocabulary), who moves first
+(this repository), the order of publish, migrate, load, verify and deploy, and every place a release
+writes its version -- is in [`schema/README.md`](schema/README.md). `check_alignment.py` checks each
+of those places and names any that disagrees. Monthly corpus releases are described separately, in
+DCAT and schema.org, by `build_release_metadata.py` ([docs/release_metadata.md](docs/release_metadata.md)).
 
 ## Things that have gone wrong before — do not reintroduce
 

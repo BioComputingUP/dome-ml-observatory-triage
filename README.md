@@ -179,7 +179,7 @@ Records with no abstract, and parse errors, are left out and counted rather than
 
 **After any load, by hand:** restart `observatory-ws` (its facet cache is boot-loaded with no
 TTL, so new journals, MeSH terms and licences are invisible until then), and if the document
-shape changed, cut a schema release in `dome-ml-observatory` with its `schema-version` skill.
+shape or a vocabulary changed, follow the release procedure in [`schema/README.md`](schema/README.md).
 
 ### 4. Enrichment — tag the positives with controlled vocabularies
 
@@ -272,6 +272,22 @@ exist on every document and are null. [`cross_links/`](cross_links/README.md) ho
 filling them, largely by deriving them from `data_links` (a Zenodo DOI, a repository link) plus
 the repository APIs Europe PMC does not cover. Nothing there writes yet; the `identifiers` write
 mode they will load through exists.
+
+### 8. Release metadata — the corpus in DCAT and schema.org
+
+Each monthly release is described once, in DCAT 3 and schema.org, from facts only this repository
+has at release time: the verified counts, the schema version, the criteria and vocabulary hashes,
+the search-space hash and the pipeline commit. The sibling serves it at `/api/catalog`; the
+per-record metadata (JSON-LD, Signposting, OAI-PMH, sitemaps) is projected there from each document.
+
+```bash
+cd moros_pipeline/scripts
+python3 verify_corpus.py
+python3 build_release_metadata.py            # dry run
+python3 build_release_metadata.py --write    # -> ../dome-ml-observatory/metadata/releases/<YYYY-MM>/
+```
+
+What the file says and what it refuses: [`docs/release_metadata.md`](docs/release_metadata.md).
 
 ## Costs and timing
 

@@ -41,7 +41,10 @@ a number must not be able to relabel who decided a record. `enrichment` cannot r
 `llm_classification` at all, which is what makes "enrichment is additive and cannot revise a
 verdict" a structural property rather than a claim about the prompt. `preprints` reaches exactly
 the three Europe PMC identity fields, and `data_links` only the `data_links.*` leaves — not
-`identifiers.*`, which a later, separate mode derives from them.
+`identifiers.*`, which a later, separate mode derives from them. From schema v1.6.0 the modes that
+change a published value (`enrichment`, `licences`, `preprints`, `data_links`, `identifiers`) also
+stamp `record_modified` on each document whose values actually change; `citations` never does, so a
+count refresh never makes OAI-PMH harvesters re-fetch the corpus.
 
 Undo any field write:
 
@@ -62,12 +65,15 @@ scan with no error logged anywhere. "Search still works" is not evidence the ind
 | `moros_write.py` | The safe writer, plus `--rollback` replay |
 | `migrate_v1_2_0.py` | The in-place v1.1.0 → v1.2.0 shape bump, with a documented constant inverse |
 | `migrate_v1_4_0.py` | The in-place v1.2.0 → v1.4.0 shape bump (preprint fields + `data_links` at never-looked-up values), same constant-inverse pattern |
+| `migrate_v1_5_0.py`, `migrate_v1_5_1.py` | Version-stamp migrations: v1.5.0's change lives in field values, v1.5.1's in the vocabularies |
+| `migrate_v1_6_0.py` | v1.5.1 → v1.6.0: the version and one constant `record_modified` stamp on every document |
 | `fetch_citations.py` | Europe PMC `citedByCount`, three keyed passes, resumable, refresh-aware |
 | `join_citations.py` | Joins those counts onto document `_id`s |
 | `load_fields.py` | Partial `$set` of allowlisted paths on documents that already exist |
 | `load_documents.py` | Upserts whole new documents; `--reverse` deletes only ids it recorded inserting |
 | `ensure_indexes.py` | Idempotent index check/creation; measures whether a citation index is warranted |
 | `verify_corpus.py` | The invariants, the AlphaFold acceptance probe, and the manual post-load checklist |
+| `build_release_metadata.py` | A monthly release's DCAT / schema.org description, from the verify report, into dome-ml-observatory's `metadata/` ([docs/release_metadata.md](../docs/release_metadata.md)) |
 | `export_journal_for_enrichment.py` | One journal's records out of moros, as enrichment input |
 | `load_enrichment.py` | An enrichment event log back into moros, in place |
 | `coverage_ledger.py` | The search space, and which (query, window) pairs are covered |
