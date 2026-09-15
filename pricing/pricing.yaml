@@ -1,8 +1,9 @@
 # Provider list prices, USD per 1,000,000 tokens, as read from the providers' own pricing pages on
 # the date below. The `cost-estimate` skill refreshes this file from the live pages before any paid
 # run; scripts/cost_dashboard.py reads it. Real spend is always checked against the DeepSeek
-# balance endpoint afterwards -- list price is a projection, the dashboard delta is the fact.
-as_of: 2026-09-07
+# balance endpoint afterwards -- list price is a projection, the balance delta is the fact
+# (data/processed/cost_estimates/deepseek_real_cost_log.csv).
+as_of: 2026-09-15
 
 deepseek:
   source: https://api-docs.deepseek.com/quick_start/pricing
@@ -13,24 +14,41 @@ deepseek:
     - {days: "Mon-Fri", from: "06:00", to: "10:00"}
   balance_endpoint: https://api.deepseek.com/user/balance
   models:
-    deepseek-v4-flash:
+    # Released 2026-09-10 (api-docs.deepseek.com/news/news260910): "New pricing takes effect at
+    # 04:00 UTC on Sept 10, 2026". The pipeline still calls the legacy id `deepseek-v4-flash`, which
+    # DeepSeek says "temporarily route[s] to V4.1-Flash"; the validated V4-Flash is no longer served.
+    # GET /models lists only `deepseek-flash` and `deepseek-v4-pro` (checked 2026-09-15).
+    deepseek-flash:
+      version: DeepSeek-V4.1-Flash
+      legacy_ids: [deepseek-v4-flash, deepseek-v4-flash-vision-exp]
+      effective_from: "2026-09-10T04:00:00Z"
       context: 1M
       max_output: 384K
-      off_peak: {input_cache_hit: 0.007, input_cache_miss: 0.22, output: 0.66}
-      peak:     {input_cache_hit: 0.014, input_cache_miss: 0.44, output: 1.32}
+      off_peak: {input_cache_hit: 0.003, input_cache_miss: 0.15, output: 0.60}
+      peak:     {input_cache_hit: 0.006, input_cache_miss: 0.30, output: 1.20}
     deepseek-v4-pro:
+      # "continue providing API services for DeepSeek V4 Pro after September 14, 2026, with the
+      # billing method remaining unchanged" (change log, 2026-09-10).
+      version: DeepSeek-V4-Pro-0813
       context: 1M
       max_output: 384K
       off_peak: {input_cache_hit: 0.022, input_cache_miss: 0.66, output: 1.98}
       peak:     {input_cache_hit: 0.044, input_cache_miss: 1.32, output: 3.96}
+  # Prices a run was billed at before a model was replaced, so an older events file can be re-costed
+  # at the price it actually ran at.
+  superseded:
+    deepseek-v4-flash:
+      version: DeepSeek-V4-Flash-0731
+      until: "2026-09-10T04:00:00Z"
+      off_peak: {input_cache_hit: 0.007, input_cache_miss: 0.22, output: 0.66}
+      peak:     {input_cache_hit: 0.014, input_cache_miss: 0.44, output: 1.32}
 
 zai:
   source: https://docs.z.ai/guides/overview/pricing
-  # No off-peak pricing is published. A 50% launch promotion "ends at 24:00 on September 9, 2026
-  # (UTC+8, Singapore time)". Cached-input storage: "Limited-time Free".
+  # No off-peak pricing is published. The 50% launch promotion ended at 24:00 on 9 September 2026
+  # (UTC+8). Cached-input storage: "Limited-time Free", no end date given.
   models:
     glm-5.3-flash:
       list:  {input_cache_hit: 0.03,  input_cache_miss: 0.15,  output: 0.50}
-      promo: {input_cache_hit: 0.015, input_cache_miss: 0.075, output: 0.25, ends: "2026-09-09T16:00:00Z"}
     glm-5.3:
       list:  {input_cache_hit: 0.26,  input_cache_miss: 1.4,   output: 4.4}

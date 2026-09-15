@@ -1,6 +1,6 @@
 # Cost dashboard
 
-Generated 2026-09-07 21:02 UTC · prices as of **2026-09-07** (`pricing/pricing.yaml`) · corpus counts as of **2026-09-07 21:02 UTC** · token profiles measured **2026-09-03** (`pricing/token_profiles.yaml`).
+Generated 2026-09-15 21:33 UTC · prices as of **2026-09-15** (`pricing/pricing.yaml`) · corpus counts as of **2026-09-15 21:33 UTC** · token profiles measured **2026-09-03** on DeepSeek-V4-Flash-0731 (`pricing/token_profiles.yaml`) · billed runs from `data/processed/cost_estimates/deepseek_real_cost_log.csv`.
 Regenerate: `python3 scripts/cost_dashboard.py --live --balance`. Timing: `python3 scripts/offpeak_window.py --minutes N`.
 
 ## Corpus now
@@ -15,32 +15,48 @@ Regenerate: `python3 scripts/cost_dashboard.py --live --balance`. Timing: `pytho
 
 ## DeepSeek balance
 
-**USD 4.73** at 2026-09-07 21:02 UTC (`GET /user/balance`). Top up before any run whose projection below exceeds it.
+**USD 14.73** at 2026-09-15 21:33 UTC (`GET /user/balance`). Top up before any run whose planning cost below exceeds it.
 
-## Price per record
+## What a record costs
 
-| Step | Tokens per record (cache hit / miss / output) | DeepSeek V4 Flash, off-peak | DeepSeek V4 Flash, peak | GLM-5.3-Flash, list | GLM-5.3-Flash, promo (until 2026-09-09 UTC) | Measured, real |
-|---|---|---:|---:|---:|---:|---:|
-| Classification (prompt v1) | 8,398 / 300 / 299 | $0.0003 | $0.0006 | $0.0004 | $0.0002 | $0.000304 (7,600 records, dashboard-confirmed) |
-| Enrichment (prompt e1) | 2,845 / 233 / 5,877 (5,752 reasoning) | $0.0039 | $0.0079 | $0.0031 | $0.0015 | $0.00407 ($4.07 per 1,000; two independent runs) |
+Every run below is costed at the **planning rate**, which comes from the bill, not from list prices:
 
-Per 1,000 records, for planning:
+- Classification: **$0.000304 per record** ($0.30 per 1,000). Billed: 7,600 records on 2026-08-21.
+- Enrichment: **$10.00 per 1,000 records** ($0.0100 per record). Billing experience, 3,000 records for about $30-40 (2026-09-15). Replace with a balance delta from deepseek_real_cost_log.csv, and never set it below a billed figure.
 
-| Step | DeepSeek V4 Flash, off-peak | DeepSeek V4 Flash, peak | GLM-5.3-Flash, list | GLM-5.3-Flash, promo (until 2026-09-09 UTC) |
-|---|---:|---:|---:|---:|
-| Classification | $0.3221 | $0.6443 | $0.4464 | $0.2232 |
-| Enrichment | $3.95 | $7.90 | $3.06 | $1.53 |
+### Billed runs (balance deltas)
+
+| Date | Step | Tier, mode | Records | Billed | Per 1,000 |
+|---|---|---|---:|---:|---:|
+| 2026-08-21 | classification | flash, primary | 7,600 | $2.31 | $0.30 |
+
+### List-price model (tokens × list price, not billed)
+
+For comparing providers and peak against off-peak only. For enrichment it gives $3.57 per 1,000 off-peak against a planning rate of $10.00: it undershoots the bill, so never budget from it.
+
+| Step | Tokens per record (cache hit / miss / output) | DeepSeek V4.1 Flash, off-peak | DeepSeek V4.1 Flash, peak | GLM-5.3-Flash, list |
+|---|---|---:|---:|---:|
+| Classification (prompt v1) | 8,398 / 300 / 299 | $0.0002 | $0.0005 | $0.0004 |
+| Enrichment (prompt e1) | 2,845 / 233 / 5,877 (5,752 reasoning) | $0.0036 | $0.0071 | $0.0031 |
+
+Per 1,000 records:
+
+| Step | DeepSeek V4.1 Flash, off-peak | DeepSeek V4.1 Flash, peak | GLM-5.3-Flash, list |
+|---|---:|---:|---:|
+| Classification | $0.2496 | $0.4992 | $0.4464 |
+| Enrichment | $3.57 | $7.14 | $3.06 |
 
 ## What the next runs cost
 
-| Run | Records | DeepSeek V4 Flash, off-peak | DeepSeek V4 Flash, peak | GLM-5.3-Flash, list | GLM-5.3-Flash, promo (until 2026-09-09 UTC) | Wall time |
+| Run | Records | **Planning (billed rate)** | DeepSeek V4.1 Flash, off-peak (list model) | DeepSeek V4.1 Flash, peak (list model) | GLM-5.3-Flash, list (list model) | Wall time |
 |---|---:|---:|---:|---:|---:|---|
-| Classify one incremental batch (last batch: 13,499) | 13,499 | $4.35 | $8.70 | $6.03 | $3.01 | 3 min at concurrency 400 |
-| Enrich that batch's positives (last batch: 7,369) | 7,369 | $29.11 | $58.22 | $22.54 | $11.27 | 18 min at concurrency 800 |
-| Enrich 10,000 positives (one journal-sized cohort) | 10,000 | $39.50 | $79.00 | $30.59 | $15.29 | 24 min at concurrency 800 |
-| **Enrich every remaining positive** (359,653) | 359,653 | $1,421 | $2,841 | $1,100 | $550 | 14.3 h at concurrency 800 |
+| Classify one incremental batch (last batch: 13,499) | 13,499 | **$4.10** | $3.37 | $6.74 | $6.03 | 3 min at concurrency 400 |
+| Enrich that batch's positives (last batch: 7,369) | 7,369 | **$73.69** | $26.31 | $52.61 | $22.54 | 18 min at concurrency 800 |
+| Enrich 300 positives (a capped cohort) | 300 | **$3.00** | $1.07 | $2.14 | $0.9176 | 1 min at concurrency 800 |
+| Enrich 10,000 positives (one journal-sized cohort) | 10,000 | **$100** | $35.70 | $71.39 | $30.59 | 24 min at concurrency 800 |
+| **Enrich every remaining positive** (359,653) | 359,653 | **$3,597** | $1,284 | $2,568 | $1,100 | 14.3 h at concurrency 800 |
 
-At the **measured** enrichment rate ($4.07/1,000, DeepSeek off-peak, including the ~1.5% truncated re-tries) the full backlog is **$1,464**. Classification of a monthly batch is a rounding error next to it.
+At the planning rate the full enrichment backlog is **$3,597**; the list-price model says $1,284 off-peak. Classification of a monthly batch is a rounding error next to it.
 
 ## Best time to run (DeepSeek)
 
@@ -53,8 +69,10 @@ Peak, at double price: 01:00–04:00 UTC and 06:00–10:00 UTC, Mon-Fri. Everyth
 
 ## Assumptions and caveats
 
-- Token counts are DeepSeek's own `usage` figures from real runs. The GLM column applies the same counts to Z.ai's prices: a different tokenizer and a different reasoning budget would change them, and **GLM-5.3-Flash has not been validated** against the human benchmark or the enrichment agreement check. It is a price comparison, not an approved substitute (see ROADMAP.md).
-- Classification cache hits are modelled (the event log does not record them): everything but the ~300 per-record tokens is treated as a prefix-cache hit. The model reproduces the dashboard-confirmed $0.000304/record within ~6%.
+- **The model changed.** Token profiles were measured on DeepSeek-V4-Flash-0731; DeepSeek now answers `deepseek-v4-flash` with DeepSeek-V4.1-Flash (from 2026-09-10), and the list prices above are DeepSeek-V4.1-Flash's. Its token use is unmeasured until its first events files are re-measured (`--events-classification` / `--events-enrichment`), and whether it agrees with the validated model is a separate check (see ROADMAP.md).
+- **Enrichment's list-price model undershoots its bill.** Tokens × list price gave $4.07 per 1,000 on V4-Flash; enrichment is billed at about $10. Budget from billed runs only: bracket every paid run with `GET /user/balance` reads and append the delta to the real cost log.
+- The GLM columns apply DeepSeek's token counts to Z.ai's prices: a different tokenizer and a different reasoning budget would change them, and **GLM-5.3-Flash has not been validated** against the human benchmark or the enrichment agreement check. They are a price comparison, not an approved substitute (see ROADMAP.md).
+- Classification cache hits are modelled (the event log does not record them): everything but the ~300 per-record tokens is treated as a prefix-cache hit. On V4-Flash that model came within ~6% of the billed $0.000304/record.
 - Enrichment cost is not reducible by settings: lower reasoning effort cost more with six times the vocabulary violations; thinking off was 88% cheaper and agreed with production on all six fields for 0% of records.
 - About 5% of new records have no abstract and are never sent to the model; the backlog figure already excludes abstract-less positives.
 - List prices drift. The `cost-estimate` skill re-reads both pricing pages before any paid run and updates `pricing/pricing.yaml`; real spend is confirmed from the balance delta afterwards.
