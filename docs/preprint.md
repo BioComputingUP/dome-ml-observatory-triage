@@ -130,7 +130,8 @@ it on the floor.
 - Bump `SCHEMA_VERSION` to `1.3.0` and add the changelog comment beside it, in the same style as
   the 1.1.0 and 1.2.0 entries.
 
-Also update `EXPECTED_SCHEMA_VERSION` in `moros_pipeline/scripts/verify_corpus.py`.
+`verify_corpus.py` has read its expected version from `schema.py` since 2026-09-15, so there is no
+second literal to update; the whole procedure is in `schema/README.md`.
 
 ---
 
