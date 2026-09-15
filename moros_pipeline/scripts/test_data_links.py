@@ -78,9 +78,9 @@ def test_both_passes_can_share_one_row():
     assert update["data_links.link_count"] == 1
 
 
-def test_the_data_links_allowlist_is_the_ten_leaves_plus_the_version():
+def test_the_data_links_allowlist_is_the_ten_leaves_plus_the_version_and_the_stamp():
     assert mw.WRITE_MODES["data_links"] == frozenset({
-        "schema_version",
+        "schema_version", "record_modified",
         "data_links.has_data", "data_links.tags", "data_links.accession_types",
         "data_links.db_cross_references", "data_links.fetched_at", "data_links.sources",
         "data_links.link_count", "data_links.truncated", "data_links.resources",
@@ -97,9 +97,10 @@ def test_the_data_links_mode_cannot_reach_identifiers_or_verdicts():
 
 
 def test_the_migration_mode_covers_exactly_the_new_leaves():
+    # v1.6.0's record_modified joined the two field modes later; the 1.4.0 migration predates it.
     assert mw.WRITE_MODES["migrate_v1_4_0"] == (
         mw.WRITE_MODES["preprints"] | mw.WRITE_MODES["data_links"]
-    )
+    ) - {"record_modified"}
 
 
 def test_every_mapper_output_path_is_inside_its_allowlist():

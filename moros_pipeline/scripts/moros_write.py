@@ -55,8 +55,9 @@ REPORT_DIR = FOLDER_DIR / "output"
 
 BATCH_SIZE = 1_000
 
-# Written by every mode: a document whose shape changed must say so, or a later migration cannot
-# find it. Included in each allowlist below rather than special-cased.
+# In every allowlist, so any mode may move the version alongside what it writes. In practice only
+# build_document (on insert) and the migrate_v* scripts write it; the field loads leave it alone,
+# which is why a release migrates before its field loads (schema/README.md, "Release procedure").
 _SCHEMA_VERSION_PATH = "schema_version"
 
 _ENRICHMENT_FIELDS = (
@@ -90,6 +91,18 @@ IDENTIFIER_FIELDS = (
     "identifiers.zenodo",
 )
 
+# v1.6.0: when the record last changed in a field the observatory's metadata exposes -- the
+# datestamp OAI-PMH harvests by (`from`/`until`) and the sitemap's `lastmod`. SafeWriter stamps it
+# itself, for the modes below, on each document whose allowlisted values actually differ from what
+# it holds: a refresh that rewrites identical values must not make every harvester re-fetch. The
+# `citations` refresh never stamps (oai_dc and JSON-LD carry no counts), or a monthly number refresh
+# would be a monthly full re-harvest; nor do the version-stamp migrations.
+RECORD_MODIFIED_PATH = "record_modified"
+STAMPS_RECORD_MODIFIED = frozenset({"enrichment", "licences", "preprints", "data_links", "identifiers"})
+# UTC to the second with a literal Z: OAI-PMH's granularity, and one fixed width, so string order is
+# time order and a range query on the stored strings is correct.
+RECORD_MODIFIED_PATTERN = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$"
+
 # Mode -> the exact leaf paths that mode may write. Adding a field to a document means adding it
 # here first, on purpose, in a diff someone reviews.
 WRITE_MODES: dict[str, frozenset[str]] = {
@@ -115,13 +128,14 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # Deliberately cannot reach `fulltext_available`, which is ours, not EPMC's.
     "licences": frozenset({
         _SCHEMA_VERSION_PATH,
+        RECORD_MODIFIED_PATH,
         "source.access.license",
         "source.access.open_access",
     }),
     # The enrichment merge. Cannot reach `llm_classification` at all, which is the whole point:
     # enrichment is additive by construction and must not be able to revise a verdict.
     "enrichment": frozenset(
-        {_SCHEMA_VERSION_PATH}
+        {_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH}
         | {f"content_filters.{f}" for f in _ENRICHED_FILTER_FIELDS}
         | {f"llm_enrichment.{f}" for f in _ENRICHMENT_FIELDS}
     ),
@@ -130,11 +144,11 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     "migrate_v1_4_0": frozenset({_SCHEMA_VERSION_PATH, *PREPRINT_FIELDS} | _DATA_LINKS_PATHS),
     # The Europe PMC identity / preprint backfill (docs/preprint.md). Exactly the three v1.3.0
     # leaves: it cannot reach `journal`, `pub_types` or anything that decides what a record is.
-    "preprints": frozenset({_SCHEMA_VERSION_PATH, *PREPRINT_FIELDS}),
+    "preprints": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH, *PREPRINT_FIELDS}),
     # The data-links fetch. `resources` and `links` are arrays of objects and are leaves here on
     # purpose: `$set` replaces each whole and the rollback snapshot restores each whole (dig()
     # does not walk into arrays). Cannot reach `identifiers.*`: those go through their own mode.
-    "data_links": frozenset({_SCHEMA_VERSION_PATH} | _DATA_LINKS_PATHS),
+    "data_links": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH} | _DATA_LINKS_PATHS),
     # The in-place 1.4.0 -> 1.5.0 version stamp. v1.5.0's change lives inside the data_links arrays
     # and in identifier values, which the `data_links` and `identifiers` modes write per document,
     # so the migration sets nothing but the version.
@@ -145,7 +159,10 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # `dome_registry` from EBI Search's DOME Registry entries; the other four arrive with their own
     # passes. Cannot reach data_links, the Europe PMC identity (`identifiers.epmc_id` is the
     # `preprints` mode's) or anything that decides what a record is.
-    "identifiers": frozenset({_SCHEMA_VERSION_PATH, *IDENTIFIER_FIELDS}),
+    "identifiers": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH, *IDENTIFIER_FIELDS}),
+    # 1.5.1 -> 1.6.0: the version, and one constant record_modified (the migration's run time) on
+    # every existing document. See migrate_v1_6_0.py for why the stamp is a constant.
+    "migrate_v1_6_0": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH}),
 }
 
 _ABSENT = object()
@@ -157,6 +174,11 @@ def new_run_id(prefix: str) -> str:
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def record_modified_stamp(now: Optional[datetime] = None) -> str:
+    """A `record_modified` value: UTC to the second, `YYYY-MM-DDThh:mm:ssZ` (RECORD_MODIFIED_PATTERN)."""
+    return (now or datetime.now(timezone.utc)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def sha256_file(path: Path) -> str:
@@ -183,12 +205,14 @@ class WriteResult:
         self.matched = 0
         self.modified = 0
         self.batches = 0
+        self.stamped = 0
         self.errors: list[str] = []
 
     def as_dict(self) -> dict:
         return {
             "matched": self.matched,
             "modified": self.modified,
+            "stamped": self.stamped,
             "batches": self.batches,
             "errors": self.errors,
         }
@@ -212,6 +236,8 @@ class SafeWriter:
         self.dry_run = dry_run
         self.rollback_dir = Path(rollback_dir)
         self.rollback_path = self.rollback_dir / f"{self.run_id}.jsonl"
+        # One stamp per run: every document this run changes says the run changed it.
+        self.stamp = record_modified_stamp() if mode in STAMPS_RECORD_MODIFIED else None
 
     # -- validation --------------------------------------------------------------
 
@@ -231,6 +257,46 @@ class SafeWriter:
                     f"{sorted(self.allowed)}. If this field genuinely belongs to this mode, add "
                     f"it to WRITE_MODES on purpose rather than widening the check."
                 )
+
+    # -- record_modified ---------------------------------------------------------
+
+    def _stamp_against(
+        self,
+        updates: list[tuple[str, dict[str, Any]]],
+        current: dict[str, dict],
+        result: Optional[WriteResult] = None,
+    ) -> list[tuple[str, dict[str, Any]]]:
+        """`updates` with `record_modified` added to each document whose allowlisted values differ
+        from `current` (its pre-write state, projected on at least those paths). A document not in
+        `current` would not match the write, so it is left as it is."""
+        out = []
+        for doc_id, fields in updates:
+            doc = current.get(doc_id)
+            if doc is not None and any(dig(doc, path) != value for path, value in fields.items()
+                                       if path != RECORD_MODIFIED_PATH):
+                fields = {**fields, RECORD_MODIFIED_PATH: self.stamp}
+                if result is not None:
+                    result.stamped += 1
+            out.append((doc_id, fields))
+        return out
+
+    def _stamped(
+        self,
+        updates: list[tuple[str, dict[str, Any]]],
+        result: Optional[WriteResult] = None,
+    ) -> list[tuple[str, dict[str, Any]]]:
+        """`_stamp_against` after reading the documents' current values; a no-op for a mode that
+        does not stamp."""
+        if not self.stamp or not updates:
+            return list(updates)
+        paths = sorted({p for _, fields in updates for p in fields} - {RECORD_MODIFIED_PATH})
+        ids = [doc_id for doc_id, _ in updates]
+        current: dict[str, dict] = {}
+        for batch_start in range(0, len(ids), BATCH_SIZE):
+            batch = ids[batch_start : batch_start + BATCH_SIZE]
+            for doc in self.moros.collection.find({ID_FIELD: {"$in": batch}}, {p: 1 for p in paths}):
+                current[doc[ID_FIELD]] = doc
+        return self._stamp_against(updates, current, result)
 
     # -- rollback ----------------------------------------------------------------
 
@@ -293,10 +359,13 @@ class SafeWriter:
         print(f"[{self.run_id}] mode={self.mode} target={target}")
         print(f"[{self.run_id}] {len(materialised):,} documents to update, "
               f"paths: {sorted({p for _, fs in materialised for p in fs})}")
+        if self.stamp:
+            print(f"[{self.run_id}] {RECORD_MODIFIED_PATH} -> {self.stamp} on each document whose "
+                  f"values change")
 
         if self.dry_run:
             print(f"[{self.run_id}] DRY RUN -- nothing written. Sample of what would change:")
-            for doc_id, fields in materialised[:5]:
+            for doc_id, fields in self._stamped(materialised[:5]):
                 current = self.moros.get(doc_id, {p: 1 for p in fields})
                 if current is None:
                     print(f"    {doc_id}  (NOT PRESENT in the collection -- would not match)")
@@ -308,6 +377,7 @@ class SafeWriter:
             print(f"[{self.run_id}] re-run with --confirm to write.")
             return result
 
+        materialised = self._stamped(materialised, result)
         if take_snapshot:
             self.snapshot(materialised)
 
@@ -322,7 +392,7 @@ class SafeWriter:
             result.batches += 1
 
         print(f"[{self.run_id}] matched {result.matched:,}, modified {result.modified:,}, "
-              f"{len(result.errors)} batch error(s)")
+              f"stamped {result.stamped:,}, {len(result.errors)} batch error(s)")
         for err in result.errors[:5]:
             print(f"    {err}")
         return result
@@ -359,7 +429,7 @@ class SafeWriter:
             for _, fields in head:
                 self.validate(fields)
             print(f"[{self.run_id}] DRY RUN -- nothing written. Sample of what would change:")
-            for doc_id, fields in head:
+            for doc_id, fields in self._stamped(head):
                 current = self.moros.get(doc_id, {p: 1 for p in fields})
                 if current is None:
                     print(f"    {doc_id}  (NOT PRESENT -- would not match)")
@@ -380,7 +450,10 @@ class SafeWriter:
             for batch in _iter_batches(updates, BATCH_SIZE):
                 for _, fields in batch:
                     self.validate(fields)
-                paths = sorted({p for _, fields in batch for p in fields})
+                # A stamping mode may add record_modified to any document in the batch, so the
+                # snapshot covers that path for all of them and a rollback restores it.
+                paths = sorted({p for _, fields in batch for p in fields}
+                               | ({RECORD_MODIFIED_PATH} if self.stamp else set()))
 
                 if not wrote_meta:
                     snap.write(json.dumps({"_meta": {
@@ -393,7 +466,9 @@ class SafeWriter:
 
                 ids = [doc_id for doc_id, _ in batch]
                 cursor = self.moros.collection.find({ID_FIELD: {"$in": ids}}, {p: 1 for p in paths})
+                current: dict[str, dict] = {}
                 for doc in cursor:
+                    current[doc[ID_FIELD]] = doc
                     restore: dict[str, Any] = {}
                     unset: list[str] = []
                     for path in paths:
@@ -407,6 +482,8 @@ class SafeWriter:
                     }) + "\n")
                     n_snapshotted += 1
                 snap.flush()  # the snapshot is on disk BEFORE the write below is issued
+                if self.stamp:
+                    batch = self._stamp_against(batch, current, result)
 
                 ops = [UpdateOne({ID_FIELD: doc_id}, {"$set": fields}) for doc_id, fields in batch]
                 try:
@@ -421,7 +498,7 @@ class SafeWriter:
 
         print(f"[{self.run_id}] snapshot: {n_snapshotted:,} documents -> {self.rollback_path}")
         print(f"[{self.run_id}] matched {result.matched:,}, modified {result.modified:,}, "
-              f"{len(result.errors)} batch error(s)")
+              f"stamped {result.stamped:,}, {len(result.errors)} batch error(s)")
         for err in result.errors[:5]:
             print(f"    {err}")
         return result

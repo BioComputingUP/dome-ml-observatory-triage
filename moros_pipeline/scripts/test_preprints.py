@@ -36,9 +36,9 @@ def test_a_half_identity_yields_no_update():
     assert lf.preprint_row_to_update({"pid": "", "epmc_id": "1", "epmc_source": "MED"}) is None
 
 
-def test_the_preprints_allowlist_is_exactly_three_fields_plus_the_version():
+def test_the_preprints_allowlist_is_exactly_three_fields_plus_the_version_and_the_stamp():
     assert mw.WRITE_MODES["preprints"] == frozenset({
-        "schema_version", "identifiers.epmc_id", "source.epmc_source",
+        "schema_version", "record_modified", "identifiers.epmc_id", "source.epmc_source",
         "publication_metadata.preprint_server",
     })
 

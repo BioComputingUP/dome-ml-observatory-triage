@@ -1,12 +1,15 @@
 """Idempotently ensures the corpus's indexes exist, and reports which already did.
 
-Three indexes matter on `dome_observatory.Content`:
+Four indexes matter on `dome_observatory.Content`:
 
 - `_id_` -- automatic, never absent.
 - `class_year_id` -- `{classification: 1, year: -1, _id: 1}`. Cheap (~4s, ~37MB).
 - `positives_text` -- the weighted text index over title/abstract/authors, **partial** on
   `llm_classification.classification: "positive"`. Expensive: ~3 minutes of tokenising plus a
   1.5GB collection read, and ~390MB plus ~1GB of transient sort files.
+- `record_modified_positive` (v1.6.0) -- `{record_modified: 1, _id: 1}`, **partial** on positives.
+  The keyset `observatory-ws` pages OAI-PMH harvests and sitemap chunks by: without it every
+  harvest page is a sort over the positives.
 
 The reason this script exists rather than a note in a runbook: **when `positives_text` is missing,
 nothing breaks.** `observatory-ws` detects its absence at boot and silently falls back to a regex
@@ -36,8 +39,9 @@ from pymongo import ASCENDING, DESCENDING, TEXT
 from moros_client import Moros
 from moros_write import REPORT_DIR, new_run_id, utc_now_iso
 
-# Reproduced verbatim from ../dome-ml-observatory/ROADMAP.md lines 80-92, which is the
-# authoritative definition. Do not "improve" these without changing that file first.
+# The queries these serve are in ../dome-ml-observatory/observatory-ws (records.query.ts, the OAI
+# and sitemap walks), and that repository's offline-database/seed.sh builds the same definitions for
+# its fixture database. Change a definition in all three places or not at all.
 REQUIRED_INDEXES = {
     "positives_text": {
         "keys": [
@@ -66,6 +70,18 @@ REQUIRED_INDEXES = {
         "options": {"name": "class_year_id", "background": True},
         "cost": "~4 seconds, ~37MB",
     },
+    "record_modified_positive": {
+        "keys": [
+            ("record_modified", ASCENDING),
+            ("_id", ASCENDING),
+        ],
+        "options": {
+            "name": "record_modified_positive",
+            "partialFilterExpression": {"llm_classification.classification": "positive"},
+            "background": True,
+        },
+        "cost": "partial on the ~366k positives; seconds, tens of MB (estimate until measured)",
+    },
 }
 
 # Not created by default. `citations_desc`/`citations_asc` are existing API sort options that only
@@ -84,7 +100,7 @@ CITATION_INDEX = {
 def report(moros: Moros) -> dict[str, dict]:
     present = moros.indexes()
     print(f"target {moros.describe()}\n")
-    print(f"{'index':<20}{'state':<12}{'note'}")
+    print(f"{'index':<26}{'state':<12}{'note'}")
     status: dict[str, dict] = {}
     for name, spec in {**REQUIRED_INDEXES, "class_citations_id": CITATION_INDEX}.items():
         exists = name in present
@@ -93,12 +109,12 @@ def report(moros: Moros) -> dict[str, dict]:
         note = spec.get("cost", "") if not exists and required else ""
         if name == "class_citations_id" and not exists:
             note = "optional -- run --measure-citation-sort to decide"
-        print(f"{name:<20}{state:<12}{note}")
+        print(f"{name:<26}{state:<12}{note}")
         status[name] = {"present": exists, "required": required}
     for name in present:
         if name not in status and name != "_id_":
-            print(f"{name:<20}{'present':<12}not managed by this script")
-    print(f"\n_id_                present     automatic")
+            print(f"{name:<26}{'present':<12}not managed by this script")
+    print(f"\n{'_id_':<26}{'present':<12}automatic")
     return status
 
 

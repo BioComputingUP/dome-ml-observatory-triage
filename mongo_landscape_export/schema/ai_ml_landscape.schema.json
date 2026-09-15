@@ -1,6 +1,7 @@
 {
   "_id": null,
-  "schema_version": "1.5.1",
+  "schema_version": "1.6.0",
+  "record_modified": null,
   "identifiers": {
     "pmid": null,
     "pmcid": null,

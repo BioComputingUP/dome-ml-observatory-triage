@@ -24,6 +24,9 @@ What this adds around mongoimport:
   that did not exist beforehand. `--reverse` deletes only ids listed in a spec this tool wrote.
   Documents that already existed are reported and *not* made reversible, because restoring their
   prior content is `load_fields.py`'s snapshot mechanism, not this one's.
+- **The `record_modified` stamp (v1.6.0).** Every document written gets this run's stamp, so a
+  harvester asking for records changed since its last visit sees it. The stamp is ignored when a
+  resumed load compares a document with what moros already holds: only the stamp would differ.
 
     python3 load_documents.py --input ../../mongo_landscape_export/output/curated_records.jsonl
     python3 load_documents.py --input ... --limit 100 --confirm
@@ -45,7 +48,15 @@ from pymongo import ReplaceOne
 
 from link_identifiers import malformed_links
 from moros_client import ID_FIELD, Moros, load_env
-from moros_write import REPORT_DIR, ROLLBACK_DIR, new_run_id, sha256_file, utc_now_iso
+from moros_write import (
+    RECORD_MODIFIED_PATH,
+    REPORT_DIR,
+    ROLLBACK_DIR,
+    new_run_id,
+    record_modified_stamp,
+    sha256_file,
+    utc_now_iso,
+)
 
 THIS_DIR = Path(__file__).resolve().parent
 FOLDER_DIR = THIS_DIR.parent
@@ -163,9 +174,16 @@ def find_malformed_data_links(path: Path, limit: int | None) -> list[tuple[str, 
     return found
 
 
+def _without_stamp(doc: dict | None) -> dict | None:
+    """The document minus `record_modified`, for comparing content across two load runs."""
+    if doc is None:
+        return None
+    return {k: v for k, v in doc.items() if k != RECORD_MODIFIED_PATH}
+
+
 def upsert_via_pymongo(
     moros: Moros, path: Path, limit: int | None, existing: set[str],
-    allow_replace_existing: bool,
+    allow_replace_existing: bool, stamp: str,
 ) -> dict:
     """Batched `ReplaceOne(upsert=True)` -- the same semantics as
     `mongoimport --mode upsert --upsertFields _id`, over the driver that actually holds a
@@ -211,7 +229,7 @@ def upsert_via_pymongo(
     for doc in documents:
         doc_id = doc[ID_FIELD]
         if doc_id in existing:
-            if current_by_id.get(doc_id) == doc:
+            if _without_stamp(current_by_id.get(doc_id)) == _without_stamp(doc):
                 stats["identical_skipped"] += 1
                 progress.update(1)
                 continue
@@ -222,7 +240,7 @@ def upsert_via_pymongo(
             stats["replaced"] += 1
         else:
             stats["inserted"] += 1
-        batch.append(ReplaceOne({ID_FIELD: doc_id}, doc, upsert=True))
+        batch.append(ReplaceOne({ID_FIELD: doc_id}, {**doc, RECORD_MODIFIED_PATH: stamp}, upsert=True))
         if len(batch) >= UPSERT_BATCH_SIZE:
             flush()
         progress.update(1)
@@ -237,6 +255,7 @@ def run(input_path: Path, gate_report: Path, confirm: bool, limit: int | None,
         raise SystemExit(f"{input_path} does not exist")
 
     run_id = new_run_id("load_documents")
+    stamp = record_modified_stamp()
     env = load_env()
     print(f"[{run_id}] input {input_path.name} ({input_path.stat().st_size / 1e6:.1f} MB)")
     report = check_gate(gate_report)
@@ -299,8 +318,9 @@ def run(input_path: Path, gate_report: Path, confirm: bool, limit: int | None,
         }, indent=2) + "\n", encoding="utf-8")
         print(f"[{run_id}] rollback spec ({len(new_ids):,} reversible inserts) -> {spec_path}")
 
+        print(f"[{run_id}] {RECORD_MODIFIED_PATH} -> {stamp} on every document written")
         stats = upsert_via_pymongo(
-            moros, input_path, limit, existing, allow_replace_existing
+            moros, input_path, limit, existing, allow_replace_existing, stamp
         )
         after = moros.count()
         delta = after - before
@@ -343,6 +363,7 @@ def run(input_path: Path, gate_report: Path, confirm: bool, limit: int | None,
             "delta": delta,
             "delta_matches_expected": delta == len(new_ids),
             "writer": "pymongo ReplaceOne(upsert=True)",
+            "record_modified": stamp,
             "upsert_stats": {k: (len(v) if isinstance(v, list) else v)
                              for k, v in stats.items()},
             "rollback": str(spec_path),

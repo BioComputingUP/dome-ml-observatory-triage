@@ -131,8 +131,9 @@ Restores absent-vs-null faithfully. Run `verify_corpus.py` afterwards.
 
 ## E. Indexes
 
-`python3 ensure_indexes.py` reports; `--confirm` creates a missing `class_year_id` (~4 s) or
-`positives_text` (~3 min, ~1 GB of transient sort files). `--measure-citation-sort` says whether a
+`python3 ensure_indexes.py` reports; `--confirm` creates a missing `class_year_id` (~4 s),
+`positives_text` (~3 min, ~1 GB of transient sort files) or `record_modified_positive` (schema
+v1.6.0: partial on positives, the keyset OAI-PMH and the sitemaps page by). `--measure-citation-sort` says whether a
 citation index is warranted yet. Do not create indexes speculatively on a shared production host.
 
 ## F. Shape migrations
@@ -143,7 +144,8 @@ python3 migrate_v1_4_0.py --confirm  # one updateMany: 1.2.0 -> 1.4.0, new field
 python3 migrate_v1_4_0.py --reverse --confirm   # only before any preprints / data_links load
 ```
 
-Run only after `check_alignment.py` shows v1.4.0 published. Rollback is a constant inverse, not a
+Every migration runs only after `check_alignment.py` shows its release published, and before any
+field load of that release (`schema/README.md`, "Release procedure"). Rollback is a constant inverse, not a
 snapshot, and `--reverse` refuses once real data has landed.
 
 ```bash
@@ -164,6 +166,18 @@ python3 migrate_v1_5_1.py --reverse --confirm   # always safe: v1.5.1 puts nothi
 ```
 
 v1.5.1 changes no field: the two modelling vocabularies gained `ontology_mappings`.
+
+```bash
+python3 migrate_v1_6_0.py                        # 1.5.1 -> 1.6.0: the version, plus one record_modified stamp on every document
+python3 migrate_v1_6_0.py --confirm
+python3 ensure_indexes.py --confirm              # then build record_modified_positive
+python3 migrate_v1_6_0.py --reverse --confirm    # always safe: sets 1.5.1 back and removes record_modified
+```
+
+v1.6.0 adds `record_modified`, the datestamp OAI-PMH harvests by. From then on `SafeWriter` stamps it
+itself in the `enrichment`, `licences`, `preprints`, `data_links` and `identifiers` modes, only on
+documents whose values actually change, and `load_documents.py` on every document it writes. The
+`citations` refresh never stamps, so a count refresh never forces a re-harvest.
 
 ## After any confirmed write: the manual checklist
 

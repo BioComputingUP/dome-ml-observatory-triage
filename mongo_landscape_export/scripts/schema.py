@@ -36,8 +36,13 @@ Schema designed together with Gavin (2026-08-28) -- six groups:
 Every document also carries a top-level `schema_version` (see `SCHEMA_VERSION` below) -- it
 describes the shape of the document itself, not the paper's content or any processing run, so it
 doesn't belong inside any of the content groups above; it sits at the top level next to `_id`
-instead. Bump it whenever this module's document shape changes, so a future migration can query
-`{schema_version: "1.1.0"}` to find documents built under an older shape. The checked-in reference
+instead. Bump it on any change a release carries -- this module's document shape or a vocabulary
+file -- so a migration can query `{schema_version: "1.1.0"}` to find documents built under an older
+release (`schema/README.md`, "Release procedure").
+
+A top-level `record_modified` (v1.6.0) sits beside it: when the record last changed in a field the
+observatory's metadata exposes, the datestamp OAI-PMH harvests by. The builders leave it null;
+`load_documents.py` stamps it as it writes. The checked-in reference
 copy of an empty document (all fields present, no real data) lives at
 `../schema/ai_ml_landscape.schema.json` -- regenerate it with `write_schema_template.py` after any
 shape change so it never drifts from what this module actually produces.
@@ -60,7 +65,7 @@ from typing import Any, Optional
 # Mirrors deepseek_client.py's TIER_MODEL_IDS -- see module docstring.
 TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 
-# Bump on any change to build_document()'s output shape -- see module docstring.
+# Bump on any change a release carries (document shape or vocabulary) -- see module docstring.
 # 1.1.0 (2026-08-28): added identifiers.dome_registry/bioai_repo/huggingface/kaggle/zenodo
 # (additive, always null for now -- no existing field changed or removed).
 # 1.2.0 (2026-09-03): added source.decision_provenance (so a human/registry decision is no longer
@@ -92,7 +97,13 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # gains ontology_mappings (MeSH, AIO, NCIT, OBI, SWO, STATO and EDAM ids; see
 # docs/vocabulary_ontology_mappings.md). The patch bump keeps authored, published and live on
 # one version.
-SCHEMA_VERSION = "1.5.1"
+# 1.6.0 (2026-09-15): added the top-level record_modified -- when the record last changed in a field
+# the observatory's metadata projections expose (oai_dc, JSON-LD), UTC to the second
+# (YYYY-MM-DDThh:mm:ssZ). OAI-PMH's from/until harvesting and the sitemap's lastmod read it. Null
+# from the builders: load_documents.py stamps it on write, moros_write.SafeWriter's stamping modes
+# on each document whose values change, and migrate_v1_6_0.py once for the existing corpus.
+# Additive -- no existing field changed or removed.
+SCHEMA_VERSION = "1.6.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
@@ -442,6 +453,7 @@ def build_document(row: dict[str, str]) -> dict[str, Any]:
     return {
         "_id": row["pid"],
         "schema_version": SCHEMA_VERSION,
+        "record_modified": None,
         "identifiers": _identifiers(row),
         "publication_metadata": _publication_metadata(row),
         "source": _source(row, PROVENANCE_LLM),
@@ -469,6 +481,7 @@ def build_curated_document(row: dict[str, str]) -> dict[str, Any]:
     return {
         "_id": row["pid"],
         "schema_version": SCHEMA_VERSION,
+        "record_modified": None,
         "identifiers": _identifiers(row),
         "publication_metadata": _publication_metadata(row),
         "source": _source(row, confidence),

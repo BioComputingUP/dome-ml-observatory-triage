@@ -29,6 +29,7 @@ def build_template() -> dict:
     return {
         "_id": None,
         "schema_version": SCHEMA_VERSION,
+        "record_modified": None,
         "identifiers": {
             "pmid": None,
             "pmcid": None,

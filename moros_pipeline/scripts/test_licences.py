@@ -133,9 +133,9 @@ def test_a_citations_only_row_yields_no_licence_update():
     assert lf.licence_row_to_update({"pid": "p1", "citation_count": "5"}) is None
 
 
-def test_the_licences_allowlist_is_exactly_two_fields_plus_the_version():
+def test_the_licences_allowlist_is_exactly_two_fields_plus_the_version_and_the_stamp():
     assert mw.WRITE_MODES["licences"] == frozenset({
-        "schema_version", "source.access.license", "source.access.open_access",
+        "schema_version", "record_modified", "source.access.license", "source.access.open_access",
     })
 
 

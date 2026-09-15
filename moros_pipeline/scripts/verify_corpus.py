@@ -31,16 +31,37 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 from moros_client import Moros
 from link_identifiers import MONGO_MALFORMED_REGEX
-from moros_write import REPORT_DIR, new_run_id, utc_now_iso
+from moros_write import (
+    RECORD_MODIFIED_PATH,
+    RECORD_MODIFIED_PATTERN,
+    REPORT_DIR,
+    new_run_id,
+    utc_now_iso,
+)
 
-EXPECTED_SCHEMA_VERSION = "1.5.1"
+SCHEMA_PY = Path(__file__).resolve().parents[2] / "mongo_landscape_export" / "scripts" / "schema.py"
+
+
+def authored_schema_version(path: Path = SCHEMA_PY) -> str:
+    """`SCHEMA_VERSION` read out of schema.py rather than repeated here: a second literal is one more
+    place a release has to remember to move (schema/README.md, "Release procedure")."""
+    m = re.search(r'^SCHEMA_VERSION\s*=\s*"([^"]+)"', path.read_text(encoding="utf-8"), re.M)
+    if not m:
+        raise SystemExit(f"SCHEMA_VERSION not found in {path}")
+    return m.group(1)
+
+
+EXPECTED_SCHEMA_VERSION = authored_schema_version()
 VALID_PROVENANCE = ("llm", "human_curated", "registry_confirmed")
 VALID_CLASSIFICATIONS = ("positive", "negative", "undeterminable")
-REQUIRED_INDEXES = ("_id_", "class_year_id", "positives_text")
+REQUIRED_INDEXES = ("_id_", "class_year_id", "positives_text", "record_modified_positive")
+# Versions older than v1.5.0, which introduced the EBI Search link keys.
+PRE_V1_5_0 = ("1.1.0", "1.2.0", "1.3.0", "1.4.0")
 
 # Jumper et al., Nature 596 (2021). The paper whose absence exposed the whole gap.
 ALPHAFOLD = {
@@ -242,9 +263,19 @@ def verify(moros: Moros, expect_count: int | None) -> tuple[Checks, dict]:
     checks.note("identifiers.dome_registry",
                 f"{dome_found:,} with a DOME Registry entry, {dome_none:,} looked up with none")
     early = moros.count({"data_links.links.matched_by": {"$exists": True},
-                         "schema_version": {"$ne": EXPECTED_SCHEMA_VERSION}})
+                         "schema_version": {"$in": list(PRE_V1_5_0)}})
     checks.add("no v1.5.0 link keys under an older schema_version", early == 0,
                f"{early:,} documents -- run migrate_v1_5_0.py")
+
+    # -- record_modified (v1.6.0) ----------------------------------------------
+    #
+    # Every document carries one, in the one format OAI-PMH's from/until range queries compare as
+    # strings. A missing or malformed value hides the record from incremental harvesters.
+    unstamped = moros.count({RECORD_MODIFIED_PATH: {"$not": {"$regex": RECORD_MODIFIED_PATTERN}}})
+    facts["record_modified"] = {"missing_or_malformed": unstamped}
+    checks.add("every document has a well-formed record_modified", unstamped == 0,
+               f"{unstamped:,} documents without a YYYY-MM-DDThh:mm:ssZ record_modified -- run "
+               f"migrate_v1_6_0.py")
 
     # -- indexes ------------------------------------------------------------
     indexes = sorted(moros.indexes())

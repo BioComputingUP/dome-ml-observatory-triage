@@ -29,9 +29,9 @@ def test_an_unclean_identifier_cannot_reach_the_writer():
         lf.identifiers_row_to_update({"pid": "p1", "dome_registry": "3mm 086r5pw"})
 
 
-def test_the_identifiers_allowlist_is_the_five_reserved_fields_plus_the_version():
+def test_the_identifiers_allowlist_is_the_five_reserved_fields_plus_the_version_and_the_stamp():
     assert mw.WRITE_MODES["identifiers"] == frozenset({
-        "schema_version", "identifiers.dome_registry", "identifiers.bioai_repo",
+        "schema_version", "record_modified", "identifiers.dome_registry", "identifiers.bioai_repo",
         "identifiers.huggingface", "identifiers.kaggle", "identifiers.zenodo",
     })
 

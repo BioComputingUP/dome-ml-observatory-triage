@@ -49,9 +49,16 @@ def test_top_level_shape_and_id():
     doc = build_document(BASE_ROW)
     assert doc["_id"] == "abc-123"
     assert set(doc.keys()) == {
-        "_id", "schema_version", "identifiers", "publication_metadata", "source",
-        "content_filters", "data_links", "llm_classification", "llm_enrichment",
+        "_id", "schema_version", "record_modified", "identifiers", "publication_metadata",
+        "source", "content_filters", "data_links", "llm_classification", "llm_enrichment",
     }
+
+
+def test_record_modified_is_left_for_the_writer_to_stamp():
+    # v1.6.0: a built document has not been written yet, so it cannot say when it last changed.
+    # load_documents.py stamps it at load; a value here would predate the write it describes.
+    assert build_document(BASE_ROW)["record_modified"] is None
+    assert build_curated_document(CURATED_ROW)["record_modified"] is None
 
 
 def test_schema_version_is_stamped_on_every_document():

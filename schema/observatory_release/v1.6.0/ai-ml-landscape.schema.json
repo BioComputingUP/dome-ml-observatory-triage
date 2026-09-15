@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://observatory.dome-ml.org/schema/v1.5.1/ai-ml-landscape.schema.json",
+  "$id": "https://observatory.dome-ml.org/schema/v1.6.0/ai-ml-landscape.schema.json",
   "title": "DOME Observatory AI/ML landscape record",
   "description": "One document per screened publication. Source of truth for this shape is dome-ml-observatory-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside that repo (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
   "type": "object",
   "required": [
     "_id",
     "schema_version",
+    "record_modified",
     "identifiers",
     "publication_metadata",
     "source",
@@ -23,7 +24,15 @@
     },
     "schema_version": {
       "type": "string",
-      "description": "The shape of this document, e.g. \"1.1.0\" -- describes the document's structure, not the paper's content or any processing run. Bump only when this module's document shape changes; see schema/CHANGELOG.md."
+      "description": "The release of the record schema this document was written under, e.g. \"1.6.0\" -- describes the document's structure and vocabularies, not the paper's content or any processing run. Bumped on every release, whether the document shape or a vocabulary changed, and restamped on every document by that release's migration; see schema/CHANGELOG.md."
+    },
+    "record_modified": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "When this record last changed in a field the Observatory's metadata exposes (the Dublin Core served over OAI-PMH and the schema.org JSON-LD on record pages). UTC to the second, YYYY-MM-DDThh:mm:ssZ -- OAI-PMH's granularity, one fixed width, so values compare correctly as strings. Set when a load writes the document and when an enrichment, licence, preprint, data-links or identifiers write changes one of its values; never by a citation-count refresh or a version-stamp migration. Documents migrated to v1.6.0 carry the migration's run time. Null only in a document built but not yet written. OAI-PMH from/until and the sitemap's lastmod read it."
     },
     "identifiers": {
       "type": "object",

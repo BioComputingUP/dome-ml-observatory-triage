@@ -1,6 +1,7 @@
 {
   "_id": "8b720ad0-8cf7-5304-a016-3b15feae2815",
-  "schema_version": "1.5.1",
+  "schema_version": "1.6.0",
+  "record_modified": null,
   "identifiers": {
     "pmid": "40703513",
     "pmcid": "PMC12283288",

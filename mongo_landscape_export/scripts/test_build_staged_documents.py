@@ -37,9 +37,9 @@ def test_the_document_is_the_same_shape_as_every_other_path():
     """This file owns no document shape of its own -- it assembles a row and hands it to the one
     shared builder, so the landscape, curated and incremental paths cannot drift apart."""
     doc = _doc()
-    assert set(doc) == {"_id", "schema_version", "identifiers", "publication_metadata",
-                        "source", "content_filters", "data_links", "llm_classification",
-                        "llm_enrichment"}
+    assert set(doc) == {"_id", "schema_version", "record_modified", "identifiers",
+                        "publication_metadata", "source", "content_filters", "data_links",
+                        "llm_classification", "llm_enrichment"}
     assert doc["schema_version"] == SCHEMA_VERSION
 
 
