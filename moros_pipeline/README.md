@@ -151,7 +151,7 @@ python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --identifiers ../output/incoming_new_pid_identifiers.csv
 
 # 6. Load, index, verify.
-python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
+python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl   # dry run: no --confirm
 python3 load_documents.py --input ... --confirm
 python3 ensure_indexes.py && python3 verify_corpus.py
 ```
@@ -161,7 +161,7 @@ appear.
 
 ## Enrichment — a separate, deliberate, costly cycle
 
-Enrichment is **not** part of the recurring loop. It costs roughly 13,000x more per record than
+Enrichment is **not** part of the recurring loop. It is billed at roughly nine times more per record than
 classification and is run per journal or per cohort, when wanted.
 
 ```bash
@@ -181,7 +181,7 @@ docker compose run --rm pipeline dome-triage llm-classify enrich \
     --input /app/moros_pipeline/output/enrich_input_flagship4.csv \
     --events-out /app/moros_pipeline/output/enrichment_flagship4_events.csv
 
-python3 load_enrichment.py --events ../output/enrichment_flagship4_events.csv --dry-run
+python3 load_enrichment.py --events ../output/enrichment_flagship4_events.csv   # dry run: no --confirm
 python3 load_enrichment.py --events ... --limit 25 --confirm    # real, reversible trial
 python3 load_enrichment.py --events ... --confirm
 ```
@@ -269,8 +269,9 @@ silently re-create the exact gap this pipeline exists to close.
   with six times the violations, and every thinking-enabled arm spends 98% of its output on
   reasoning whatever level is requested. A hierarchical domain rendering saved nothing either, and
   a cheap-first two-pass has a useless trigger — violations do not predict disagreement (0% of
-  records agree on all six fields even when the cheap pass flags none). Enrichment costs
-  **$4.07/1,000 records** and that is the price.
+  records agree on all six fields even when the cheap pass flags none). Tokens × list price put
+  enrichment at $4.07/1,000 records on V4-Flash while the bill was about $10/1,000; on V4.1 Flash it is
+  billed at about **$1.80/1,000**, measured, and that is the price.
 - **`enrich` needs a larger token budget than `classify`.** At the inherited `max_tokens=6000`, 12
   of 25 Bioinformatics records came back as `parse_error` with `output_tokens` of *exactly* 6000 —
   truncated mid-JSON. Raising it to 16,000 took that to 0 of 25. Billing is per token generated,

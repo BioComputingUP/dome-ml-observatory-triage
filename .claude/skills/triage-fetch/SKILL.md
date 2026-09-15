@@ -29,7 +29,16 @@ lab VPN (moros is an internal host).
 
 ```bash
 cd moros_pipeline/scripts
-python3 fetch_search_space.py --dry-run
+python3 fetch_search_space.py --indexed-since last --up-to today --dry-run
+```
+
+That is the normal refresh: everything Europe PMC has first indexed since the last fetch, whatever its
+publication date (about 5,000 a week, and it includes papers indexed late for an earlier year). Use the
+year windows below only to open coverage for a year that has never been fetched, or when the ledger has
+lost history.
+
+```bash
+python3 fetch_search_space.py --dry-run --up-to today      # year windows: or --up-to YYYY-MM-DD
 ```
 
 Report which windows it will fetch: normally only the current year (always re-fetched, it is
@@ -37,15 +46,24 @@ still filling up) plus any year the ledger has never covered. **If it stops beca
 documents in years the ledger never recorded, stop and report.** Never pass
 `--ignore-cross-check` without the user deciding to.
 
+A window always starts on 1 January: `--up-to` only moves its end, and there is no start-date flag.
+What counts as new comes from the moros dedupe in `build_incoming_documents.py`, not from the
+window, so a bounded run (`--up-to 2026-09-10`) still picks up late-indexed records from earlier in
+the year. The ledger records each window as fetched; a year whose window stops before 31 December is
+fetched again next time (`coverage_ledger.complete_years`), so a December run cannot leave the rest
+of December behind.
+
 ```bash
-python3 fetch_search_space.py --up-to today 2>&1 | tee ../output/fetch_run.log
+python3 fetch_search_space.py --indexed-since last --up-to today 2>&1 | tee ../output/fetch_run.log
+python3 fetch_search_space.py --up-to today 2>&1 | tee ../output/fetch_run.log   # year windows instead
 ```
 
 Resumable: each year is checkpointed with a `.done` marker under `../output/incoming/<hash>/`.
 If interrupted, re-run the same command.
 
 ```bash
-python3 build_incoming_documents.py --incoming ../output/incoming/<query-hash>
+python3 build_incoming_documents.py --incoming ../output/incoming/<query-hash>/indexed_<since>_<up-to>
+#   year windows instead: --incoming ../output/incoming/<query-hash>
 ```
 
 Output: `../output/incoming_new.csv` (`pid, pmid, pmcid, doi, title, abstract, journal, year,
@@ -60,11 +78,12 @@ data links without another metadata pass.
 Give the user:
 
 - windows fetched and records returned;
-- how many were already in the corpus vs genuinely new;
+- how many were already in the corpus, how many are in it under an older `_id` (set aside, with the
+  `_id` that holds them), and how many are genuinely new;
 - how many new records have no abstract (they are staged but never classified; the builder leaves
   them out and counts them);
 - the classification projection for the new records: run the `cost-estimate` skill (live price,
-  balance, off-peak status). At the measured rate it is about $0.0003 per record off-peak.
+  balance, off-peak status). At the billed rate it is about $0.0002 per record off-peak.
 
 Then ask: **"Classify these N records for about $X now (off-peak: yes/no)?"** Hand over to the
 `classify` skill only on a yes. Do not start it yourself.

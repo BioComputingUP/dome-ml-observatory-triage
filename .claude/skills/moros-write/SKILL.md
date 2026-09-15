@@ -18,8 +18,8 @@ to `../output/rollback/<run_id>.jsonl` before the first batch. There is no drop,
 whole-document replace path. **Never drop `Content`**: it destroys `positives_text`, and search
 silently degrades to a regex scan with no error anywhere.
 
-Always, in this order: `--dry-run` (or no `--confirm`) → `--limit N --confirm` (a real, reversible
-trial) → `--confirm` → `verify_corpus.py` → the post-load checklist. Report the run id and the
+Always, in this order: a dry run (the command without `--confirm`; no loader has a `--dry-run`
+flag) → `--limit N --confirm` (a real, reversible trial) → `--confirm` → `verify_corpus.py` → the post-load checklist. Report the run id and the
 rollback path after every confirmed write.
 
 ## A. Load a classified batch as new documents
@@ -28,9 +28,10 @@ rollback path after every confirmed write.
 cd moros_pipeline/scripts
 # 1. Citations AND licences for the batch, by pmid -> doi -> pmcid. --with-licence is required for
 #    new records (the lite result type carries no licence).
-python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv
-python3 join_citations.py --citations ../output/epmc_citations.csv \
-    --with-licence --corpus-from-moros --output ../output/pid_licences.csv
+#    Into a batch file: the shared epmc_citations.csv predates the licence columns, so licences
+#    appended there are invisible to the builder (2026-09-15).
+python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv \
+    --output ../output/incoming_new_citations.csv
 
 # 1b. Data links for the batch. The staged CSV already carries epmc_source / epmc_id, the preprint
 #     server and the data-links summary; only the link fetches and the merge remain. Europe PMC for
@@ -48,17 +49,20 @@ python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../outp
     --classification-events ../output/incoming_new_classification_events.csv --shards 1 \
     --out-preprints ../output/incoming_new_pid_preprints.csv --out-data-links ../output/incoming_new_pid_data_links.csv \
     --out-identifiers ../output/incoming_new_pid_identifiers.csv
-#     (/datalinks down? add --datalinks-scope none; the next data-links refresh completes them)
+#     (/datalinks down, or fetch_datalinks.py found no targets and wrote no file? add
+#      --datalinks-scope none; the next data-links refresh completes them)
 
 # 2. Documents, through the same schema.build_document() every record was built with.
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
+    --citations ../output/incoming_new_citations.csv --licence-fetch ../output/incoming_new_citations.csv \
     --data-links ../output/incoming_new_pid_data_links.csv \
     --identifiers ../output/incoming_new_pid_identifiers.csv --report-only
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
+    --citations ../output/incoming_new_citations.csv --licence-fetch ../output/incoming_new_citations.csv \
     --data-links ../output/incoming_new_pid_data_links.csv \
     --identifiers ../output/incoming_new_pid_identifiers.csv
 #    -> ../../mongo_landscape_export/output/incoming_new_documents.jsonl + .report.json
@@ -81,13 +85,15 @@ the existing document should lose what the new one lacks.
 ## B. Merge an enrichment events file
 
 ```bash
-python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --dry-run
+python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv              # dry run
 python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --limit 25 --confirm
 python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --confirm
 ```
 
 The `enrichment` allowlist covers `content_filters`' six vocabulary fields and the
 `llm_enrichment` group only; it cannot reach `llm_classification`. `parse_error` rows are skipped.
+Never merge an events file written for a comparison (`enrichment_revalidation_*`): it re-enriched
+records that already carry an enrichment, and merging would overwrite what it was compared with.
 Report matched / modified / violations, then `verify_corpus.py`.
 
 ## C. Field refreshes

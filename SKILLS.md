@@ -16,12 +16,14 @@ validated scripts and commands in this repository, exactly as `README.md` docume
 | `data-links` | "fetch the data links", "EBI Search links", "backfill the preprint servers", "refresh data links" | no | via `moros-write` |
 | `cross-links` | working on the reserved `identifiers.*` fields (`dome_registry` is filled by `data-links`; the rest is a scaffold) | no | via `moros-write` |
 | `refresh-cycle` | "do the monthly refresh", "run the whole pipeline" | asks first | asks first |
+| `processing-log` | the close of a refresh; "log the round", "update the processing history page" | no | no (commits the page in `dome-ml-observatory`) |
 
 The sequential order for a refresh: `triage-fetch` → (ask) → `classify` → `moros-write` (load,
 index, verify) → (ask) → `enrich` → `moros-write` (merge) → `citations-refresh` (optional) →
-`data-links` refresh (when due).
+`data-links` refresh (when due) → `processing-log`. A run is usually started from the parameter
+block in `BULK_UPDATE.md`, which says what each choice does.
 `cost-estimate` runs inside every paid step; `schema-sync` runs before every load.
 
 Rules every skill follows: dry-run before confirm; `--limit` trial before a full write; pull the
-live price and balance before spending; prefer off-peak; one events file per batch; never a second
+live price and balance before spending, and log the billed balance delta after; prefer off-peak; one events file per batch; never a second
 container while one is running; restart `observatory-ws` after a load.

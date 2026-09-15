@@ -146,9 +146,10 @@ the batch and merged (Europe PMC for every record, EBI Search for the positives)
 
 ```bash
 cd moros_pipeline/scripts
-python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv
-python3 join_citations.py --citations ../output/epmc_citations.csv \
-    --with-licence --corpus-from-moros --output ../output/pid_licences.csv
+#    Into a batch file: the shared epmc_citations.csv predates the licence columns, so licences
+#    appended there are invisible to the builder (2026-09-15).
+python3 fetch_citations.py --with-licence --input ../output/incoming_new.csv \
+    --output ../output/incoming_new_citations.csv
 python3 fetch_annotations.py --input ../output/incoming_new.csv --output ../output/incoming_new_annotations.jsonl
 python3 fetch_datalinks.py   --input ../output/incoming_new.csv --output ../output/incoming_new_datalinks.jsonl
 python3 fetch_ebisearch_domains.py --max-age-days 30        # EBI Search: re-dumps only stale accepted domains
@@ -165,11 +166,12 @@ python3 build_data_links.py --keys ../output/incoming_new.csv --metadata ../outp
 python3 ../../mongo_landscape_export/scripts/build_staged_documents.py \
     --staged ../output/incoming_new.csv \
     --events ../output/incoming_new_classification_events.csv \
+    --citations ../output/incoming_new_citations.csv --licence-fetch ../output/incoming_new_citations.csv \
     --data-links ../output/incoming_new_pid_data_links.csv \
     --identifiers ../output/incoming_new_pid_identifiers.csv
 #   -> ../../mongo_landscape_export/output/incoming_new_documents.jsonl
 
-python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl --dry-run
+python3 load_documents.py --input ../../mongo_landscape_export/output/incoming_new_documents.jsonl   # dry run: no --confirm
 python3 load_documents.py --input ... --limit 100 --confirm     # real, reversible trial
 python3 load_documents.py --input ... --confirm
 python3 ensure_indexes.py && python3 verify_corpus.py --expect-count <previous + loaded>
@@ -183,7 +185,7 @@ shape or a vocabulary changed, follow the release procedure in [`schema/README.m
 
 ### 4. Enrichment — tag the positives with controlled vocabularies
 
-A separate, deliberate, costly cycle: roughly 13,000x the per-record price of classification,
+A separate, deliberate, costly cycle: billed at roughly nine times the per-record price of classification,
 run per journal or cohort when wanted. The system message (prompt `e1`) carries the three
 vocabularies in `curation_criteria/` verbatim: EDAM domain in three tiers, learning paradigm and
 model family (closed), and canonical model-type spellings (open: unlisted methods are tagged
@@ -196,17 +198,19 @@ rather than retried blindly.
 cd moros_pipeline/scripts
 python3 export_journal_for_enrichment.py --journal "Bioinformatics (Oxford, England)" \
     --out ../output/enrich_input_<name>.csv           # names are matched VERBATIM; --max-usd guards it
+#   or the batch a refresh just loaded: --batch-id <llm_classification.batch_id> --limit <N>
 docker compose run --rm pipeline dome-triage llm-classify enrich \
     --tier flash --concurrency 800 \
     --input /app/moros_pipeline/output/enrich_input_<name>.csv \
     --events-out /app/moros_pipeline/output/enrichment_<name>_events.csv   # ALWAYS pass --events-out
-python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --dry-run
+python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv   # dry run: no --confirm
 python3 load_enrichment.py --events ... --limit 25 --confirm
 python3 load_enrichment.py --events ... --confirm
 ```
 
-Measured cost: **$4.07 per 1,000 records**, 94% of it output tokens, of which 98% is the model's
-reasoning trace. That is not reducible: lowering reasoning effort cost more and produced six times
+Cost: billed at about **$1.80 per 1,000 records** on V4.1 Flash (it was about $10 on V4-Flash, whose
+list-price model said $4). `COST_DASHBOARD.md` costs runs from balance deltas only. 90% of the tokens
+are output, of which 90% is the model's reasoning trace. That is not reducible: lowering reasoning effort cost more and produced six times
 the vocabulary violations; disabling thinking was 88% cheaper and agreed with production on all
 six fields for 0% of records. Throughput is `concurrency / ~45 s per call`: about 418 records per
 minute at 800.

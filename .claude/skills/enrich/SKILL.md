@@ -2,11 +2,11 @@
 name: enrich
 description: >
   Enrich a cohort of positive records in moros with the controlled vocabularies (EDAM domain
-  tiers, learning paradigm, model family, model type) using the validated DeepSeek V4 Flash
-  enrichment prompt, after a live cost estimate, an off-peak timing check and explicit
+  tiers, learning paradigm, model family, model type) using the validated enrichment prompt (e1,
+  DeepSeek's flash tier), after a live cost estimate, an off-peak timing check and explicit
   confirmation; then hand the events file to moros-write. Trigger on "enrich journal X", "enrich
-  the new positives", "run the enrichment", "how much would enriching Y cost". Expensive: about $4
-  per 1,000 records, 13,000x classification.
+  the new positives", "run the enrichment", "how much would enriching Y cost". Costly: billed at about
+  $1.80 per 1,000 records on V4.1 Flash, roughly nine times classification.
 ---
 
 # enrich
@@ -43,13 +43,25 @@ python3 export_journal_for_enrichment.py \
     --out ../output/enrich_input_<name>.csv --max-usd <cap>
 ```
 
+Or the batch a refresh just loaded, capped at N records:
+
+```bash
+python3 export_journal_for_enrichment.py \
+    --batch-id <llm_classification.batch_id> --limit <N> \
+    --out ../output/enrich_input_<name>.csv --max-usd <cap>
+```
+
+`--max-usd` costs what the export will write (`--limit` included) at the billed rate.
+
 ## 2. Cost and timing, then ask
 
-Run the `cost-estimate` skill for `N = rows exported`: at the measured $4.07 per 1,000 (off-peak)
-and ~418 records/min at `--concurrency 800`, so `minutes = N / 418`. Then
+Run the `cost-estimate` skill for `N = rows exported`: at the planning rate in `COST_DASHBOARD.md`
+(billed: $1.80 per 1,000 on V4.1 Flash, from `deepseek_real_cost_log.csv`; never the list-price
+model, which undershot V4-Flash's bill by more than half) and ~418 records/min at `--concurrency 800`, so
+`minutes = N / 418`. Then
 `python3 scripts/offpeak_window.py --minutes <that>`; if the run would cross a peak window,
 propose the earliest fully off-peak start (weekends hold anything). Check the balance covers the
-projection. State all of it and ask: **"Enrich N records for about $X, starting now / at T?"**
+projection, and read it immediately before starting. State all of it and ask: **"Enrich N records for about $X, starting now / at T?"**
 
 ## 3. Run
 
@@ -76,6 +88,9 @@ From the events file report: ok / parse_error, how many `finish_reason == length
 the 16,000-token cap, ~1.5%; they are **not** retried automatically because retrying at the same
 cap re-truncates — raising `ENRICHMENT_MAX_TOKENS` is a versioned change for the user to decide),
 vocabulary-violation rate (trial baseline 6.8%, production 4.1%), prefix-cache hit share, mean
-output and reasoning tokens, and the real balance delta.
+output and reasoning tokens, and the real balance delta. The balance lags the run by minutes: poll it
+until it moves and settles, start no other paid run meanwhile, then append a row to
+`data/processed/cost_estimates/deepseek_real_cost_log.csv` (`mode` `enrich`, `source`
+`balance_delta`).
 
 Then ask: **"Merge these into moros?"** Hand to `moros-write` section B on a yes.

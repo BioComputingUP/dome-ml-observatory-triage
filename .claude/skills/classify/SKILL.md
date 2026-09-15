@@ -2,7 +2,7 @@
 name: classify
 description: >
   Classify a staged batch of new records (positive / negative / undeterminable) with the validated
-  DeepSeek V4 Flash second-curator prompt, after a live cost estimate and explicit confirmation.
+  second-curator prompt (v1, DeepSeek's flash tier), after a live cost estimate and explicit confirmation.
   Trigger on "classify the staged batch", "run the classification", "classify incoming_new.csv".
   Costs money (about $0.0003 per record off-peak). Writes only an events CSV; never touches moros.
 ---
