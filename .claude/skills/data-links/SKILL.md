@@ -7,7 +7,7 @@ description: >
   bio.tools, the DOME Registry), the merge, the v1.4.0 and v1.5.0 migrations and the `preprints` /
   `data_links` / `identifiers` field loads. Trigger on "data links", "fetch the data links", "EBI
   Search links", "DOME Registry links", "backfill the preprint servers", "fill epmc_id", "refresh
-  data links", "link papers to their datasets", "roadmap item 1". Free; writes only through
+  data links", "link papers to their datasets". Free; writes only through
   moros-write.
 ---
 

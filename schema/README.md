@@ -85,7 +85,8 @@ It exits 1 on any difference, naming each one with the step that fixes it.
 with, copied by the `schema-sync` skill so a diff is readable offline. It is a copy, not an
 authority.
 
-**Where the three sides stand (2026-09-15).** 1.6.0 is authored here and published as v1.6.0 (the
-snapshot is in `observatory_release/`). moros holds 1.5.1 on every document until
-`migrate_v1_6_0.py` runs. 1.6.0 adds the top-level `record_modified` datestamp, which OAI-PMH and
-the sitemaps page by.
+**Where the three sides stand (2026-09-15).** 1.6.0 is on all three. It is authored here and
+published as v1.6.0 (the snapshot is in `observatory_release/`). `migrate_v1_6_0.py` stamped all
+846,716 documents on moros at 20:09 UTC, and `record_modified_positive` is built.
+`verify_corpus.py` passes and `check_alignment.py --live` reports `aligned`. 1.6.0 adds the
+top-level `record_modified` datestamp, which OAI-PMH and the sitemaps page by.

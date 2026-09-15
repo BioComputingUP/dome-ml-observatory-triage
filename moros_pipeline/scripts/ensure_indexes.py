@@ -80,7 +80,7 @@ REQUIRED_INDEXES = {
             "partialFilterExpression": {"llm_classification.classification": "positive"},
             "background": True,
         },
-        "cost": "partial on the ~366k positives; seconds, tens of MB (estimate until measured)",
+        "cost": "~3 seconds, ~17MB (partial on the ~366k positives; measured 2026-09-15)",
     },
 }
 
