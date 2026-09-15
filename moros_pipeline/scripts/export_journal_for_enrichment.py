@@ -1,9 +1,10 @@
-"""Exports one journal's positive records out of moros as an enrichment-ready input CSV.
+"""Exports a cohort of positive records out of moros as an enrichment-ready input CSV.
 
-This is the reusable half of "enrich a journal": `--journal` is an argument, so the next journal
-is one command rather than a new script. It reads from **moros, not the staging CSV**, which is
-what makes it work on the whole corpus including the curated records that were only just merged --
-a CSV-based export would miss exactly the records this project cares most about.
+This is the reusable half of "enrich a journal" or "enrich this batch": `--journal` and
+`--batch-id` are arguments, so the next cohort is one command rather than a new script. It reads
+from **moros, not the staging CSV**, which is what makes it work on the whole corpus including the
+curated records that were only just merged -- a CSV-based export would miss exactly the records
+this project cares most about.
 
 The output carries only `record_id, title, abstract, journal, year`. That is the identical field
 set `llm_classify/sampling.py::strip_for_api` sends to the API -- the blinding boundary -- so no
@@ -18,6 +19,7 @@ for both. (`enrich --events-out` was declared but silently dropped until 2026-09
 
     python3 export_journal_for_enrichment.py --journal "Bioinformatics (Oxford, England)"
     python3 export_journal_for_enrichment.py --journal "Nature" --classification positive --limit 50
+    python3 export_journal_for_enrichment.py --batch-id classify_flash_staged_file_primary_20260903T201216 --limit 200 --max-usd 3
 """
 
 from __future__ import annotations
@@ -36,21 +38,21 @@ DEFAULT_OUT_DIR = FOLDER_DIR / "output"
 
 OUTPUT_COLUMNS = ["record_id", "title", "abstract", "journal", "year"]
 
-# Measured on THIS population, not the Step 20j trial: 100 paired Bioinformatics records at the
-# production configuration (thinking on, provider-default effort, flat domain rendering) cost
-# **$4.07 per 1,000 records** -- 5,947 output tokens per record, 98% of them reasoning.
+# What an export is costed at before its input file exists. **$10 per 1,000 records** since
+# 2026-09-15: enrichment is billed at about that (3,000 records for $30-40). The previous 4.07 was
+# tokens x list price from 100 paired Bioinformatics records (5,947 output tokens per record, 98%
+# of them reasoning), never checked against the balance, and it let this gate admit about 2.5x the
+# spend its --max-usd said. Replace it only with a balance delta from
+# data/processed/cost_estimates/deepseek_real_cost_log.csv, never with a token-model figure.
 #
-# The old constant here was $1.76/1k, taken from the Step 20j trial population, and it
-# under-projected this journal by 2.3x. Enrichment cost is strongly population-dependent: these
-# records think about three times as long as the trial's (median 5,627 output tokens vs 2,163).
-# Treat this number as a Bioinformatics-calibrated estimate, not a universal rate, and re-measure
-# from a real run's own token totals when projecting a different journal.
+# Enrichment cost is strongly population-dependent: Bioinformatics records think about three times
+# as long as the Step 20j trial's (median 5,627 output tokens vs 2,163).
 #
 # Attempts to reduce it, all measured and all rejected (thinking_ablation/run_effort_ablation.py,
-# 2026-09-03): `reasoning_effort: low` cost MORE than the default ($4.15/1k) with 6x the
-# violations; a hierarchical domain rendering saved nothing ($4.09/1k); disabling thinking is 88%
-# cheaper but agrees with the production configuration on all six fields for 0% of records.
-USD_PER_1000_RECORDS = 4.07
+# 2026-09-03): `reasoning_effort: low` cost MORE than the default with 6x the violations; a
+# hierarchical domain rendering saved nothing; disabling thinking is 88% cheaper but agrees with the
+# production configuration on all six fields for 0% of records.
+USD_PER_1000_RECORDS = 10.0
 
 
 def slugify(value: str) -> str:
@@ -58,12 +60,20 @@ def slugify(value: str) -> str:
     return "".join(keep).strip("_").replace("__", "_")[:60]
 
 
-def build_query(journals: list[str], classification: str | None,
-                include_enriched: bool) -> dict:
-    """`$in` over the journal names, so several journals are one export and one events file
-    rather than one run to babysit per journal. Names are matched VERBATIM and are fuller than
-    expected -- Science is stored as "Science (New York, N.Y.)"."""
-    query: dict = {"publication_metadata.journal": {"$in": journals}}
+def build_query(journals: list[str] | None, classification: str | None,
+                include_enriched: bool, batch_ids: list[str] | None = None) -> dict:
+    """`$in` over the journal names and/or the classification batch ids, so several journals or
+    batches are one export and one events file rather than one run to babysit each. Journal names
+    are matched VERBATIM and are fuller than expected -- Science is stored as "Science (New York,
+    N.Y.)". A batch id is the `llm_classification.batch_id` a load stamped, as `verify_corpus.py`
+    lists under `batch_ids`."""
+    if not journals and not batch_ids:
+        raise ValueError("a cohort needs at least one journal or classification batch id")
+    query: dict = {}
+    if journals:
+        query["publication_metadata.journal"] = {"$in": journals}
+    if batch_ids:
+        query["llm_classification.batch_id"] = {"$in": batch_ids}
     if classification:
         query["llm_classification.classification"] = classification
     if not include_enriched:
@@ -73,9 +83,16 @@ def build_query(journals: list[str], classification: str | None,
     return query
 
 
-def run(journals: list[str], classification: str | None, out_path: Path, limit: int | None,
-        include_enriched: bool, max_usd: float | None) -> None:
-    query = build_query(journals, classification, include_enriched)
+def projected_usd(n_match: int, limit: int | None) -> float:
+    """What the export will cost once enriched: the records it will actually write, which is the
+    `--limit` when one is given, at the billed rate."""
+    n = n_match if limit is None else min(n_match, limit)
+    return n / 1000 * USD_PER_1000_RECORDS
+
+
+def run(journals: list[str] | None, classification: str | None, out_path: Path, limit: int | None,
+        include_enriched: bool, max_usd: float | None, batch_ids: list[str] | None = None) -> None:
+    query = build_query(journals, classification, include_enriched, batch_ids)
     out_path = Path(out_path).resolve()
 
     projection = {
@@ -88,32 +105,36 @@ def run(journals: list[str], classification: str | None, out_path: Path, limit: 
 
     with Moros.from_env() as moros:
         print(f"target {moros.describe()}\n")
-        print(f"{'journal':<36}{'documents':>11}{'to enrich':>11}")
+        cohorts = ([("journal", "publication_metadata.journal", name) for name in journals or []]
+                   + [("batch", "llm_classification.batch_id", bid) for bid in batch_ids or []])
+        print(f"{'cohort':<60}{'documents':>11}{'to enrich':>11}")
         missing = []
-        for name in journals:
-            total = moros.count({"publication_metadata.journal": name})
+        for kind, field, value in cohorts:
+            total = moros.count({field: value})
             if total == 0:
-                missing.append(name)
-            per_journal = moros.count(build_query([name], classification, include_enriched))
-            print(f"{name:<36}{total:>11,}{per_journal:>11,}")
+                missing.append((kind, value))
+            one = build_query([value] if kind == "journal" else None, classification,
+                              include_enriched, [value] if kind == "batch" else None)
+            print(f"{value[:58]:<60}{total:>11,}{moros.count(one):>11,}")
         if missing:
             raise SystemExit(
                 f"\nno documents for {missing}. Journal names are matched verbatim and are often "
                 f"fuller than expected -- Bioinformatics is stored as 'Bioinformatics (Oxford, "
                 f"England)' and Science as 'Science (New York, N.Y.)'. Check /api/facets/journal "
-                f"for the exact string."
+                f"for the exact string. Batch ids are listed by verify_corpus.py under batch_ids."
             )
         n_match = moros.count(query)
-        print(f"{'TOTAL':<36}{'':>11}{n_match:>11,}\n")
+        print(f"{'TOTAL':<60}{'':>11}{n_match:>11,}\n")
 
         # The budget gate. `enrich` deliberately has no --estimated-usd/--confirm gate (Gavin's
         # 2026-08-27 call), so this is the one place a runaway is stopped -- before the input file
         # exists, rather than after the money is spent.
-        projected = n_match / 1000 * USD_PER_1000_RECORDS
+        projected = projected_usd(n_match, limit)
         if max_usd is not None and projected > max_usd:
             raise SystemExit(
-                f"REFUSING to write: {n_match:,} records project to ${projected:.2f}, over the "
-                f"${max_usd:.2f} limit. Narrow the journal list, or raise --max-usd deliberately."
+                f"REFUSING to write: {min(n_match, limit or n_match):,} records project to "
+                f"${projected:.2f} at ${USD_PER_1000_RECORDS:.2f}/1k, over the ${max_usd:.2f} "
+                f"limit. Narrow the cohort, pass a smaller --limit, or raise --max-usd deliberately."
             )
 
         rows = []
@@ -144,13 +165,13 @@ def run(journals: list[str], classification: str | None, out_path: Path, limit: 
 
     cost = len(rows) / 1000 * USD_PER_1000_RECORDS
     print(f"\nwrote {len(rows):,} records -> {out_path}")
-    if skipped:
+    if skipped and limit is None:
         print(f"  {skipped:,} skipped for having no title or abstract to enrich from")
-    print(f"\nprojected cost: {len(rows):,} records x ${USD_PER_1000_RECORDS}/1k = "
+    print(f"\nprojected cost: {len(rows):,} records x ${USD_PER_1000_RECORDS:.2f}/1k = "
           f"**${cost:.2f}**"
           + (f" (limit ${max_usd:.2f})" if max_usd is not None else ""))
-    print("  Rate measured on this exact configuration; ~3% of records are expected to hit the "
-          "16,000-token cap and be skipped (recorded as finish_reason=length).")
+    print("  At the billed rate. Read the DeepSeek balance before and after the run and log the "
+          "delta; ~3% of records are expected to hit the 16,000-token cap (finish_reason=length).")
     events = out_path.with_name(out_path.stem.replace("enrich_input_", "enrichment_") + "_events.csv")
     print(f"""
 next -- smoke check 25 first, inspect, then run the rest:
@@ -165,10 +186,14 @@ then the same command without --limit, then:
   python3 load_enrichment.py --events {events}""")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--journal", required=True, action="append", dest="journals",
+    cohort = parser.add_mutually_exclusive_group(required=True)
+    cohort.add_argument("--journal", action="append", dest="journals",
                         help="Exact journal string, matched verbatim. Repeatable.")
+    cohort.add_argument("--batch-id", action="append", dest="batch_ids",
+                        help="A classification batch id (llm_classification.batch_id), e.g. the "
+                             "batch a refresh just loaded. Repeatable.")
     parser.add_argument("--classification", default="positive",
                         choices=["positive", "negative", "undeterminable", "any"])
     parser.add_argument("--out", type=Path, default=None)
@@ -178,12 +203,20 @@ def main() -> None:
     parser.add_argument("--max-usd", type=float, default=20.0,
                         help="Refuse to write an input whose projected cost exceeds this. "
                              "Pass 0 to disable the gate.")
-    args = parser.parse_args()
-    default_name = (slugify(args.journals[0]) if len(args.journals) == 1
-                    else f"{len(args.journals)}journals")
-    out = args.out or DEFAULT_OUT_DIR / f"enrich_input_{default_name}.csv"
+    return parser
+
+
+def default_name(journals: list[str] | None, batch_ids: list[str] | None) -> str:
+    if journals:
+        return slugify(journals[0]) if len(journals) == 1 else f"{len(journals)}journals"
+    return f"batch_{slugify(batch_ids[0])}" if len(batch_ids) == 1 else f"{len(batch_ids)}batches"
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    out = args.out or DEFAULT_OUT_DIR / f"enrich_input_{default_name(args.journals, args.batch_ids)}.csv"
     run(args.journals, None if args.classification == "any" else args.classification,
-        out, args.limit, args.include_enriched, args.max_usd or None)
+        out, args.limit, args.include_enriched, args.max_usd or None, args.batch_ids)
 
 
 if __name__ == "__main__":

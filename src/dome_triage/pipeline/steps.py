@@ -3179,7 +3179,7 @@ def step_llm_classify_enrich(
     print(
         f"llm-classify.enrich: {_n_todo:,} record(s) to enrich at concurrency {concurrency} "
         f"-> ~{_n_todo / max(concurrency / 45.0, 1e-9) / 60:.1f} min, "
-        f"~${_n_todo / 1000 * 4.07:.2f} at the measured $4.07/1k. "
+        f"~${_n_todo / 1000 * 10.0:.2f} at the billed ~$10/1k (tokens x list price undershoots the bill). "
         f"Events stream to disk per record; a re-run never re-pays for finished work."
     )
 
