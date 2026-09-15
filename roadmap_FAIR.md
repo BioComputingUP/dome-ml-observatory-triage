@@ -16,8 +16,9 @@ Facts this report rests on, checked in both repositories and online:
 - **Service.** `observatory-ws` (NestJS) is the only reader. `observatory-ui` is a static Angular
   SPA with no SSR, served by nginx (`try_files … /index.html`). The record page sets no `<title>`,
   meta tags or JSON-LD.
-- **Vocabularies.** The vocabulary files already carry IRIs: `domain_vocab.json` has `edam_id` and
-  `modelling_branch_vocab.json` has `mesh_id`. The documents do not store IRIs, and the
+- **Vocabularies.** The vocabulary files already carry IRIs: `domain_vocab.json` has `edam_id`, and
+  since schema v1.5.1 both modelling vocabularies carry `ontology_mappings` (MeSH, AIO, NCIT, OBI,
+  SWO, STATO, EDAM). The documents do not store IRIs, and the
   `mesh_headings` entries are labels with no descriptor ids.
 - **No record-level modified date.** Only per-group timestamps exist (`llm_classification.timestamp`,
   `citation_count_updated`, `data_links.fetched_at`, `llm_enrichment.timestamp`).
@@ -99,7 +100,7 @@ Merging the two would put CC BY 4.0 on abstracts the project does not own. That 
 | `year` | An integer | `datePublished: "2025"` |
 | `domain_tier*` | Terms | EDAM IRI `http://edamontology.org/topic_XXXX` via the release vocab `edam_id` |
 | `learning_paradigm` / `model_family` | Terms | MeSH IRI `http://id.nlm.nih.gov/mesh/<mesh_id>`. The 4 project extensions have `mesh_id: null` and get a project-namespace IRI. |
-| `mesh_headings`, `model_type`, `keywords_author` | Labels only | `keywords` as literals. MeSH descriptor IRIs would be a later enrichment. |
+| `mesh_headings`, `model_type`, `keywords_author` | Labels only | `keywords` as literals. 31 of the 76 model-type seed terms have IRIs in the release vocab's `ontology_mappings`; `mesh_headings` descriptor IRIs would be a later enrichment. |
 | `source.access.license` | `"cc by"`, with no version | An SPDX / Creative Commons IRI map. The version is not asserted when Europe PMC gives none. |
 | `abstract`, `title` | Contain HTML | Stripped to plain text. Port `plainText` from `observatory-ui/src/app/core/rich-text.ts`. |
 | `data_links.links[]` | `id`, `url` (identifiers.org / doi.org), Scholix `relationship` | Typed references to `Dataset` nodes. Set a partial-list flag when `truncated`. |
@@ -271,7 +272,7 @@ expressed in a standard vocabulary.
 | A1 open protocol by id | HTTPS API | Plus content negotiation and signposting | 1 |
 | A2 metadata outlives data | No | Archived, DOI'd monthly releases with DCAT | 2 |
 | I1 formal language | Plain JSON | JSON-LD / RDF | 1 |
-| I2 FAIR vocabularies | EDAM and MeSH ids in the vocab files but not in output | Emitted as IRIs | 1 |
+| I2 FAIR vocabularies | EDAM ids and (v1.5.1) `ontology_mappings` in the vocab files but not in output | Emitted as IRIs | 1 |
 | I3 qualified references | DOI/PMID strings, data-link URLs | Typed IRIs (article, datasets, Registry) | 1 |
 | R1.1 licence | Prose in `LICENSE.md` | Machine-readable, record vs article split | 1, 2 |
 | R1.2 provenance | Rich but unexposed | PROV-O from `llm_classification` | 1 |

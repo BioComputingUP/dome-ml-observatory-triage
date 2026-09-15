@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://observatory.dome-ml.org/schema/v1.5.0/ai-ml-landscape.schema.json",
+  "$id": "https://observatory.dome-ml.org/schema/v1.5.1/ai-ml-landscape.schema.json",
   "title": "DOME Observatory AI/ML landscape record",
   "description": "One document per screened publication. Source of truth for this shape is dome-ml-observatory-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside that repo (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
   "type": "object",
@@ -273,7 +273,7 @@
     },
     "content_filters": {
       "type": "object",
-      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining six are the AI/ML enrichment pass's output -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags).",
+      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining six are the AI/ML enrichment pass's output -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags). From v1.5.1 every term in vocab/modelling-branch.json and vocab/model-type-seed.json carries ontology_mappings: the MeSH, AIO, NCIT, OBI, SWO, STATO and EDAM terms it matches.",
       "required": [
         "mesh_headings",
         "pub_types",

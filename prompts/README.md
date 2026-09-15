@@ -41,7 +41,9 @@ python3 prompts/render_prompts.py --check   # exit 1 if the committed files or h
 `--check` runs before and after any change to `curation_criteria/` or the two prompt modules.
 If it fails, either the assets changed (then this is a new prompt version: bump `PROMPT_VERSION`
 or `ENRICHMENT_PROMPT_VERSION`, re-validate, and expect resumption to start a fresh batch) or
-someone edited a rendered file by hand (then re-render).
+someone edited a rendered file by hand (then re-render). A key the renderer never reads
+(`parent_ids`, `ontology_mappings`) changes only `vocab_file_sha256`: re-render. The rendered
+message and `vocab_sha256` stay the same, so it is not a new prompt version.
 
 Historical hashes in production: classification criteria `bd9d66dd892e6c0a…` (every record
 classified since 2026-08-21); enrichment vocab `41db952f15118176…` (every enriched record).

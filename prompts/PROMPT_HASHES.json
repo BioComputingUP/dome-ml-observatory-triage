@@ -11,8 +11,8 @@
     "prompt_version": "e1",
     "vocab_file_sha256": {
       "domain_vocab.json": "156fb50433dfacbc9e14ec3fe892f1887d035d382a1deefc6e92ce65a8af891b",
-      "model_type_seed_vocab.json": "f3c5f1caf3ad18f2aee1f99885b51c8631108295b5084e8af9769dc8a0a75692",
-      "modelling_branch_vocab.json": "35f2da1d0b666c78e3a9818034b5da73979d4b760e69021f514e5ae9ee6e3761"
+      "model_type_seed_vocab.json": "3ff01c0bef4714477fef15f9215efb9b1cfd9e4794fcb8db2bad1674a0df3cdc",
+      "modelling_branch_vocab.json": "24c1216eded96a7c845e0627a9e78f9bb2ec3fdbafb291c378502b96c64bab0c"
     },
     "vocab_files": [
       "curation_criteria/domain_vocab.json",

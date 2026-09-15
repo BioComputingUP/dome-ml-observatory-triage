@@ -34,7 +34,7 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
       fetch_annotations.py · fetch_datalinks.py · fetch_ebisearch_*.py · build_data_links.py ──▶ data links for the batch
                         │
                         ▼
-      build_staged_documents.py ──▶ documents JSONL (schema 1.5.0) ──load_documents.py──▶ moros
+      build_staged_documents.py ──▶ documents JSONL (schema 1.5.1) ──load_documents.py──▶ moros
                                                                   ensure_indexes.py · verify_corpus.py
 
 positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
@@ -298,7 +298,7 @@ a run of that length started now stays off-peak, and when the next such window o
 | `pricing/`, `scripts/cost_dashboard.py`, `COST_DASHBOARD.md` | Pricing as of a date, the generator, and the dashboard. |
 | `epmc_licensing/` | The original pmid-keyed licence table (13 MB), still read as a fallback by the document builder. |
 | `cross_links/` | Scaffold for the reserved external-identifier fields other than `dome_registry`, to be derived from `data_links`. |
-| `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. [`data_links_sources.md`](docs/data_links_sources.md) lists every data-link source, accepted or refused (schema v1.5.0). |
+| `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. [`data_links_sources.md`](docs/data_links_sources.md) lists every data-link source, accepted or refused (schema v1.5.0). [`vocabulary_ontology_mappings.md`](docs/vocabulary_ontology_mappings.md) says where the vocabulary terms' ontology ids came from (schema v1.5.1). |
 | `.claude/skills/`, [`SKILLS.md`](SKILLS.md) | Agent skills, one per process, plus the sequential refresh cycle. |
 | [`AGENTS.md`](AGENTS.md) | The rules: what may never be altered, how writes are kept safe, what has gone wrong before. |
 | [`ROADMAP.md`](ROADMAP.md) | Short. |

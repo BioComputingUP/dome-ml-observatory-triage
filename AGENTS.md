@@ -183,4 +183,6 @@ field.
 The scripts, package, prompts and vocabularies were validated in a research project and carried
 here byte-for-byte on 2026-09-07 (commit `e553279` of that project's history, recorded here for
 reproducibility only; it is not a dependency of anything in this repository). This repository is
-the operational home from that date.
+the operational home from that date. On 2026-09-15 the two modelling vocabularies gained
+`ontology_mappings` ([docs/vocabulary_ontology_mappings.md](docs/vocabulary_ontology_mappings.md)); the
+rendered enrichment prompt is unchanged.

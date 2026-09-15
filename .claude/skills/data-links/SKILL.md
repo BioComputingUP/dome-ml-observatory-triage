@@ -34,7 +34,7 @@ calls. Both have headroom; start there or higher.
 
 ## Preconditions
 
-1. `python3 ../../schema/check_alignment.py` says authored 1.5.0 = published v1.5.0. If the
+1. `python3 ../../schema/check_alignment.py` says authored 1.5.1 = published v1.5.1. If the
    release is not cut, stop: `schema-sync` first.
 2. `python3 verify_corpus.py` — note the count and the schema_version histogram.
 

@@ -157,6 +157,14 @@ through `load_fields.py`, so migrate first. `verify_corpus.py` fails on a docume
 link keys under an older version, and `--reverse` refuses once EBI Search links or a DOME Registry
 id have landed.
 
+```bash
+python3 migrate_v1_5_1.py            # 1.5.0 -> 1.5.1: the version stamp only
+python3 migrate_v1_5_1.py --confirm
+python3 migrate_v1_5_1.py --reverse --confirm   # always safe: v1.5.1 puts nothing in documents
+```
+
+v1.5.1 changes no field: the two modelling vocabularies gained `ontology_mappings`.
+
 ## After any confirmed write: the manual checklist
 
 1. Restart `observatory-ws` (its facet cache is boot-loaded with no TTL).

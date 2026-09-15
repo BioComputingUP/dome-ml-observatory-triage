@@ -139,6 +139,8 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # and in identifier values, which the `data_links` and `identifiers` modes write per document,
     # so the migration sets nothing but the version.
     "migrate_v1_5_0": frozenset({_SCHEMA_VERSION_PATH}),
+    # 1.5.0 -> 1.5.1: the version stamp only; v1.5.1 changed vocabulary metadata, not documents.
+    "migrate_v1_5_1": frozenset({_SCHEMA_VERSION_PATH}),
     # The external cross-reference identifiers (cross_links/README.md). The data-links build fills
     # `dome_registry` from EBI Search's DOME Registry entries; the other four arrive with their own
     # passes. Cannot reach data_links, the Europe PMC identity (`identifiers.epmc_id` is the

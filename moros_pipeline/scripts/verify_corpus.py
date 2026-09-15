@@ -37,7 +37,7 @@ from moros_client import Moros
 from link_identifiers import MONGO_MALFORMED_REGEX
 from moros_write import REPORT_DIR, new_run_id, utc_now_iso
 
-EXPECTED_SCHEMA_VERSION = "1.5.0"
+EXPECTED_SCHEMA_VERSION = "1.5.1"
 VALID_PROVENANCE = ("llm", "human_curated", "registry_confirmed")
 VALID_CLASSIFICATIONS = ("positive", "negative", "undeterminable")
 REQUIRED_INDEXES = ("_id_", "class_year_id", "positives_text")

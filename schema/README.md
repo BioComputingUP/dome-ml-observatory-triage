@@ -36,10 +36,7 @@ Exit code 1 on any difference, with each one named.
 with, copied by the `schema-sync` skill so a diff is readable offline. It is a copy, not an
 authority.
 
-**Where the three sides stand (2026-09-14).** Authored here: 1.4.0 (the v1.3.0 preprint fields
-plus the `data_links` group). Published in the sibling working tree: v1.4.0, cut with its
-`schema-version` skill in the same change. Live on moros: 1.2.0 until `migrate_v1_4_0.py --confirm`
-runs, so `check_alignment.py --live` reports the corpus as behind until then — that is the
-migration due, not drift to fix by hand. The snapshot below is still v1.1.0: a snapshot is only
-ever taken from a committed release, so refresh it with the `schema-sync` skill once the sibling's
-v1.4.0 folder is committed.
+**Where the three sides stand (2026-09-15).** 1.5.1 on all three: authored here, published as
+v1.5.1 (the snapshot in `observatory_release/`) and stamped on every moros document. 1.5.1 changes no
+field: the two modelling vocabularies gained `ontology_mappings` ([how they were
+sourced](../docs/vocabulary_ontology_mappings.md)).

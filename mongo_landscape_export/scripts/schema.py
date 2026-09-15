@@ -88,7 +88,11 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # links[] gain `matched_by` (pmid | pmcid | doi) and `source_domain` (the EBI Search domain), and
 # obtained_by gains ebisearch_xref / ebisearch_domain. The new element keys are optional: a record
 # the merge withholds keeps its 1.4.0 elements until a later build completes it.
-SCHEMA_VERSION = "1.5.0"
+# 1.5.1 (2026-09-15): no document shape change. Every term in the two modelling vocabularies
+# gains ontology_mappings (MeSH, AIO, NCIT, OBI, SWO, STATO and EDAM ids; see
+# docs/vocabulary_ontology_mappings.md). The patch bump keeps authored, published and live on
+# one version.
+SCHEMA_VERSION = "1.5.1"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat

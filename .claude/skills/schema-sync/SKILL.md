@@ -33,7 +33,7 @@ Read the report. `aligned` → done, say so. Otherwise, for each named differenc
 - **Fields authored but not published** — same as above; list them for the changelog. Also flag
   the three places there that mirror the shape (`record.model.ts`, `record.schema.ts`,
   `records.query.ts` + `search-params.ts`).
-- **Vocab drift** — additive `parent_ids`-style metadata still needs publishing (a minor bump);
+- **Vocab drift** — additive `parent_ids`-style metadata still needs publishing (a patch bump);
   a changed term set is also a new enrichment `vocab_sha256`, so every existing enrichment run
   resumes as a fresh batch. Say both.
 - **Live documents behind the authored version** — an in-place migration is due here, with the
