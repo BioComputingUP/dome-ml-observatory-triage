@@ -11,8 +11,9 @@ The read side, `dome-ml-observatory` (UI + API + the published schema releases),
 repository and is read-only by design; **it must never gain write credentials, and this
 repository must never serve reads.**
 
-`README.md` explains each process. `SKILLS.md` lists the agent skills. `ROADMAP.md` is short on
-purpose.
+`README.md` explains each process. `SKILLS.md` lists the agent skills. Open work for both
+repositories is in one roadmap, in the sibling:
+[`ROADMAP.md`](https://github.com/BioComputingUP/dome-ml-observatory/blob/main/ROADMAP.md).
 
 ## Ground rules
 

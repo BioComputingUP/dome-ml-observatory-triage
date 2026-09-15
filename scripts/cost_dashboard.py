@@ -332,7 +332,7 @@ def render(pricing: dict, profiles: dict, counts: dict, balance: dict | None, ru
                      f"`{profiles.get('model_id')}` with {ds['version']} (from {str(ds.get('effective_from', ''))[:10]}), "
                      f"and the list prices above are {ds['version']}'s. Its token use is unmeasured until its first events "
                      "files are re-measured (`--events-classification` / `--events-enrichment`), and whether it agrees with "
-                     "the validated model is a separate check (see ROADMAP.md).")
+                     "the validated model is a separate check (see AGENTS.md, ground rule 1).")
     lines.append(f"- **Enrichment's list-price model undershoots its bill.** Tokens × list price gave "
                  f"${float(e.get('token_model_usd_per_1k', 0)):.2f} per 1,000 on V4-Flash; enrichment is billed at about "
                  f"${float(e.get('planning_usd_per_1k', 10.0)):.0f}. Budget from billed runs only: bracket every paid run with "
@@ -340,7 +340,7 @@ def render(pricing: dict, profiles: dict, counts: dict, balance: dict | None, ru
     lines.append("- The GLM columns apply DeepSeek's token counts to Z.ai's prices: a different tokenizer and a "
                  "different reasoning budget would change them, and **GLM-5.3-Flash has not been validated** against "
                  "the human benchmark or the enrichment agreement check. They are a price comparison, not an approved "
-                 "substitute (see ROADMAP.md).")
+                 "substitute (see AGENTS.md, ground rule 1).")
     lines.append("- Classification cache hits are modelled (the event log does not record them): everything but the "
                  f"~{c['record_tokens_estimate']} per-record tokens is treated as a prefix-cache hit. On V4-Flash that "
                  f"model came within ~6% of the billed ${c['real_anchor_usd_per_record']:.6f}/record.")

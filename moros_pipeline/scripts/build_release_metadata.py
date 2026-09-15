@@ -20,8 +20,9 @@ Search) read the same file.
 A published month is immutable, like a schema release: an existing month is refused unless
 `--overwrite` is given, which is only for a month not yet committed there.
 
-No Zenodo distribution and no DOI yet. The archive job (ROADMAP.md) adds both when it deposits the
-month; until then the corpus is identified by its landing page. See docs/release_metadata.md.
+No Zenodo distribution and no DOI yet. The archive job (item 4 of the sibling repository's
+ROADMAP.md) adds both when it deposits the month; until then the corpus is identified by its landing
+page. See docs/release_metadata.md.
 """
 
 from __future__ import annotations

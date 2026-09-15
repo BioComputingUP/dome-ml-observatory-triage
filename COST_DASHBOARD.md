@@ -74,7 +74,7 @@ Peak, at double price: 01:00–04:00 UTC and 06:00–10:00 UTC, Mon-Fri. Everyth
 ## Assumptions and caveats
 
 - **Enrichment's list-price model undershoots its bill.** Tokens × list price gave $4.07 per 1,000 on V4-Flash; enrichment is billed at about $2. Budget from billed runs only: bracket every paid run with `GET /user/balance` reads and append the delta to the real cost log.
-- The GLM columns apply DeepSeek's token counts to Z.ai's prices: a different tokenizer and a different reasoning budget would change them, and **GLM-5.3-Flash has not been validated** against the human benchmark or the enrichment agreement check. They are a price comparison, not an approved substitute (see ROADMAP.md).
+- The GLM columns apply DeepSeek's token counts to Z.ai's prices: a different tokenizer and a different reasoning budget would change them, and **GLM-5.3-Flash has not been validated** against the human benchmark or the enrichment agreement check. They are a price comparison, not an approved substitute (see AGENTS.md, ground rule 1).
 - Classification cache hits are modelled (the event log does not record them): everything but the ~300 per-record tokens is treated as a prefix-cache hit. On V4-Flash that model came within ~6% of the billed $0.000199/record.
 - Enrichment cost is not reducible by settings: lower reasoning effort cost more with six times the vocabulary violations; thinking off was 88% cheaper and agreed with production on all six fields for 0% of records.
 - About 5% of new records have no abstract and are never sent to the model; the backlog figure already excludes abstract-less positives.

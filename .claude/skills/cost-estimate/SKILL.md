@@ -30,7 +30,7 @@ Confirm the model ids still exist:
 `curl -s -H "Authorization: Bearer $DEEPSEEK_API_KEY" https://api.deepseek.com/models`. The pipeline
 calls `deepseek-v4-flash`; a one-call probe's `model` field says what answers it (`deepseek-flash`
 on 2026-09-15). If that changes, say so: a new model needs the agreement check before its output is
-loaded (ROADMAP.md).
+loaded (`AGENTS.md`, ground rule 1).
 
 ## 2. Live balance
 

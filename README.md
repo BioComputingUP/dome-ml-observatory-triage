@@ -13,6 +13,9 @@ Two operational repositories, one database, one direction of writes:
 | **this one** — `dome-ml-observatory-triage` | data management: fetch, dedupe, classify, enrich, format, load, refresh | **the only writer** |
 | [`dome-ml-observatory`](https://github.com/BioComputingUP/dome-ml-observatory) | the production service: Angular UI + NestJS API, and the **published schema releases** | read-only |
 
+Open work for both repositories is tracked in one roadmap, in the sister repository:
+[`ROADMAP.md`](https://github.com/BioComputingUP/dome-ml-observatory/blob/main/ROADMAP.md).
+
 Every command below is meant to be run one at a time by a person (or by an agent following the
 skills in [`SKILLS.md`](SKILLS.md)), inspecting the output before the next step. Nothing here is a
 black box, and nothing that costs money or writes to the database runs without an explicit
@@ -25,7 +28,7 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
                                                                     (records moros has never seen)
                         │
                         ▼
-      dome-triage llm-classify classify --scope staged_file        (DeepSeek V4 Flash, prompt v1)
+      dome-triage llm-classify classify --scope staged_file        (DeepSeek V4.1 Flash, prompt v1)
                         │  classification events (positive / negative / undeterminable + rationale)
                         ▼
       fetch_citations.py --with-licence ──▶ citation counts + licences for the batch
@@ -34,7 +37,7 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
       fetch_annotations.py · fetch_datalinks.py · fetch_ebisearch_*.py · build_data_links.py ──▶ data links for the batch
                         │
                         ▼
-      build_staged_documents.py ──▶ documents JSONL (schema 1.5.1) ──load_documents.py──▶ moros
+      build_staged_documents.py ──▶ documents JSONL (schema 1.6.0) ──load_documents.py──▶ moros
                                                                   ensure_indexes.py · verify_corpus.py
 
 positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
@@ -83,6 +86,7 @@ Hermetic tests for the host-side scripts, no server or network needed:
 ```bash
 (cd moros_pipeline/scripts && python3 -m pytest .)
 (cd mongo_landscape_export/scripts && python3 -m pytest .)
+(cd schema && python3 -m pytest .)
 ```
 
 ## The processes, tersely
@@ -117,16 +121,17 @@ years the ledger has never recorded.
 
 ### 2. Classification — is this an AI/ML methods paper?
 
-DeepSeek V4 Flash acts as an independent second curator. The system message is the preamble plus
-the **full text of `curation_criteria/CRITERIA.md`** (prompt `v1`); the user message is exactly
-`title / journal / year / abstract` and nothing else, so no label, MeSH term or prior decision can
-reach the model. The answer is `positive`, `negative` or `undeterminable` with a two-sentence
-rationale. Validated against human curation at kappa 0.81 before it was ever run at scale. Every
-event records the criteria sha256 it was judged under; resumption keys on it, so a criteria edit
-starts a fresh, non-conflated batch.
+DeepSeek V4.1 Flash acts as an independent second curator (the pipeline calls the legacy id
+`deepseek-v4-flash`, which DeepSeek has routed to V4.1 Flash since 2026-09-10). The system message
+is the preamble plus the **full text of `curation_criteria/CRITERIA.md`** (prompt `v1`); the user
+message is exactly `title / journal / year / abstract` and nothing else, so no label, MeSH term or
+prior decision can reach the model. The answer is `positive`, `negative` or `undeterminable` with
+a two-sentence rationale. Validated against human curation at kappa 0.81 before it was ever run at
+scale. Every event records the criteria sha256 it was judged under; resumption keys on it, so a
+criteria edit starts a fresh, non-conflated batch.
 
 ```bash
-# Cost first (see COST_DASHBOARD.md; ~$0.0003 per record off-peak), then run:
+# Cost first (see COST_DASHBOARD.md; ~$0.0002 per record billed), then run:
 docker compose run --rm pipeline dome-triage llm-classify classify \
     --scope staged_file --input /app/moros_pipeline/output/incoming_new.csv \
     --tier flash --concurrency 400 --estimated-usd <X> --confirm
@@ -212,8 +217,8 @@ Cost: billed at about **$1.80 per 1,000 records** on V4.1 Flash (it was about $1
 list-price model said $4). `COST_DASHBOARD.md` costs runs from balance deltas only. 90% of the tokens
 are output, of which 90% is the model's reasoning trace. That is not reducible: lowering reasoning effort cost more and produced six times
 the vocabulary violations; disabling thinking was 88% cheaper and agreed with production on all
-six fields for 0% of records. Throughput is `concurrency / ~45 s per call`: about 418 records per
-minute at 800.
+six fields for 0% of records. Throughput is measured, not linear in the flag: about 418 records a
+minute at `--concurrency 800`, and 53 a minute at 40.
 
 ### 5. Citation refresh — keep `citation_count` current on existing records
 
@@ -283,6 +288,9 @@ Each monthly release is described once, in DCAT 3 and schema.org, from facts onl
 has at release time: the verified counts, the schema version, the criteria and vocabulary hashes,
 the search-space hash and the pipeline commit. The sibling serves it at `/api/catalog`; the
 per-record metadata (JSON-LD, Signposting, OAI-PMH, sitemaps) is projected there from each document.
+Schema v1.6.0 adds the datestamp that needs: `record_modified`, which OAI-PMH harvests by
+(`from` / `until`) and the sitemap reports as `lastmod`, moved only by a write that changes a
+harvested value.
 
 ```bash
 cd moros_pipeline/scripts
@@ -296,7 +304,7 @@ What the file says and what it refuses: [`docs/release_metadata.md`](docs/releas
 ## Costs and timing
 
 [`COST_DASHBOARD.md`](COST_DASHBOARD.md) is the one-page answer: what a monthly classification
-batch costs, what enriching the remaining positives costs, at DeepSeek V4 Flash off-peak and peak
+batch costs, what enriching the remaining positives costs, at DeepSeek V4.1 Flash off-peak and peak
 rates and at GLM-5.3-Flash list rates, from measured token profiles and the live corpus counts.
 Regenerate it with `python3 scripts/cost_dashboard.py --live --balance`; the pricing it reads is
 [`pricing/pricing.yaml`](pricing/pricing.yaml), dated and sourced.
@@ -321,7 +329,7 @@ a run of that length started now stays off-peak, and when the next such window o
 | `docs/` | Specifications. [`preprint.md`](docs/preprint.md) is the Europe PMC preprint-venue capture and backfill (schema v1.3.0), which the metadata pass implements. [`data_links_sources.md`](docs/data_links_sources.md) lists every data-link source, accepted or refused (schema v1.5.0). [`vocabulary_ontology_mappings.md`](docs/vocabulary_ontology_mappings.md) says where the vocabulary terms' ontology ids came from (schema v1.5.1). |
 | `.claude/skills/`, [`SKILLS.md`](SKILLS.md) | Agent skills, one per process, plus the sequential refresh cycle. |
 | [`AGENTS.md`](AGENTS.md) | The rules: what may never be altered, how writes are kept safe, what has gone wrong before. |
-| [`ROADMAP.md`](ROADMAP.md) | Short. |
+| [`BULK_UPDATE.md`](BULK_UPDATE.md) | The parameter block a refresh is started from, what each choice does, and the last run's figures. |
 
 ## Maintained assets and what "validated" means
 

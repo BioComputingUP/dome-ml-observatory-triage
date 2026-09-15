@@ -107,7 +107,7 @@ See `COST_DASHBOARD.md` for the current rates. As billed on 15 September 2026, o
 - **Classification cannot be limited to positives.** The verdict is what classification produces.
 - **The check-ins cannot be switched off.** Every paid or writing step waits for your yes.
 - **The model cannot be changed here.** A different model needs checking against the human benchmark
-  first (see `ROADMAP.md`).
+  first (`AGENTS.md`, ground rule 1).
 
 ## Examples
 
