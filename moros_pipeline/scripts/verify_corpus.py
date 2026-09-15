@@ -36,6 +36,7 @@ from pathlib import Path
 
 from moros_client import Moros
 from link_identifiers import MONGO_MALFORMED_REGEX
+import resolve_duplicates as rd
 from moros_write import (
     RECORD_MODIFIED_PATH,
     RECORD_MODIFIED_PATTERN,
@@ -166,6 +167,33 @@ def verify(moros: Moros, expect_count: int | None) -> tuple[Checks, dict]:
         bool(curated_batches) and bool(llm_batches),
         f"{len(llm_batches)} LLM batch(es) covering {sum(llm_batches.values()):,} docs, "
         f"{len(curated_batches)} curated batch(es) covering {sum(curated_batches.values()):,}",
+    )
+
+    # -- one paper, one document --------------------------------------------
+    #
+    # The `_id` is UUID5 of the first of pmcid > doi > pmid, so the same paper fetched before and
+    # after Europe PMC gave it a PMCID mints two ids. The 2026-09-03 load compared only `_id` and
+    # inserted 10,572 second copies; `build_incoming_documents.py` has checked the identifiers since
+    # 2026-09-15, and this is what makes a recurrence loud rather than silent. Groups that are not
+    # one paper twice -- two Europe PMC records sharing a DOI, or a curated record -- are reported,
+    # not failed. The scan costs a couple of minutes on the full corpus.
+    duplicate_groups = rd.duplicate_groups(moros)
+    decided = [rd.classify_group(docs) for docs in duplicate_groups.values()]
+    removable = [d for d in decided if d["kind"] in ("plain", "merge_then_remove")]
+    left: dict[str, int] = {}
+    for decision in decided:
+        if decision["kind"] in rd.SKIP_KINDS:
+            left[decision["kind"]] = left.get(decision["kind"], 0) + 1
+    facts["duplicates"] = {"groups": len(duplicate_groups),
+                           "removable_groups": len(removable),
+                           "documents_removable": sum(len(d["losers"]) for d in removable),
+                           "left_alone": left}
+    checks.add(
+        "no paper is in the corpus twice",
+        not removable,
+        f"{len(removable):,} group(s) hold one paper under two _ids "
+        f"({sum(len(d['losers']) for d in removable):,} document(s)) -- run resolve_duplicates.py; "
+        f"{sum(left.values()):,} group(s) left alone by design: {left}",
     )
 
     # -- citations ----------------------------------------------------------

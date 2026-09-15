@@ -185,6 +185,18 @@ DCAT and schema.org, by `build_release_metadata.py` ([docs/release_metadata.md](
   entry against its count; `moros_pipeline/scripts/ebisearch_resources.py` is the only accept list
   for EBI Search domains, and [`docs/data_links_sources.md`](docs/data_links_sources.md) must
   agree with it. EBI Search links go to positives only and pass the same four gates.
+- **The same paper was loaded twice, under two `_id`s** (2026-09-15: 10,572 documents, 9,995 of them
+  an August copy beside a 2026-09-03 one). The `_id` is UUID5 of the first of `pmcid > doi > pmid`, so
+  a paper fetched before and after Europe PMC gave it a PMCID mints two different ids, and a staging
+  check that compares only `_id` calls the second copy new. `build_incoming_documents.py` now checks
+  pmcid, doi and pmid against the corpus and sets such records aside into
+  `<batch>_known_under_older_id.csv`; `verify_corpus.py` fails while a removable duplicate is in the
+  corpus; `resolve_duplicates.py` removes one, keeping the copy whose `_id` is minted from the group's
+  identifiers combined, which is the id the next fetch will mint.
+- **A fetch stopped paging early and nothing noticed** (2026-09-03: 148,815 records recorded for
+  2026-01-01..09-03, where at least 164,626 matched that query unchanged; about 36,700 papers never
+  reached moros). Every window is now compared with Europe PMC's own `hitCount` and refused when it
+  comes back short -- no `.done` marker, no ledger entry, re-run the same command.
 
 ## Provenance of this repository
 

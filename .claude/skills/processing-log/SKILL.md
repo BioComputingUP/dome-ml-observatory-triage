@@ -28,8 +28,9 @@ python3 round_summary.py --enrichment-batch <enrich batch id> [--enrichment-batc
 
 A round that ran as several batches takes `--classification-prefix` / `--enrichment-prefix`. Batch
 ids are the `batch_id` column of the run's events file, `verify_corpus.py`'s `batch_ids`, or the
-load report. Check before writing anything: the classification rounds already on the page plus this
-one add up to `corpus_total`. If they do not, stop and say why.
+load report. Check before writing anything: the classification rounds already on the page, plus this
+one, less the documents any `CORRECTIONS` entry removed, add up to `corpus_total`. If they do not,
+stop and say why.
 
 The window is the one the run fetched (the ledger, `../output/coverage_ledger.json`, and the
 `--up-to` used). The model is the one that actually answered: `pricing/pricing.yaml`'s version for
@@ -83,6 +84,11 @@ Write it the way the rest of the About pages are written:
 - Keep `searchSpace: CORE_SEARCH_SPACE` unless `moros_pipeline/config/search_space.yaml` changed;
   then write the new query in words and say it is a new search space.
 - Figures only from step 1: never an estimate, never "approximately".
+
+Documents removed from the corpus after a round go in `CORRECTIONS` instead, in the same file
+(`number`, `title`, `date`, `documents`, `why`): the round cards keep saying what their round did, and
+the page's Corrections section says what came out since. `resolve_duplicates.py`'s report gives the
+figures.
 
 Leave the rest of the page alone unless something on it has become untrue (the enrichment
 section's intro switches by itself once `ENRICHMENT_ROUNDS` has an entry). A copy change is its own,
