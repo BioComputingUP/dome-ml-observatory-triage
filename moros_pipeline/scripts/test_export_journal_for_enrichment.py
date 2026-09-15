@@ -9,7 +9,10 @@ whole cohort even when --limit wrote a slice of it.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+import yaml
 
 import export_journal_for_enrichment as ex
 
@@ -47,19 +50,26 @@ def test_a_cohort_needs_a_journal_or_a_batch():
         ex.build_query([], "positive", False, [])
 
 
-def test_rate_is_the_billed_rate_not_the_token_model():
-    assert ex.USD_PER_1000_RECORDS >= 10.0
+def test_the_gate_costs_at_the_dashboard_s_planning_rate():
+    """Both come from the billed log. If they drift, a cohort the dashboard prices at one figure is
+    admitted or refused at another."""
+    profiles = yaml.safe_load(
+        (Path(__file__).resolve().parents[2] / "pricing" / "token_profiles.yaml").read_text(encoding="utf-8"))
+    assert ex.USD_PER_1000_RECORDS == pytest.approx(profiles["enrichment"]["planning_usd_per_1k"])
+    assert ex.USD_PER_1000_RECORDS != pytest.approx(profiles["enrichment"]["token_model_usd_per_1k"])
 
 
 def test_projection_costs_the_limit_not_the_whole_cohort():
-    assert ex.projected_usd(2_000, 200) == pytest.approx(2.0)
-    assert ex.projected_usd(150, 200) == pytest.approx(1.5)
-    assert ex.projected_usd(2_000, None) == pytest.approx(20.0)
+    rate = ex.USD_PER_1000_RECORDS
+    assert ex.projected_usd(2_000, 200) == pytest.approx(0.2 * rate)
+    assert ex.projected_usd(150, 200) == pytest.approx(0.15 * rate)
+    assert ex.projected_usd(2_000, None) == pytest.approx(2 * rate)
 
 
-def test_gate_refuses_400_records_at_three_dollars():
-    assert ex.projected_usd(400, None) > 3.0
-    assert ex.projected_usd(5_000, 300) <= 3.0
+def test_the_gate_refuses_a_cohort_over_its_limit():
+    cap = ex.projected_usd(300, None)
+    assert ex.projected_usd(400, None) > cap          # a bigger cohort is refused
+    assert ex.projected_usd(5_000, 300) <= cap        # the same cohort capped by --limit is not
 
 
 def test_parser_requires_exactly_one_kind_of_cohort():
