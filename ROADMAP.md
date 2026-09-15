@@ -1,27 +1,27 @@
 # Roadmap
 
-**FAIR metadata (items 6–7, plus Dublin Core and OAI-PMH):** plan in [`roadmap_FAIR.md`](roadmap_FAIR.md).
-6. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
+**FAIR metadata (items 1–2, plus Dublin Core and OAI-PMH):** plan in [`roadmap_FAIR.md`](roadmap_FAIR.md).
+1. **DCAT integration.** Plan how the corpus and its releases are described as a DCAT dataset/
    distribution, and where that description is served.
-7. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
+2. **schema.org / JSON-LD.** Plan a JSON-LD equivalent of the record schema and database
    metadata, kept in step with `schema/`.
 
-2. **Finalise schema versioning.** With v1.4.0 authored and released, settle the release procedure — who bumps,
+3. **Finalise schema versioning.** With v1.4.0 authored and released, settle the release procedure — who bumps,
    when, what a release carries — so the authored `SCHEMA_VERSION`, the published `schema/CURRENT`
    and the live `schema_version` stop drifting. `schema/check_alignment.py` is the arbiter.
 
-3. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
+4. **Test and build this repository** end to end — `pytest`, a clean install, `ruff` — with the
    skills in `.claude/skills/` exercised in tandem against the commands they document.
-4. **Cross links.** `identifiers.dome_registry` and the `identifiers` write mode are built with
+5. **Cross links.** `identifiers.dome_registry` and the `identifiers` write mode are built with
    v1.5.0. Left: derive `identifiers.zenodo` and `bioai_repo` from `data_links`, and build the
    fetch process for Hugging Face and Kaggle per [`cross_links/README.md`](cross_links/README.md).
-5. **Automated Zenodo bulk push.** Monthly GitHub Actions workflow: cursor-loop `GET /api/export`,
+6. **Automated Zenodo bulk push.** Monthly GitHub Actions workflow: cursor-loop `GET /api/export`,
    gzip, deposit through the Zenodo API with a sidecar (count, size, sha256, `schema_version`) and
    the schema release. Reuse `DOME_zenodo_archive/download_dome_registry.py`, `ZENODO_TOKEN` from
    Actions secrets. Replaces the unregistered DOI hardcoded on `/download/bulk`.
 
-8. **Test 6 and 7** end to end against the live service before either is published.
-9. **Keep the two repositories aligned.** Last, once the items above land: `check_alignment.py`
+7. **Test 1 and 2** end to end against the live service before either is published.
+8. **Keep the two repositories aligned.** Last, once the items above land: `check_alignment.py`
    clean, and no claim, count or link in either repo's `README.md`, `ROADMAP.md` or skills
    contradicting the other's. The sister roadmap carries the matching item.
 
