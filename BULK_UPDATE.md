@@ -9,15 +9,16 @@ whatever the block says.
 
 | | |
 |---|---|
-| Date | 15 September 2026 (practice run) |
-| Window fetched | First indexed by Europe PMC 3–10 September 2026, plus papers dated after 3 September |
-| New / classified / loaded | 7,342 new (141 set aside as already held under an older id) / 6,215 classified / 6,215 loaded |
-| Verdicts | 1,791 positive, 4,416 negative, 8 undeterminable |
-| Enriched | 200 of the round's positives (enrichment now covers 3,532 records) |
-| Corpus after | 852,931 documents |
-| Billed | $1.24 classification, $0.20 enrichment |
+| Dates | 15–16 September 2026: the practice run, then the catch-up and the duplicate removal |
+| Windows fetched | Practice: first indexed by Europe PMC 3–10 September 2026. Catch-up: 2026 up to 10 September, re-read in full because the 3 September fetch had stopped short |
+| New / classified / loaded | Practice: 7,342 / 6,215 / 6,215. Catch-up: 37,327 / 33,974 / 33,961 (2,362 set aside, already held under an older id) |
+| Verdicts | Practice: 1,791 positive, 4,416 negative, 8 undeterminable. Catch-up: 5,306 positive, 28,632 negative, 23 undeterminable |
+| Enriched | 200 of the practice round's positives (enrichment covers 3,532 records) |
+| Duplicates removed | 10,568 documents on 16 September 2026 with `resolve_duplicates.py`; 66 groups left alone by design (39 curated, 23 separate Europe PMC records, 4 for review) |
+| Corpus after | 876,324 documents, every `verify_corpus.py` invariant passing |
+| Billed | Practice: $1.24 classification, $0.20 enrichment. Catch-up: $6.74 classification |
 | Model that answered | DeepSeek V4.1 Flash, called as `deepseek-v4-flash` |
-| Left undone | About 36,700 2026 papers an incomplete fetch on 3 September missed are staged in `moros_pipeline/output/incoming_new_year_refetch_20260915.csv`, unclassified (about $7 to classify). Around 10,000 papers are in the corpus twice, from that same run, and need a decision. |
+| Left undone | Europe PMC's `/datalinks` endpoint was down, so the catch-up documents carry text-mined links only until the next data-links refresh. 2,362 papers stored under their pre-PMCID id are set aside at every fetch; updating their identifiers needs a new write mode. |
 
 ## The block
 
@@ -67,7 +68,8 @@ notes:
 3. **Before loading**: after a dry run and a 100-record trial that can be rolled back.
 4. **Before enriching**: the cohort, the cost at the billed rate, the time, the balance.
 5. **Before merging the enrichment**: after a dry run and a 25-record trial.
-6. **Before restarting `observatory-ws`**, the production API.
+6. **Before relaunching the local observatory containers**, whose API reads moros. There is no
+   deployed site yet; the stack runs from `dome-ml-observatory/docker-compose-local.yml`.
 7. **Before deploying the page**, unless `deploy_page: yes`.
 
 After every paid step Claude reads the DeepSeek balance until the charge lands (it lags by a few

@@ -126,7 +126,25 @@ whose link ids or URLs fail `link_identifiers.malformed_links()` ("refusing to l
 data link"). That means the staging file is stale or was edited: rebuild it with
 `build_data_links.py`; never strip the offending rows by hand.
 
-## D. Roll back
+## D. Remove a paper that was loaded twice
+
+```bash
+python3 resolve_duplicates.py                                   # classify every group, write the report
+python3 resolve_duplicates.py --limit 50 --confirm              # a real, restorable 50-group trial
+python3 resolve_duplicates.py --confirm
+python3 resolve_duplicates.py --restore ../output/rollback/<run_id>.deleted.jsonl --confirm
+```
+
+The `_id` is UUID5 of the first of pmcid > doi > pmid, so a paper fetched before and after Europe PMC
+gave it a PMCID mints two ids. This keeps the copy minted from the group's identifiers combined, the
+id the next fetch will mint, and refuses a group that is not one paper twice: two Europe PMC records
+sharing a DOI, a curated or registry record, or a copy carrying an enrichment, a DOME entry, an
+abstract or data links the keeper lacks. A disclosed licence or a higher citation count moves to the
+keeper first through the `licences` and `citations` modes above. Every removed document is written
+whole to `../output/rollback/<run_id>.deleted.jsonl` before the first delete; `--restore` puts them
+back. `verify_corpus.py` fails while a removable duplicate is in the corpus, so run it after.
+
+## E. Roll back
 
 ```bash
 python3 moros_write.py --rollback ../output/rollback/<run_id>.jsonl --confirm      # any field write
@@ -135,14 +153,14 @@ python3 load_documents.py --reverse ../output/rollback/<run_id>.inserted.json --
 
 Restores absent-vs-null faithfully. Run `verify_corpus.py` afterwards.
 
-## E. Indexes
+## F. Indexes
 
 `python3 ensure_indexes.py` reports; `--confirm` creates a missing `class_year_id` (~4 s),
 `positives_text` (~3 min, ~1 GB of transient sort files) or `record_modified_positive` (schema
 v1.6.0: partial on positives, the keyset OAI-PMH and the sitemaps page by). `--measure-citation-sort` says whether a
 citation index is warranted yet. Do not create indexes speculatively on a shared production host.
 
-## F. Shape migrations
+## G. Shape migrations
 
 ```bash
 python3 migrate_v1_4_0.py            # pre-flight: refuses any schema_version it does not expect
@@ -187,7 +205,7 @@ documents whose values actually change, and `load_documents.py` on every documen
 
 ## After any confirmed write: the manual checklist
 
-1. Restart `observatory-ws` (its facet cache is boot-loaded with no TTL).
+1. Ask, then rebuild and relaunch the local stack in `dome-ml-observatory` (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`; there is no deployed site yet): `observatory-ws`'s facet cache is boot-loaded with no TTL.
 2. In `dome-ml-observatory`: `python3 schema/generate_facet_stats.py --from-api <url>` and check
    `/api/stats` reconciles with `verify_corpus.py`.
 3. If `SCHEMA_VERSION` or a vocabulary changed: `schema-sync` here, then their `schema-version`

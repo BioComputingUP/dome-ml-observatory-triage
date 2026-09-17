@@ -66,7 +66,7 @@ every paid or writing step still stops for a yes.
    `--limit 25 --confirm`, `--confirm`. Report ok / truncated / violations and the billed cost.
 6. **`citations-refresh`** if `citations_refresh` is yes (free); the **`data-links`** refresh
    (`--max-age-days 180` on the Europe PMC fetches, 30 on the EBI Search dumps; free) when due.
-7. **Post-load checklist** (from `moros-write`): ask before restarting `observatory-ws` (production),
+7. **Post-load checklist** (from `moros-write`): ask, then rebuild and relaunch the local stack in `dome-ml-observatory` (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`; there is no deployed site yet) so its API picks the load up,
    reconcile `generate_facet_stats.py --from-api`, `schema-sync` if the shape changed.
 8. **Close.**
    - Re-measure the token profiles from this run's events files
