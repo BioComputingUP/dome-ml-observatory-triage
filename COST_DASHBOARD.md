@@ -1,27 +1,27 @@
 # Cost dashboard
 
-Generated 2026-09-15 22:41 UTC · prices as of **2026-09-15** (`pricing/pricing.yaml`) · corpus counts as of **2026-09-15 22:41 UTC** · token profiles measured **2026-09-15** on DeepSeek-V4.1-Flash (`pricing/token_profiles.yaml`) · billed runs from `data/processed/cost_estimates/deepseek_real_cost_log.csv`.
+Generated 2026-09-17 13:49 UTC · prices as of **2026-09-15** (`pricing/pricing.yaml`) · corpus counts as of **2026-09-17 13:49 UTC** · token profiles measured **2026-09-15** on DeepSeek-V4.1-Flash (`pricing/token_profiles.yaml`) · billed runs from `data/processed/cost_estimates/deepseek_real_cost_log.csv`.
 Regenerate: `python3 scripts/cost_dashboard.py --live --balance`. Timing: `python3 scripts/offpeak_window.py --minutes N`.
 
 ## Corpus now
 
 | | Records |
 |---|---:|
-| Documents in `dome_observatory.Content` | 852,931 |
-| Positive / negative / undeterminable | 368,025 / 477,919 / 6,987 |
+| Documents in `dome_observatory.Content` | 876,324 |
+| Positive / negative / undeterminable | 367,348 / 502,002 / 6,974 |
 | Enriched | 3,532 |
-| **Positives left to enrich** (with an abstract) | **361,244** (364,493 incl. no-abstract) |
-| Citation counts never fetched / older than 30 days | 16,027 / 0 |
+| **Positives left to enrich** (with an abstract) | **360,567** (363,816 incl. no-abstract) |
+| Citation counts never fetched / older than 30 days | 16,025 / 0 |
 
 ## DeepSeek balance
 
-**USD 12.80** at 2026-09-15 22:41 UTC (`GET /user/balance`). Top up before any run whose planning cost below exceeds it.
+**USD 6.06** at 2026-09-17 13:49 UTC (`GET /user/balance`). Top up before any run whose planning cost below exceeds it.
 
 ## What a record costs
 
 Every run below is costed at the **planning rate**, which comes from the bill, not from list prices:
 
-- Classification: **$0.000199 per record** ($0.20 per 1,000). Billed: 6,216 records on 2026-09-15.
+- Classification: **$0.000198 per record** ($0.20 per 1,000). Billed: 34,024 records on 2026-09-16.
 - Enrichment: **$1.80 per 1,000 records** ($0.0018 per record). Billed V4.1 runs on 2026-09-15: $1.80 per 1,000 (100 Bioinformatics records) and $1.00 per 1,000 (200 records of a refresh batch); the higher is kept. V4-Flash was billed about $10 per 1,000. Cost varies with how long the population makes the model think. The latest billed run came to $1.00 per 1,000 (200 records, 2026-09-15); the higher figure is kept.
 
 ### Billed runs (balance deltas)
@@ -33,6 +33,7 @@ Every run below is costed at the **planning rate**, which comes from the bill, n
 | 2026-09-15 | enrichment | flash, enrich | 100 | $0.18 | $1.80 |
 | 2026-09-15 | classification | flash, primary | 6,216 | $1.24 | $0.20 |
 | 2026-09-15 | enrichment | flash, enrich | 200 | $0.20 | $1.00 |
+| 2026-09-16 | classification | flash, primary | 34,024 | $6.74 | $0.20 |
 
 ### List-price model (tokens × list price, not billed)
 
@@ -54,13 +55,13 @@ Per 1,000 records:
 
 | Run | Records | **Planning (billed rate)** | DeepSeek V4.1 Flash, off-peak (list model) | DeepSeek V4.1 Flash, peak (list model) | GLM-5.3-Flash, list (list model) | Wall time |
 |---|---:|---:|---:|---:|---:|---|
-| Classify one incremental batch (last batch: 6,216) | 6,216 | **$1.24** | $1.08 | $2.15 | $2.37 | 1 min at concurrency 400 |
+| Classify one incremental batch (last batch: 6,216) | 6,216 | **$1.23** | $1.08 | $2.15 | $2.37 | 1 min at concurrency 400 |
 | Enrich that batch's positives (last batch: 1,791) | 1,791 | **$3.22** | $1.76 | $3.53 | $1.62 | 4 min at concurrency 800 |
 | Enrich 300 positives (a capped cohort) | 300 | **$0.5400** | $0.2953 | $0.5907 | $0.2717 | 1 min at concurrency 800 |
 | Enrich 10,000 positives (one journal-sized cohort) | 10,000 | **$18.00** | $9.84 | $19.69 | $9.05 | 24 min at concurrency 800 |
-| **Enrich every remaining positive** (361,244) | 361,244 | **$650** | $356 | $711 | $327 | 14.4 h at concurrency 800 |
+| **Enrich every remaining positive** (360,567) | 360,567 | **$649** | $355 | $710 | $326 | 14.4 h at concurrency 800 |
 
-At the planning rate the full enrichment backlog is **$650**; the list-price model says $356 off-peak. Classification of a monthly batch is a rounding error next to it.
+At the planning rate the full enrichment backlog is **$649**; the list-price model says $355 off-peak. Classification of a monthly batch is a rounding error next to it.
 
 ## Best time to run (DeepSeek)
 
