@@ -286,7 +286,7 @@ mode they will load through exists.
 
 ### 8. Release metadata — the corpus in DCAT and schema.org
 
-Each monthly release is described once, in DCAT 3 and schema.org, from facts only this repository
+Each corpus release is described once, in DCAT 3 and schema.org, from facts only this repository
 has at release time: the verified counts, the schema version, the criteria and vocabulary hashes,
 the search-space hash and the pipeline commit. The sibling serves it at `/api/catalog`; the
 per-record metadata (JSON-LD, Signposting, OAI-PMH, sitemaps) is projected there from each document.
@@ -305,7 +305,7 @@ What the file says and what it refuses: [`docs/release_metadata.md`](docs/releas
 
 ## Costs and timing
 
-[`COST_DASHBOARD.md`](COST_DASHBOARD.md) is the one-page answer: what a monthly classification
+[`COST_DASHBOARD.md`](COST_DASHBOARD.md) is the one-page answer: what a refresh's classification
 batch costs, what enriching the remaining positives costs, at DeepSeek V4.1 Flash off-peak and peak
 rates and at GLM-5.3-Flash list rates, from measured token profiles and the live corpus counts.
 Regenerate it with `python3 scripts/cost_dashboard.py --live --balance`; the pricing it reads is

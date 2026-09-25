@@ -4,7 +4,7 @@ description: >
   Refresh Europe PMC citation counts on the records already in moros: export the corpus keys
   read-only, re-fetch only counts older than N days, join them to document ids, and write them
   through the `citations` allowlist via moros-write. Trigger on "refresh citation counts",
-  "update citations", "pull the new citation counts", monthly. Free (Europe PMC), and separate
+  "update citations", "pull the new citation counts", every two months. Free (Europe PMC), and separate
   from the batch load, which fetches counts for new records itself.
 ---
 
@@ -47,7 +47,7 @@ python3 verify_corpus.py
 
 Yield to expect per key (measured): pmid 99.6%, pmcid 100%, doi 80.7%; overall ~98.1% of the
 corpus carries a count. Throughput ~840 records/s, so the whole corpus takes ~17 minutes when
-everything is stale; a monthly refresh with `--max-age-days 30` re-fetches only what has aged.
+everything is stale; a refresh with `--max-age-days 30` re-fetches only what has aged.
 
 ## Report
 

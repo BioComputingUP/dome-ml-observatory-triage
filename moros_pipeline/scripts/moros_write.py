@@ -95,8 +95,8 @@ IDENTIFIER_FIELDS = (
 # datestamp OAI-PMH harvests by (`from`/`until`) and the sitemap's `lastmod`. SafeWriter stamps it
 # itself, for the modes below, on each document whose allowlisted values actually differ from what
 # it holds: a refresh that rewrites identical values must not make every harvester re-fetch. The
-# `citations` refresh never stamps (oai_dc and JSON-LD carry no counts), or a monthly number refresh
-# would be a monthly full re-harvest; nor do the version-stamp migrations.
+# `citations` refresh never stamps (oai_dc and JSON-LD carry no counts), or every count refresh
+# would be a full re-harvest; nor do the version-stamp migrations.
 RECORD_MODIFIED_PATH = "record_modified"
 STAMPS_RECORD_MODIFIED = frozenset({"enrichment", "licences", "preprints", "data_links", "identifiers"})
 # UTC to the second with a literal Z: OAI-PMH's granularity, and one fixed width, so string order is

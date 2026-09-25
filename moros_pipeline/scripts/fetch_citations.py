@@ -35,11 +35,11 @@ one DOI existed as both a MED article and a PPR preprint. Preference is
 row so the choice is auditable rather than implicit.
 
 Resumable and refresh-aware: `--max-age-days N` skips any key already fetched within N days, which
-is what makes the monthly refresh cheap instead of re-fetching 830k counts every time.
+is what makes each refresh cheap instead of re-fetching 830k counts every time.
 
     python3 fetch_citations.py --limit 2000          # smoke check
     python3 fetch_citations.py                       # full corpus + the curated set
-    python3 fetch_citations.py --max-age-days 30     # monthly refresh: only stale entries
+    python3 fetch_citations.py --max-age-days 30     # a refresh: only stale entries
 """
 
 from __future__ import annotations

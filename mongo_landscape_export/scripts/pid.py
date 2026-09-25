@@ -9,7 +9,7 @@ format alone (a 36-character UUID string vs. a 40-character sha1 hex string) can
 with `record_id`, on top of using an entirely separate namespace/hash.
 
 Deterministic by construction: the same paper (same pmcid/doi/pmid) always mints the same PID on
-any future run. That is what makes a monthly incremental append safe -- reprocessing a paper
+any future run. That is what makes each incremental append safe -- reprocessing a paper
 already in the database yields its existing PID again instead of a duplicate document.
 
 Self-contained -- no `dome_triage` import, matching this folder's `epmc_licensing`-style

@@ -67,7 +67,7 @@ of either.
 | there | the code that mirrors the shape: `record.model.ts`, `record.schema.ts`, and `PROJECTED_PATHS` in `observatory-ws/src/metadata/record-view.ts` | their own tests (`PROJECTED_PATHS` is tested against `CURRENT`) |
 | moros | every document at the version | `check_alignment.py --live`, `verify_corpus.py` |
 
-Monthly corpus releases are a separate thing from schema releases, with their own description:
+Corpus releases are a separate thing from schema releases, with their own description:
 [`docs/release_metadata.md`](../docs/release_metadata.md).
 
 ## The check

@@ -209,7 +209,7 @@ they exist in Mongo. What does *not* update itself:
 State the rule where the archive job can see it: **every export is a snapshot of the schema
 version in `schema/CURRENT` at the moment it was cut, and the archive must record which version
 that was.** An export whose schema version is not recorded cannot be interpreted later, and this
-is precisely the kind of drift that a monthly automated archive introduces silently.
+is precisely the kind of drift that an automated archive every two months introduces silently.
 
 ---
 

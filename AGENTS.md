@@ -143,7 +143,7 @@ field.
 **The release procedure** -- what counts as a release (the shape or any vocabulary), who moves first
 (this repository), the order of publish, migrate, load, verify and deploy, and every place a release
 writes its version -- is in [`schema/README.md`](schema/README.md). `check_alignment.py` checks each
-of those places and names any that disagrees. Monthly corpus releases are described separately, in
+of those places and names any that disagrees. Corpus releases are described separately, in
 DCAT and schema.org, by `build_release_metadata.py` ([docs/release_metadata.md](docs/release_metadata.md)).
 
 ## Things that have gone wrong before — do not reintroduce

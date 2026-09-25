@@ -5,7 +5,7 @@ corpus behind the public DOME Observatory — plus the machinery that decides wh
 and load next.
 
 This is *the* refresh runbook. Before it existed, the corpus had been loaded exactly once, by hand,
-through MongoDB Compass, with no record of how. The corpus turns over 6–12 times a year.
+through MongoDB Compass, with no record of how. The corpus is refreshed every two months.
 
 **Standalone by design.** Like `epmc_licensing/` and `mongo_landscape_export/`, this folder sits
 outside the `dome_triage` package and does **not** run through Docker: plain `python3` on the host,
@@ -73,7 +73,7 @@ scan with no error logged anywhere. "Search still works" is not evidence the ind
 | `load_documents.py` | Upserts whole new documents; `--reverse` deletes only ids it recorded inserting |
 | `ensure_indexes.py` | Idempotent index check/creation; measures whether a citation index is warranted |
 | `verify_corpus.py` | The invariants, the AlphaFold acceptance probe, and the manual post-load checklist |
-| `build_release_metadata.py` | A monthly release's DCAT / schema.org description, from the verify report, into dome-ml-observatory's `metadata/` ([docs/release_metadata.md](../docs/release_metadata.md)) |
+| `build_release_metadata.py` | A release's DCAT / schema.org description, from the verify report, into dome-ml-observatory's `metadata/` ([docs/release_metadata.md](../docs/release_metadata.md)) |
 | `export_journal_for_enrichment.py` | One journal's records out of moros, as enrichment input |
 | `load_enrichment.py` | An enrichment event log back into moros, in place |
 | `coverage_ledger.py` | The search space, and which (query, window) pairs are covered |

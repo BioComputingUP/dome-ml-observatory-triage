@@ -303,7 +303,7 @@ def render(pricing: dict, profiles: dict, counts: dict, balance: dict | None, ru
         lines.append(f"| {label} | {n:,} | **{fmt_usd(n * rates[step])}** | {cells} | {hours(n, rate)} at concurrency {conc} |")
     lines.append("")
     lines.append(f"At the planning rate the full enrichment backlog is **{fmt_usd(backlog * rates['enrichment'])}**; the "
-                 f"list-price model says {fmt_usd(backlog * enr_list_offpeak)} off-peak. Classification of a monthly batch "
+                 f"list-price model says {fmt_usd(backlog * enr_list_offpeak)} off-peak. Classification of a refresh's batch "
                  "is a rounding error next to it.")
     lines.append("")
 
@@ -314,7 +314,7 @@ def render(pricing: dict, profiles: dict, counts: dict, balance: dict | None, ru
     lines.append("Peak, at double price: " + " and ".join(f"{w['from']}–{w['to']} UTC" for w in pw) + f", {pw[0]['days']}. "
                  "Everything else, including all weekend, is off-peak.")
     lines.append("")
-    lines.append("- A monthly classification batch takes minutes: run it any off-peak hour.")
+    lines.append("- A refresh's classification batch takes minutes: run it any off-peak hour.")
     lines.append(f"- A 10,000-record enrichment takes ~{hours(10_000, enr_per_min)}: "
                  "start after 10:00 UTC on a weekday, or any time at the weekend.")
     lines.append(f"- The full backlog takes ~{hours(backlog, enr_per_min)} at concurrency 800: "

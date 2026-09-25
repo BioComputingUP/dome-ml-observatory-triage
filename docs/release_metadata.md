@@ -1,6 +1,6 @@
 # Release metadata: the corpus in DCAT and schema.org
 
-Each monthly corpus release is described once, in standard vocabularies, and published with the
+Each corpus release is described once, in standard vocabularies, and published with the
 sibling repository's apps. This page covers what that description contains, where each fact comes
 from, and how to publish a release.
 

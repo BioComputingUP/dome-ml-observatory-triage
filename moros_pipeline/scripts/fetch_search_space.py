@@ -1,6 +1,6 @@
 """Fetches only the time windows of the search space that are not already covered.
 
-The point of this script is what it *doesn't* do: it does not re-fetch 842,271 records every month
+The point of this script is what it *doesn't* do: it does not re-fetch 842,271 records every two months
 and rely on dedupe to discard them. It asks the ledger which windows have been fetched, asks moros
 which are actually loaded, and fetches the difference.
 

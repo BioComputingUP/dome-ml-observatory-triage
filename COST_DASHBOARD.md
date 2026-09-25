@@ -61,13 +61,13 @@ Per 1,000 records:
 | Enrich 10,000 positives (one journal-sized cohort) | 10,000 | **$18.00** | $9.84 | $19.69 | $9.05 | 24 min at concurrency 800 |
 | **Enrich every remaining positive** (360,567) | 360,567 | **$649** | $355 | $710 | $326 | 14.4 h at concurrency 800 |
 
-At the planning rate the full enrichment backlog is **$649**; the list-price model says $355 off-peak. Classification of a monthly batch is a rounding error next to it.
+At the planning rate the full enrichment backlog is **$649**; the list-price model says $355 off-peak. Classification of a refresh's batch is a rounding error next to it.
 
 ## Best time to run (DeepSeek)
 
 Peak, at double price: 01:00–04:00 UTC and 06:00–10:00 UTC, Mon-Fri. Everything else, including all weekend, is off-peak.
 
-- A monthly classification batch takes minutes: run it any off-peak hour.
+- A refresh's classification batch takes minutes: run it any off-peak hour.
 - A 10,000-record enrichment takes ~24 min: start after 10:00 UTC on a weekday, or any time at the weekend.
 - The full backlog takes ~14.4 h at concurrency 800: only a weekend (Fri 10:00 UTC → Mon 01:00 UTC) holds it entirely off-peak; otherwise run it as journal cohorts, each inside one off-peak stretch. Resumability makes splitting free.
 - GLM-5.3-Flash publishes no off-peak rate; its column is the same price at any hour.

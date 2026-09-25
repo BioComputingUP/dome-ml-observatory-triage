@@ -4,7 +4,7 @@ description: >
   Run the triage: fetch newly published AI/ML records from Europe PMC for the configured search
   space and reduce them to the records moros has never seen, then report the counts and ask
   whether to classify. Trigger on "run the triage", "fetch new papers", "what is new since the
-  last refresh", "start the monthly refresh". Free (Europe PMC costs nothing), read-only against
+  last refresh", "start the refresh". Free (Europe PMC costs nothing), read-only against
   moros. Never classifies, loads, or edits the ledger by itself.
 ---
 

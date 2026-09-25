@@ -1,4 +1,4 @@
-"""Builds the corpus's DCAT 3 / schema.org description for one monthly release, and writes it into
+"""Builds the corpus's DCAT 3 / schema.org description for one release, and writes it into
 the sister repository, which publishes it.
 
     python3 build_release_metadata.py                      # dry run: prints the document
@@ -205,7 +205,7 @@ def build_document(
         "name": "DOME Observatory corpus",
         "dct:title": "DOME Observatory corpus",
         "description": "AI/ML methods papers in the life sciences, screened from Europe PMC and annotated "
-                       "with controlled vocabularies and linked research outputs; released monthly.",
+                       "with controlled vocabularies and linked research outputs; released every two months.",
         "url": f"{ORIGIN}/download/bulk",
         "dcat:landingPage": {"@id": f"{ORIGIN}/download/bulk"},
         "keywords": ["machine learning", "artificial intelligence", "life sciences", "literature",

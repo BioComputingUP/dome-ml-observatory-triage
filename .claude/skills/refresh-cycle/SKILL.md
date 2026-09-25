@@ -5,7 +5,7 @@ description: >
   triage-fetch → (ask) classify → (ask) moros-write load → (ask) enrich → moros-write merge →
   optional citations-refresh, the full-text refresh, then the post-load checklist, the Zenodo
   archive and processing-log. Trigger on "do the
-  monthly refresh", "run the whole pipeline", "bring the corpus up to date", or a pasted
+  refresh", "run the whole pipeline", "bring the corpus up to date", or a pasted
   BULK_UPDATE block. Never runs a paid or writing step without the user's explicit yes at that step.
 ---
 

@@ -2461,7 +2461,7 @@ def step_llm_classify_classify(
     n_written = 0
     try:
         # Same one-writer-per-event-log guard the enrich path uses -- see _events_file_lock. This
-        # path will run unattended against monthly Europe PMC batches, so it needs it at least as
+        # path will run unattended against a Europe PMC batch every two months, so it needs it at least as
         # much: two classify processes on one log pay twice for the same records.
         with _events_file_lock(events_path, ignore_lock=ignore_lock):
             n_written = _stream_classify_events_to_disk(
