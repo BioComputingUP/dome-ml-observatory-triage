@@ -163,6 +163,11 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # 1.5.1 -> 1.6.0: the version, and one constant record_modified (the migration's run time) on
     # every existing document. See migrate_v1_6_0.py for why the stamp is a constant.
     "migrate_v1_6_0": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH}),
+    # The full-text refresh (fetch_fulltext.py): Europe PMC's inEPMC / inPMC, the rule the bulk
+    # match set this flag by. One leaf. Cannot reach `open_access` or `license` (the `licences`
+    # mode's) or anything that decides what a record is. Not in STAMPS_RECORD_MODIFIED: the flag is
+    # in neither the Dublin Core nor the JSON-LD, so a change to it is no reason to re-harvest.
+    "fulltext": frozenset({_SCHEMA_VERSION_PATH, "source.access.fulltext_available"}),
 }
 
 _ABSENT = object()

@@ -10,9 +10,13 @@ which upserts whole *new* documents through `mongoimport`. The split is delibera
   refresh must not blank an `llm_enrichment` group a later enrichment run has populated"). So this
   writes named leaf paths only, checked against `moros_write.WRITE_MODES`.
 
-Five modes (`citations`, `licences`, `preprints`, `data_links`, `identifiers`). Adding another means adding its
+Six modes (`citations`, `licences`, `preprints`, `data_links`, `identifiers`, `fulltext`). Adding another means adding its
 allowlist to `WRITE_MODES` and its row mapper below -- both in a diff someone reads, which is the
 point -- plus a `DEFAULT_INPUTS` entry and a `_coverage` headline field.
+
+`fulltext` reads `output/pid_fulltext.csv` (from `fetch_fulltext.py`) and writes
+`source.access.fulltext_available` from Europe PMC's `inEPMC` / `inPMC`, the rule the bulk match set
+it by. Same three-step shape; it reports how many values would change before writing.
 
 `citations` reads `output/pid_citations.csv` (produced by `join_citations.py`, already keyed on the
 document `_id`) and writes `publication_metadata.citation_count` / `.citation_count_updated` /
@@ -62,6 +66,7 @@ DEFAULT_INPUTS = {
     "preprints": FOLDER_DIR / "output" / "pid_preprints.csv",
     "data_links": FOLDER_DIR / "output" / "pid_data_links.csv",
     "identifiers": FOLDER_DIR / "output" / "pid_identifiers.csv",
+    "fulltext": FOLDER_DIR / "output" / "pid_fulltext.csv",
 }
 
 
@@ -224,12 +229,29 @@ def identifiers_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]]
     return (pid, update) if update else None
 
 
+def fulltext_row_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
+    """One `pid_fulltext.csv` row -> `(_id, {leaf_path: value})`.
+
+    `fulltext_available` is true when Europe PMC holds the full text itself (`inEPMC`) or PMC does
+    (`inPMC`) -- exactly `dome_triage/ingest/bulk_match.py`'s rule, so a refreshed record means what
+    a bulk-matched one does. A row where Europe PMC gave neither flag yields no update: the record
+    was not answered, and the value already there is the better guess, as with `open_access`.
+    """
+    pid = (row.get("pid") or "").strip()
+    in_epmc = (row.get("in_epmc") or "").strip().lower()
+    in_pmc = (row.get("in_pmc") or "").strip().lower()
+    if not pid or not (in_epmc or in_pmc):
+        return None
+    return pid, {"source.access.fulltext_available": in_epmc in _TRUE or in_pmc in _TRUE}
+
+
 ROW_MAPPERS = {
     "citations": citation_row_to_update,
     "licences": licence_row_to_update,
     "preprints": preprint_row_to_update,
     "data_links": data_links_row_to_update,
     "identifiers": identifiers_row_to_update,
+    "fulltext": fulltext_row_to_update,
 }
 
 
@@ -278,6 +300,13 @@ def run(mode: str, input_path: Path, confirm: bool, limit: int | None) -> None:
             if pct > 5.0:
                 print(f"[{run_id}] !! that is far above the 0.05% seen when this rule was first "
                       f"applied. Worth understanding before writing.")
+        if mode == "fulltext":
+            flips = _flag_flips(moros, input_path, limit, "fulltext", "source.access.fulltext_available")
+            print(f"[{run_id}] fulltext_available: {flips['flips']:,} of {flips['checked']:,} would "
+                  f"change -- {flips['to_true']:,} to true, {flips['to_false']:,} to false")
+            if flips["to_false"]:
+                print(f"[{run_id}] !! {flips['to_false']:,} would lose full text. Europe PMC does "
+                      f"withdraw some, but look at a few before writing.")
         result = writer.apply_streaming(
             iter_updates(input_path, mode, limit), total=total, desc=f"load[{mode}]"
         )
@@ -330,6 +359,25 @@ def _open_access_flips(moros: Moros, input_path: Path, limit: int | None) -> dic
     return stats
 
 
+def _flag_flips(moros: Moros, input_path: Path, limit: int | None, mode: str, path: str) -> dict[str, int]:
+    """How many values of one boolean leaf a load would change, before writing -- the general form
+    of `_open_access_flips`, for a mode whose whole point is changing values that already exist."""
+    incoming = {pid: update[path] for pid, update in iter_updates(input_path, mode, limit) if path in update}
+    stats = {"checked": len(incoming), "flips": 0, "to_true": 0, "to_false": 0}
+    ids = list(incoming)
+    for start in range(0, len(ids), 5_000):
+        chunk = ids[start:start + 5_000]
+        for doc in moros.collection.find({"_id": {"$in": chunk}}, {path: 1}):
+            node: Any = doc
+            for part in path.split("."):
+                node = node.get(part) if isinstance(node, dict) else None
+            new = incoming[doc["_id"]]
+            if node != new:
+                stats["flips"] += 1
+                stats["to_true" if new else "to_false"] += 1
+    return stats
+
+
 def _coverage(moros: Moros, mode: str) -> int:
     """How many documents already carry this mode's headline field. Reported before and after so a
     load's real effect is a number, not an assumption."""
@@ -337,7 +385,11 @@ def _coverage(moros: Moros, mode: str) -> int:
              "licences": "source.access.license",
              "preprints": "identifiers.epmc_id",
              "data_links": "data_links.has_data",
-             "identifiers": "identifiers.dome_registry"}[mode]
+             "identifiers": "identifiers.dome_registry",
+             "fulltext": "source.access.fulltext_available"}[mode]
+    if mode == "fulltext":
+        # Never null on any document, so "carries it" says nothing; how many say true does.
+        return moros.count({field: True})
     return moros.count({field: {"$ne": None}})
 
 
