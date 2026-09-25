@@ -348,7 +348,9 @@ def run(args: argparse.Namespace) -> None:
     latest = zen.latest_published(concept) if base.get("submitted") else base
     sidecar = zen.read_sidecar(latest)
 
-    with Moros.from_env() as moros:
+    # zlib on the wire: the export reads the whole collection over the VPN, which is
+    # bandwidth-bound -- about 35 minutes compressed against 110 plain (moros_client.Moros).
+    with Moros.from_env(compressors="zlib") as moros:
         print(f"zenodo_archive: {moros.describe()}")
         fig = live_figures(moros)
         fig["version"] = today.isoformat()

@@ -74,21 +74,27 @@ def load_env(path: Path = DEFAULT_ENV_PATH) -> dict[str, str]:
 class Moros:
     """A read-only view of one collection, plus the handle `moros_write.py` needs."""
 
-    def __init__(self, uri: str, db_name: str, collection_name: str) -> None:
+    def __init__(self, uri: str, db_name: str, collection_name: str,
+                 compressors: str | None = None) -> None:
         self.uri = uri
         self.db_name = db_name
         self.collection_name = collection_name
+        # `compressors="zlib"` compresses the wire protocol. Worth it for a whole-collection read
+        # over the VPN, which is bandwidth-bound: measured 2026-09-25, 7,985 documents/min plain,
+        # 24,891 with zlib. (zstd needs the backports.zstd module this host does not have.)
+        options = {"compressors": compressors} if compressors else {}
         self._client: MongoClient = MongoClient(
             uri,
             serverSelectionTimeoutMS=5_000,
             maxPoolSize=10,
+            **options,
         )
         self.collection = self._client[db_name][collection_name]
 
     @classmethod
-    def from_env(cls, env_path: Path = DEFAULT_ENV_PATH) -> "Moros":
+    def from_env(cls, env_path: Path = DEFAULT_ENV_PATH, compressors: str | None = None) -> "Moros":
         env = load_env(env_path)
-        return cls(env["MONGODB_URI"], env["MONGODB_DB"], env["MONGODB_COLLECTION"])
+        return cls(env["MONGODB_URI"], env["MONGODB_DB"], env["MONGODB_COLLECTION"], compressors)
 
     def __enter__(self) -> "Moros":
         return self
