@@ -26,9 +26,18 @@ moros_pipeline/output/backups/
 mongo_landscape_export/output/*
 !mongo_landscape_export/output/.gitkeep
 
-# Secrets
+# Secrets. Any env file but the tracked examples, and key or credential files by name -- not a
+# broader `id_*`, which would also swallow src/dome_triage/ingest/id_mapping.py.
 .env
 *.env.local
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+credentials*.json
 
 # Python
 __pycache__/

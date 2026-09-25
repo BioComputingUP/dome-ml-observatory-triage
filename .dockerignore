@@ -12,3 +12,9 @@ venv/
 .streamlit/
 nltk_data/
 .claude/
+
+# Env files hold credentials; the image copies named paths only, but never let one into the context.
+.env
+**/.env
+**/.env.*
+!**/.env.example
