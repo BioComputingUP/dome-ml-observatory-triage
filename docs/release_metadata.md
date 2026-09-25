@@ -49,10 +49,10 @@ same split by putting the record and the article in separate nodes.
 - the vocabularies (`vocab_sha256`, prompt `e1`);
 - the search space (the query's sha256).
 
-**Not in the file yet.** There is no Zenodo distribution and no DOI. The archive job (item 4 of the
-sibling's [`ROADMAP.md`](https://github.com/BioComputingUP/dome-ml-observatory/blob/main/ROADMAP.md))
-will deposit a month and then add both. The DOI hardcoded on the sibling's `/download/bulk` is not
-registered, so it never goes into this file.
+**Not in the file yet.** There is no Zenodo distribution and no DOI. The archive job deposits each
+month; adding its version and DOI here is open
+([`dome-ml-observatory#5`](https://github.com/BioComputingUP/dome-ml-observatory/issues/5)). The
+DOI hardcoded on the sibling's `/download/bulk` is not registered, so it never goes into this file.
 
 ## Publishing a release
 

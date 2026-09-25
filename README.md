@@ -13,8 +13,8 @@ Two operational repositories, one database, one direction of writes:
 | **this one** — `dome-ml-observatory-triage` | data management: fetch, dedupe, classify, enrich, format, load, refresh | **the only writer** |
 | [`dome-ml-observatory`](https://github.com/BioComputingUP/dome-ml-observatory) | the production service: Angular UI + NestJS API, and the **published schema releases** | read-only |
 
-Open work for both repositories is tracked in one roadmap, in the sister repository:
-[`ROADMAP.md`](https://github.com/BioComputingUP/dome-ml-observatory/blob/main/ROADMAP.md).
+Open work for both repositories is tracked as issues on the sister repository:
+[`dome-ml-observatory` issues](https://github.com/BioComputingUP/dome-ml-observatory/issues).
 
 Every command below is meant to be run one at a time by a person (or by an agent following the
 skills in [`SKILLS.md`](SKILLS.md)), inspecting the output before the next step. Nothing here is a

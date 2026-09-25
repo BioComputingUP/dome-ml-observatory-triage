@@ -158,9 +158,9 @@ def _decode_entities(value: Optional[str]) -> Optional[str]:
     decoding all the way to a stable string reproduces exactly what the author wrote. A single
     fixed pass would leave those 135 abstracts displaying `&lt;50`.
 
-    A UI-side decode was explicitly rejected in ../dome-ml-observatory/ROADMAP.md: 1.48% of titles
-    already contain *raw* `<i>`/`<sub>` markup, so an entity decode in the view layer would have to
-    guess which angle brackets were markup and which were arithmetic. Decoding at ingestion instead
+    A blanket UI-side decode was rejected in the read side: 1.48% of titles already contain *raw*
+    `<i>`/`<sub>` markup, so an entity decode in the view layer would have to guess which angle
+    brackets were markup and which were arithmetic. Decoding at ingestion instead
     normalises the encoded group into the same form the raw group already has.
     """
     if value is None:

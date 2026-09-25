@@ -12,8 +12,8 @@ repository and is read-only by design; **it must never gain write credentials, a
 repository must never serve reads.**
 
 `README.md` explains each process. `SKILLS.md` lists the agent skills. Open work for both
-repositories is in one roadmap, in the sibling:
-[`ROADMAP.md`](https://github.com/BioComputingUP/dome-ml-observatory/blob/main/ROADMAP.md).
+repositories is tracked as issues on the sibling:
+[`dome-ml-observatory` issues](https://github.com/BioComputingUP/dome-ml-observatory/issues).
 
 ## Ground rules
 
