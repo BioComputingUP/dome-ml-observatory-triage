@@ -3,7 +3,8 @@ name: refresh-cycle
 description: >
   Run the whole recurring refresh in order with a check-in before every paid or writing step:
   triage-fetch → (ask) classify → (ask) moros-write load → (ask) enrich → moros-write merge →
-  optional citations-refresh, then the post-load checklist and processing-log. Trigger on "do the
+  optional citations-refresh, the full-text refresh, then the post-load checklist, the Zenodo
+  archive and processing-log. Trigger on "do the
   monthly refresh", "run the whole pipeline", "bring the corpus up to date", or a pasted
   BULK_UPDATE block. Never runs a paid or writing step without the user's explicit yes at that step.
 ---
@@ -33,9 +34,11 @@ every paid or writing step still stops for a yes.
 | `enrich_max_records` | the export's `--limit`. |
 | `enrich_max_usd` | the export's `--max-usd`. |
 | `citations_refresh` | `yes` runs `citations-refresh` in step 6. |
+| `fulltext_refresh` | `yes` runs the full-text refresh in step 6. |
 | `data_links_refresh` | `when_due` runs it only past its age thresholds; `yes` or `no` decides. |
+| `archive_to_zenodo` | `yes` runs the Zenodo archive in step 8. |
 | `wait_for_off_peak` | `yes`: a paid step that would cross a peak window waits for the earliest fully off-peak start and says so. `no`: state the peak cost and ask. |
-| `update_processing_page` | `yes` runs `processing-log` in step 8. |
+| `update_processing_page` | `yes` runs `processing-log` in step 9. |
 | `deploy_page` | `yes` is the user's request to deploy the page after its commit. Default `no`. |
 | `notes` | followed where they do not remove a check-in. |
 
@@ -64,11 +67,27 @@ every paid or writing step still stops for a yes.
    --limit <enrich_max_records> --max-usd <enrich_max_usd>`, read the balance, `--limit 25` smoke,
    the rest, poll the balance and log the delta. Then **`moros-write` B** to merge: dry run,
    `--limit 25 --confirm`, `--confirm`. Report ok / truncated / violations and the billed cost.
-6. **`citations-refresh`** if `citations_refresh` is yes (free); the **`data-links`** refresh
+6. **`citations-refresh`** if `citations_refresh` is yes (free); the **full-text refresh** if
+   `fulltext_refresh` is yes (free, under a minute): `fetch_fulltext.py`, then `moros-write` C's
+   `fulltext` mode -- dry run (it reports how many flags would change; any change *to false* is worth
+   a look first), `--limit 100 --confirm`, `--confirm`; the **`data-links`** refresh
    (`--max-age-days 180` on the Europe PMC fetches, 30 on the EBI Search dumps; free) when due.
-7. **Post-load checklist** (from `moros-write`): ask, then rebuild and relaunch the local stack in `dome-ml-observatory` (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`; there is no deployed site yet) so its API picks the load up,
-   reconcile `generate_facet_stats.py --from-api`, `schema-sync` if the shape changed.
-8. **Close.**
+7. **Post-load checklist** (from `moros-write`): ask, then restart `observatory-ws` so its API picks
+   the load up -- the deployed service at observatory.dome-ml.org (the user's host: they restart it,
+   or say you may) and the local stack if it is running (`docker compose -f docker-compose-local.yml
+   up -d --build observatory-ws observatory-ui` in `dome-ml-observatory`). Then, in
+   `dome-ml-observatory`: reconcile `generate_facet_stats.py --from-api`; refresh every block
+   `grep -rn corpus-figures` finds from the restarted `/api/stats`, keeping the fallback snapshot's
+   classes summing to its total (its spec checks); and if `prompts/PROMPT_HASHES.json` gained a
+   `criteria_sha256` or prompt version, add its commit pin to both `core/curation-criteria.ts` and
+   `observatory-ws/src/metadata/metadata-urls.ts`. `schema-sync` if the shape changed.
+8. **Zenodo archive** if `archive_to_zenodo` is yes (free), after the restart:
+   `python3 scripts/zenodo_archive.py --check`; if it reports a change, `--no-publish` (exports the
+   corpus, uploads it into a version draft of the Observatory's record, prints the draft's link).
+   → **Ask:** publish that version (a published version is permanent)? Then
+   `--publish-draft <id>`. A record still `restricted` refuses until `--embargo-until` or `--open`
+   says what its files should be. Report the new version's DOI.
+9. **Close.**
    - Re-measure the token profiles from this run's events files
      (`python3 scripts/cost_dashboard.py --events-classification <csv> --events-enrichment <csv>`),
      set `last_incremental_batch_*` in `pricing/token_profiles.yaml`, and regenerate

@@ -33,7 +33,9 @@ enrich: no                      # no | batch_positives | journal:"Bioinformatics
 enrich_max_records: 0           # the most records to enrich in this run
 enrich_max_usd: 0               # the export refuses a cohort projected above this
 citations_refresh: no           # yes | no
+fulltext_refresh: yes           # yes | no
 data_links_refresh: when_due    # when_due | yes | no
+archive_to_zenodo: yes          # yes | no
 wait_for_off_peak: yes          # yes | no
 update_processing_page: yes     # yes | no
 deploy_page: no                 # no | yes
@@ -53,7 +55,9 @@ notes:
 | `enrich_max_records` | `0` | Caps the enrichment. The rest of the cohort stays untagged for a later run. |
 | `enrich_max_usd` | `0` | A hard spending limit on the enrichment export: it refuses to write a cohort projected above this. |
 | `citations_refresh` | `no` | Re-fetches citation counts older than 30 days. Free; about 17 minutes for the whole corpus. |
+| `fulltext_refresh` | `yes` | Re-checks Europe PMC for records marked as having no full text that may since have gained it: a PubMed Central embargo lifts after the fetch. Free; under a minute. |
 | `data_links_refresh` | `when_due` | Refreshes data links older than 180 days (EBI Search dumps: 30). Free. |
+| `archive_to_zenodo` | `yes` | Archives the corpus as a new version of the Observatory's Zenodo record, once the load and the observatory restart are done. Free; skipped when nothing changed since the last version. |
 | `wait_for_off_peak` | `yes` | DeepSeek charges double 01:00–04:00 and 06:00–10:00 UTC, Monday to Friday. `yes` waits for off-peak; `no` asks you with the peak price. |
 | `update_processing_page` | `yes` | Adds the run to the site's Processing history page and commits it in `dome-ml-observatory`. |
 | `deploy_page` | `no` | `yes` also publishes the page to the live site. It goes straight to production, with no staging. |
@@ -68,9 +72,12 @@ notes:
 3. **Before loading**: after a dry run and a 100-record trial that can be rolled back.
 4. **Before enriching**: the cohort, the cost at the billed rate, the time, the balance.
 5. **Before merging the enrichment**: after a dry run and a 25-record trial.
-6. **Before relaunching the local observatory containers**, whose API reads moros. There is no
-   deployed site yet; the stack runs from `dome-ml-observatory/docker-compose-local.yml`.
-7. **Before deploying the page**, unless `deploy_page: yes`.
+6. **Before restarting observatory-ws**, whose API reads moros: the deployed service at
+   observatory.dome-ml.org (your host, so you do it or say so), and the local stack
+   (`dome-ml-observatory/docker-compose-local.yml`) if it is running.
+7. **Before publishing to Zenodo**: after the archive is uploaded into an unpublished draft you can
+   look at first. A published version is permanent.
+8. **Before deploying the page**, unless `deploy_page: yes`.
 
 After every paid step Claude reads the DeepSeek balance until the charge lands (it lags by a few
 minutes) and logs what was billed in `data/processed/cost_estimates/deepseek_real_cost_log.csv`.

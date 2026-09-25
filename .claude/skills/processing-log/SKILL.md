@@ -29,8 +29,8 @@ python3 round_summary.py --enrichment-batch <enrich batch id> [--enrichment-batc
 A round that ran as several batches takes `--classification-prefix` / `--enrichment-prefix`. Batch
 ids are the `batch_id` column of the run's events file, `verify_corpus.py`'s `batch_ids`, or the
 load report. Check before writing anything: the classification rounds already on the page, plus this
-one, less the documents any `CORRECTIONS` entry removed, add up to `corpus_total`. If they do not,
-stop and say why.
+one, less the documents any `CORRECTIONS` entry of kind `removed` took out, add up to `corpus_total`.
+If they do not, stop and say why.
 
 The window is the one the run fetched (the ledger, `../output/coverage_ledger.json`, and the
 `--up-to` used). The model is the one that actually answered: `pricing/pricing.yaml`'s version for
@@ -85,10 +85,12 @@ Write it the way the rest of the About pages are written:
   then write the new query in words and say it is a new search space.
 - Figures only from step 1: never an estimate, never "approximately".
 
-Documents removed from the corpus after a round go in `CORRECTIONS` instead, in the same file
-(`number`, `title`, `date`, `documents`, `why`): the round cards keep saying what their round did, and
-the page's Corrections section says what came out since. `resolve_duplicates.py`'s report gives the
-figures.
+A change to documents already in the corpus goes in `CORRECTIONS` instead, in the same file
+(`number`, `kind`, `title`, `date`, `documents`, `why`): the round cards keep saying what their round
+did, and the page's Corrections section says what changed since. `kind: 'removed'` for documents taken
+out (`resolve_duplicates.py`'s report gives the figures); `kind: 'corrected'` for a value fixed in
+place, such as the 2026-09-25 full-text refresh (the load report's `modified`). Only removals come
+off the round totals in step 1's check.
 
 Leave the rest of the page alone unless something on it has become untrue (the enrichment
 section's intro switches by itself once `ENRICHMENT_ROUNDS` has an entry). A copy change is its own,
@@ -98,8 +100,8 @@ named commit.
 
 ```bash
 cd ../dome-ml-observatory/observatory-ui        # from this repository's root: ../dome-ml-observatory
-npx ng test --watch=false --include='src/app/about/about-processing/about-processing.spec.ts'
-npm run lint
+npx ng test --watch=false                       # the whole suite: --include breaks the builder's
+npm run lint                                    # .scss/.html loaders ("No loader is configured")
 npm run build-prod
 ```
 

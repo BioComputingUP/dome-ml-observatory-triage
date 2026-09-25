@@ -2,7 +2,7 @@
 name: moros-write
 description: >
   The only way anything is written to moros (dome_observatory.Content): loading a classified batch
-  as new documents, merging an enrichment events file, refreshing citation or licence fields,
+  as new documents, merging an enrichment events file, refreshing citation, licence or full-text fields,
   rolling a write back, and checking or creating the indexes. Trigger on "load the batch",
   "load to moros", "merge the enrichment", "roll back run X", "check the indexes", "verify the
   corpus", or any request that changes the database. Dry run first, reversible trial second,
@@ -115,6 +115,17 @@ python3 load_fields.py --mode data_links --input ../output/pid_data_links.csv  .
 python3 load_fields.py --mode identifiers --input ../output/pid_identifiers.csv ...     # same shape
 ```
 
+```bash
+python3 fetch_fulltext.py                                                               # read-only
+python3 load_fields.py --mode fulltext   ...                                            # same shape
+```
+
+`fulltext` writes `source.access.fulltext_available` only, from Europe PMC's `inEPMC` / `inPMC` (the
+bulk match's rule). `fetch_fulltext.py` targets the `false` values that go stale -- any document
+with a PMCID (a PMC embargo lifts after the fetch) and every curated-merge document (never looked
+up) -- and the dry run reports how many flags would change before anything is written. It does not
+stamp `record_modified`: the flag is in neither the Dublin Core nor the JSON-LD.
+
 `preprints` writes `identifiers.epmc_id`, `source.epmc_source` and, only when Europe PMC gave one,
 `publication_metadata.preprint_server`. `data_links` writes the `data_links.*` leaves only; it
 cannot reach `identifiers.*`. `identifiers` writes `identifiers.dome_registry` (the DOME Registry
@@ -205,9 +216,16 @@ documents whose values actually change, and `load_documents.py` on every documen
 
 ## After any confirmed write: the manual checklist
 
-1. Ask, then rebuild and relaunch the local stack in `dome-ml-observatory` (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`; there is no deployed site yet): `observatory-ws`'s facet cache is boot-loaded with no TTL.
+1. Ask, then restart `observatory-ws`: its facet cache is boot-loaded with no TTL. The deployed
+   service at observatory.dome-ml.org is the user's host (they restart it, or say you may); the
+   local stack in `dome-ml-observatory` too if it is running (`docker compose -f
+   docker-compose-local.yml up -d --build observatory-ws observatory-ui`).
 2. In `dome-ml-observatory`: `python3 schema/generate_facet_stats.py --from-api <url>` and check
-   `/api/stats` reconciles with `verify_corpus.py`.
+   `/api/stats` reconciles with `verify_corpus.py`. Refresh every displayed figure
+   `grep -rn corpus-figures` finds there from that `/api/stats`.
 3. If `SCHEMA_VERSION` or a vocabulary changed: `schema-sync` here, then their `schema-version`
-   skill.
-4. Keep the events file until this checklist is done; it is the paid record of the run.
+   skill. If `prompts/PROMPT_HASHES.json` changed: add the new criteria or prompt pin there
+   (`core/curation-criteria.ts` and `observatory-ws/src/metadata/metadata-urls.ts`, together).
+4. Archive: `python3 ../../scripts/zenodo_archive.py --check`, then `--no-publish`, and publish the
+   draft with `--publish-draft <id>` once the user says so (`refresh-cycle` step 8).
+5. Keep the events file until this checklist is done; it is the paid record of the run.

@@ -42,6 +42,8 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
 
 positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
 moros ──fetch_citations.py --max-age-days N──▶ join_citations.py ──load_fields.py --mode citations──▶ moros
+moros ──fetch_fulltext.py──▶ load_fields.py --mode fulltext──▶ moros          (Europe PMC inEPMC / inPMC, after embargoes lift)
+moros ──scripts/zenodo_archive.py──▶ Zenodo: a new version of 10.5281/zenodo.22259905 (JSONL.gz + sidecar + schema)
 moros ──export_corpus_keys.py──▶ fetch_epmc_metadata.py ──▶ fetch_annotations.py · fetch_datalinks.py · fetch_ebisearch_*.py ──▶ build_data_links.py ──load_fields.py --mode preprints | data_links | identifiers──▶ moros
 ```
 

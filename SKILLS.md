@@ -20,8 +20,10 @@ validated scripts and commands in this repository, exactly as `README.md` docume
 
 The sequential order for a refresh: `triage-fetch` → (ask) → `classify` → `moros-write` (load,
 index, verify) → (ask) → `enrich` → `moros-write` (merge) → `citations-refresh` (optional) →
-`data-links` refresh (when due) → `processing-log`. A run is usually started from the parameter
-block in `BULK_UPDATE.md`, which says what each choice does.
+full-text refresh (`fetch_fulltext.py`, `moros-write` C) → `data-links` refresh (when due) →
+post-load checklist → Zenodo archive (`scripts/zenodo_archive.py`; ask before publishing) →
+`processing-log`. A run is usually started from the parameter block in `BULK_UPDATE.md`, which
+says what each choice does.
 `cost-estimate` runs inside every paid step; `schema-sync` runs before every load.
 
 Rules every skill follows: dry-run before confirm; `--limit` trial before a full write; pull the
