@@ -136,3 +136,41 @@ def test_the_same_corpus_always_produces_the_same_bytes(tmp_path):
     za.export(_Moros(docs), one, None)
     za.export(_Moros(docs), two, None)
     assert one.read_bytes() == two.read_bytes()  # mtime 0: no timestamp in the gzip header
+
+
+# -- reading the latest version's sidecar ----------------------------------------------------------
+
+
+class _Resp:
+    def __init__(self, status: int, payload: dict | None = None) -> None:
+        self.status_code, self._payload, self.ok, self.text = status, payload, status < 400, ""
+
+    def json(self) -> dict:
+        return self._payload
+
+
+class _Session:
+    def __init__(self, resp: _Resp) -> None:
+        self.resp, self.urls, self.headers = resp, [], {}
+
+    def get(self, url, **kwargs):
+        self.urls.append(url)
+        return self.resp
+
+
+def _zenodo(resp: _Resp) -> za.Zenodo:
+    zen = za.Zenodo("https://zenodo.org", "t")
+    zen.session = _Session(resp)
+    return zen
+
+
+def test_the_sidecar_is_read_from_the_published_record_not_a_file_list():
+    # The version listing returns no files, and a published deposition's download links point at
+    # its gone draft: reading either made every run look like the first (2026-09-25).
+    zen = _zenodo(_Resp(200, {"record_count": 876_324}))
+    assert zen.read_sidecar({"id": 22967974, "files": []}) == {"record_count": 876_324}
+    assert zen.session.urls == ["https://zenodo.org/api/records/22967974/files/archive-metadata.json/content"]
+
+
+def test_a_version_without_a_sidecar_reads_as_none():
+    assert _zenodo(_Resp(404)).read_sidecar({"id": 22259906}) is None

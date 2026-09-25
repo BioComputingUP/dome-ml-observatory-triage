@@ -128,11 +128,14 @@ class Zenodo:
         return max(published, key=lambda d: int(d["id"]))
 
     def read_sidecar(self, dep: dict) -> dict | None:
-        for f in dep.get("files") or []:
-            if f.get("filename") == SIDECAR:
-                resp = self._check(self.session.get(f["links"]["download"], timeout=60), "reading the sidecar")
-                return resp.json()
-        return None
+        """A published version's sidecar, or None when it has none. Read by URL, not from a file
+        list: the version listing returns no files, and a published deposition's own download
+        links point at its draft, which is gone (both seen on 2026-09-25). The token is what
+        reads it through an embargo."""
+        resp = self.session.get(f"{self.base}/api/records/{dep['id']}/files/{SIDECAR}/content", timeout=60)
+        if resp.status_code == 404:
+            return None
+        return self._check(resp, "reading the sidecar").json()
 
     def delete_draft(self, dep_id: int | str) -> None:
         self._check(self.session.delete(f"{self.base}/api/deposit/depositions/{dep_id}", timeout=60),
@@ -346,7 +349,7 @@ def run(args: argparse.Namespace) -> None:
         publish_draft(zen, args.publish_draft, concept)
         return
     latest = zen.latest_published(concept) if base.get("submitted") else base
-    sidecar = zen.read_sidecar(latest)
+    sidecar = zen.read_sidecar(latest) if latest.get("submitted") else None
 
     # zlib on the wire: the export reads the whole collection over the VPN, which is
     # bandwidth-bound -- about 35 minutes compressed against 110 plain (moros_client.Moros).
