@@ -77,10 +77,11 @@ every paid or writing step still stops for a yes.
    or say you may) and the local stack if it is running (`docker compose -f docker-compose-local.yml
    up -d --build observatory-ws observatory-ui` in `dome-ml-observatory`). Then, in
    `dome-ml-observatory`: reconcile `generate_facet_stats.py --from-api`; refresh every block
-   `grep -rn corpus-figures` finds from the restarted `/api/stats`, keeping the fallback snapshot's
-   classes summing to its total (its spec checks); and if `prompts/PROMPT_HASHES.json` gained a
-   `criteria_sha256` or prompt version, add its commit pin to both `core/curation-criteria.ts` and
-   `observatory-ws/src/metadata/metadata-urls.ts`. `schema-sync` if the shape changed.
+   `grep -rn corpus-figures` finds from the restarted `/api/stats` (a handful of dated doc and
+   Swagger figures -- the site itself holds no copy, every page reads the API); and if
+   `prompts/PROMPT_HASHES.json` gained a `criteria_sha256` or prompt version, add its commit pin to
+   both `core/curation-criteria.ts` and `observatory-ws/src/metadata/metadata-urls.ts`.
+   `schema-sync` if the shape changed.
 8. **Zenodo archive** if `archive_to_zenodo` is yes (free), after the restart:
    `python3 scripts/zenodo_archive.py --check`; if it reports a change, `--no-publish` (exports the
    corpus, uploads it into a version draft of the Observatory's record, prints the draft's link).
