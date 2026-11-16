@@ -44,21 +44,29 @@ The branch's decisions are kept unless Phases 1–2 below change them:
 4. **Human rating does not block.** The release notes state the evidence and that the human half is pending.
 5. **The vocabulary is frozen for the whole production run.** Gaps found during the run go to a list for later.
 
-## Phase 0: THIS laptop, now (save everything)
+## Phase 0: home laptop. DONE 2026-11-16
 
-1. **Coordinate.** Follow the protocol above. Both peer sessions were idle at the time of writing.
-2. **Commit and push the branch.** In `../dome-ml-observatory-triage-e2`:
-   - run `python3 prompts/render_prompts.py --check`, the three host suites and `scripts/check_no_absolute_paths.py`;
-   - commit the other session's work as it stands on `enrichment-e2-glm53`;
-   - add this plan as `docs/plans/glm53_ebi_production.md`;
-   - push the branch.
-   Everything else then comes from this branch on the EBI laptop.
-3. **Commit and push the test bed.** Run `scripts/check_no_secrets.py`, then commit and push every remaining untracked or modified file. `data/`, `.env` and `*.local.md` stay ignored.
-4. **Set up the private runs repository** (ask Gavin first). Create it with `gh repo create gavinf97/dome-observatory-enrichment-runs --private`. Layout: `inputs/`, `events/`, `manifests/`, `SHA256SUMS`, and a README saying it must never be made public.
-5. **Export inputs from moros (read-only)** and push them to `runs/inputs/` with their sha256:
-   - the production cohort: positives with null `provider` that have a title and abstract, split into 5,000-record chunk CSVs. Record the export time and the count;
-   - the test bed's `data/input_{enriched_100,wave2_250}.csv`, for the endpoint check.
-6. **Count the evidence for each candidate model type** (read-only). For each term in Phase 1, count the positives whose title or abstract mentions it. Write the counts to `docs/e3_model_type_evidence.md`, with counts and record ids only, never abstracts.
+1. The other session's e2 work is committed and pushed: branch `enrichment-e2-glm53`, commit `97456a7`, which also adds this plan. Checks that passed: `render_prompts --check`, the three host suites (503/88/14) and the absolute-path check. **The Docker engine gate has not been run on this commit.** Run it after the first `docker compose build` on the EBI laptop.
+2. The test bed is committed and pushed: branch `tag-validation`, commit `dc02efe`. That includes all the events, manifests, the spend log, the e2 code, reports, the judge logs and the partial human ratings.
+3. The private runs repository exists: https://github.com/gavinf97/dome-observatory-enrichment-runs (private, checked with `isPrivate: true`). It holds `inputs/`, `events/`, `manifests/`, `SHA256SUMS` and a README.
+4. **Inputs come from Zenodo, not moros.** The home laptop needs no moros export before the switch. The EBI laptop builds every input from the public corpus dump (Phase E, steps 5–7). The home laptop catches up on anything newer at load time (Phase 4, step 0).
+
+## Phase E: first session on the EBI laptop (start here)
+
+Connect to the EBI VPN, then:
+
+1. **Read this plan and check for other sessions.** Run `ListAgents`, and `git status` in every checkout. Follow the protocol above.
+2. **Clone three repositories into one parent folder**, side by side; their folder names matter:
+   - `git clone git@github.com:BioComputingUP/dome-ml-observatory-triage.git && git -C dome-ml-observatory-triage checkout enrichment-e2-glm53`
+   - `git clone git@github.com:gavinf97/glm5.3_test_dome-ml-observatory-triage.git && git -C glm5.3_test_dome-ml-observatory-triage checkout tag-validation`
+   - `git clone git@github.com:gavinf97/dome-observatory-enrichment-runs.git` (private, so `gh auth login` as gavinf97 first)
+3. **`.env` in triage and the test bed.** Set `EBI_LLM_BASE_URL`, `EBI_LLM_API_KEY`, `EBI_LLM_MODEL`, `EBI_LLM_MAX_CONCURRENCY` and `ENRICHMENT_RUNS_REPO`. This laptop gets **no** moros `.env`, Z.ai key or DeepSeek key.
+4. **Docker.** Run `docker compose build` (it needs internet and downloads about 7 GB of model weights and NLTK data). Then run the AGENTS rule-9 gate and the three host suites. **If Docker is not allowed on this laptop, stop and ask Gavin.**
+5. **Download the corpus dump.** Get the latest version of Zenodo concept `10.5281/zenodo.22259905` from the API: `https://zenodo.org/api/records?q=conceptrecid:22259905&all_versions=true&sort=mostrecent`. On 2026-11-16 that was record 22967974, dated 2026-09-25, schema 1.6.0, open access, with `dome-observatory-corpus-2026-09-25.jsonl.gz` at 879 MB. Save it outside every repository, for example `../zenodo_corpus/`, and check its checksum against both Zenodo's file checksum and `archive-metadata.json`.
+6. **Build the production inputs.** Write `scripts/inputs_from_zenodo.py` in triage, with tests. It reads the dump and keeps documents with `llm_classification.classification == "positive"`, `llm_enrichment.provider` null, and a non-empty title and abstract. It writes the same columns as `export_journal_for_enrichment.py` (`record_id, title, abstract, journal, year`), in `_id` order, split into 5,000-record chunks: `inputs/enrich_input_e3_zenodo-<version>_cNN.csv`. It also writes `inputs/SOURCE.md` with the Zenodo record id, version, file sha256, the counts and the selection. Then commit and push to the runs repository and update `SHA256SUMS`.
+7. **Build the test-bed inputs.** Rebuild `data/input_{wave2_250,enriched_100}.csv` from the same dump, using the record ids in the test bed's committed `cohorts/manifest.csv`. Check that every id was found, and that they are byte-identical to the originals if those are ever available. `data/` stays gitignored.
+8. **Gather the term evidence** for Phase 1. For each candidate model type, count the positives in the dump whose title or abstract mentions it (case-insensitive, word-bounded, canonical names and aliases). Write `docs/e3_model_type_evidence.md` in triage with the counts, the share of positives and a few record ids, never abstracts. Commit and push.
+9. Then continue with Phase 1.
 
 ## Phase 1: minor model-type extension, then prompt e3
 
@@ -123,18 +131,14 @@ The branch's decisions are kept unless Phases 1–2 below change them:
 3. **Events.** e3 events add a `model_id` column holding the served id.
 4. **Loader.** Map `ebi-glm-5.3` to provider `embl-ebi` and take `model_id` from the event.
 5. **Tests.** Add tests, then commit and push.
-6. **EBI laptop setup.**
-   - Clone the branch, the test bed and the runs repository.
-   - Write `.env` with the `EBI_LLM_*` variables only. It needs no moros `.env`, Z.ai key or DeepSeek key.
-   - Run `docker compose build` (it downloads about 7 GB), then the AGENTS rule-9 gate.
-   - **If Docker is not allowed on that laptop, stop and ask.**
+6. **EBI laptop setup** was done in Phase E: the clones, `.env`, Docker and the inputs built from Zenodo.
 7. **Probe the endpoint** from the host and from the container: `/models`, then one tiny call. Record the following in a gitignored `EBI_ENDPOINT.local.md`:
    - the served id, and whether it is full or Flash and quantised;
    - the context window and maximum output tokens;
    - the thinking and effort switch;
    - the usage fields;
    - the concurrency limit.
-8. **Light endpoint check.** Run e3 on EBI over `wave2_250` and `enriched100`, from the runs repository's inputs. Then compare with the Z.ai e2 events in the test bed, field by field (`compare_to_deepseek.py`-style agreement), and run the Opus judge (subscription CLI) on wave2.
+8. **Light endpoint check.** Run e3 on EBI over `wave2_250` and `enriched100`, using the inputs rebuilt in Phase E step 7. Then compare with the Z.ai e2 events in the test bed, field by field (`compare_to_deepseek.py`-style agreement), and run the Opus judge (subscription CLI) on wave2.
    - The new seed terms are the only prompt difference, so on records that do not use them the result should match the Z.ai e2 judge rates within about 5 points.
    - If it clearly falls short, stop and show Gavin before production.
 
@@ -157,6 +161,10 @@ The branch's decisions are kept unless Phases 1–2 below change them:
 
 ## Phase 4: THIS laptop (moros and sibling)
 
+0. **Catch up on what is newer than the dump.** On the VPN, run `python3 scripts/zenodo_archive.py --check` (read-only). Then count the positives in moros with null `provider` whose `_id` is in none of the input chunks; these are positives loaded after the Zenodo dump was taken.
+   - If there are any, export them with `export_journal_for_enrichment.py --max-usd 0`, as chunks after the last one.
+   - Push them to `inputs/`, run them on the EBI laptop (Phase 3), then load them here with the rest.
+   - Otherwise, leave them for the next refresh round.
 1. Pull the branch and the runs repository, and verify `SHA256SUMS`.
 2. **Sibling.** Publish v1.7.0 with its `schema-version` skill: `model_use` and the e3 vocabularies. The CHANGELOG states the mixed e1/e3 corpus and the validation status. Then refresh `schema/observatory_release/` here and run `check_alignment.py`, which must report "aligned".
 3. **Migrate.** Run `migrate_v1_7_0.py` as a dry run, then `--limit`, then `--confirm`. Then run `verify_corpus.py` and `check_alignment.py --live`.
