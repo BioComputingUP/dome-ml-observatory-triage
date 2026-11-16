@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+import click
 import typer
 
 from dome_triage.config import PipelineConfig, resolve_path
@@ -777,14 +778,24 @@ def llm_classify_run_fallback(
 
 @llm_classify_app.command("enrich")
 def llm_classify_enrich(
-    tier: str = typer.Option("flash", "--tier", help='"flash" (default) or "pro".'),
+    prompt: str = typer.Option(
+        "e1", "--prompt",
+        help='"e1" (default): the validated DeepSeek prompt. "e2": the GLM-5.3 prompt validated on Z.ai '
+             "(curation_criteria/e2/PROVENANCE.md); needs ZAI_API_KEY, --input and --events-out.",
+    ),
+    tier: str = typer.Option(
+        "flash", "--tier",
+        help='e1: "flash" (default) or "pro" (DeepSeek). e2: "glm-5.3-flash" (the default when --prompt e2 is given '
+             'without --tier; validated) or "glm-5.3" (Z.ai).',
+    ),
     concurrency: int = typer.Option(
         800, "--concurrency",
         help="Concurrent API calls. " + """Throughput is concurrency / per-call latency, and the latency is not tunable -- the model writes its answer at ~133 tokens/sec, so a call takes as long as its output is. """
         "Enrichment averages ~6,000 output tokens per record, so ~45s per call: 800 gives "
         "~400 records/min, 100 gives ~130, 40 gives ~53 (a real 2026-09-03 run crawled for hours "
         "at 40 before this was understood). DeepSeek's documented flash ceiling is 2500 and Step "
-        "23a ran classification at 1000. The HTTP pool is sized from this value.",
+        "23a ran classification at 1000. The HTTP pool is sized from this value. With --prompt e2 and "
+        "no --concurrency, 50 is used instead (what every e2 validation run used, ~325 records/min on Z.ai).",
     ),
     events_out: Optional[str] = typer.Option(
         None, "--events-out",
@@ -800,7 +811,9 @@ def llm_classify_enrich(
     ),
     reasoning_effort: Optional[str] = typer.Option(
         None, "--reasoning-effort",
-        help='Thinking effort: "none" | "low" | "high" | "max". Omit to keep the provider '
+        help='e2 (Z.ai): "minimal" | "low" | "medium" | "high" | "xhigh" | "max"; omitted means "high", '
+             'the validated setting ("max" measured: same tags, ~6x reasoning tokens). e1 (DeepSeek): '
+             'Thinking effort: "none" | "low" | "high" | "max". Omit to keep the provider '
              'default (high). Output tokens are ~94% of this step\'s cost and ~98% of them are '
              'the reasoning trace, so this is the cost lever -- but "none" was measured to push '
              "vocabulary violations from 6% to 46.5% (thinking_ablation/), so lower it on "
@@ -832,6 +845,26 @@ def llm_classify_enrich(
     Resumable: re-running skips everything already enriched under the current vocabularies and
     retries parse_errors. No cost gate on this command -- real token totals and the prefix-cache
     hit rate are printed at the end and recorded per event."""
+    if prompt == "e2":
+        if domain_rendering != "flat":
+            raise typer.BadParameter("prompt e2 always uses the flat domain rendering it was validated with")
+        # e1's defaults (DeepSeek flash, 800) mean nothing on Z.ai: when the flag was not given,
+        # use the values e2 was validated with.
+        ctx = click.get_current_context(silent=True)
+        explicit = (lambda name: ctx is not None
+                    and ctx.get_parameter_source(name) not in (None, click.core.ParameterSource.DEFAULT))
+        pipeline_steps.step_llm_classify_enrich_e2(
+            _load_config(config_dir), tier if explicit("tier") else "glm-5.3-flash",
+            concurrency if explicit("concurrency") else 50, limit,
+            Path(input_path) if input_path else None,
+            events_out,
+            reasoning_effort,
+            retry_truncated,
+            ignore_lock,
+        )
+        return
+    if prompt != "e1":
+        raise typer.BadParameter(f'--prompt must be "e1" or "e2", got {prompt!r}')
     pipeline_steps.step_llm_classify_enrich(
         _load_config(config_dir), tier, concurrency, limit,
         Path(input_path) if input_path else None,

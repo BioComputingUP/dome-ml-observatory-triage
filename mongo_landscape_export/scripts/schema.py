@@ -103,7 +103,15 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # from the builders: load_documents.py stamps it on write, moros_write.SafeWriter's stamping modes
 # on each document whose values change, and migrate_v1_6_0.py once for the existing corpus.
 # Additive -- no existing field changed or removed.
-SCHEMA_VERSION = "1.6.0"
+# 1.7.0 (2026-11-16, authored; published and migrated when the release procedure in schema/README.md
+# runs): content_filters gains model_use -- how the paper obtains its models (trained in this
+# study / fine-tuned or adapted / pretrained, applied as-is / prompted (zero/few-shot)), filled by
+# enrichment prompt e2 (GLM-5.3-Flash, curation_criteria/e2/PROVENANCE.md). An empty list until an
+# e2 enrichment lands; e1-enriched documents keep [] (e1 never asked). The modelling vocabularies
+# become e2's, a strict superset of e1's (self-supervised; active learning, multimodal learning,
+# physics-informed machine learning; three seed types), so every e1-enriched value stays valid.
+# Additive -- no existing field changed or removed.
+SCHEMA_VERSION = "1.7.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
@@ -329,6 +337,8 @@ def _content_filters(row: dict[str, str]) -> dict[str, Any]:
         "learning_paradigm": [],
         "model_family": [],
         "model_type": [],
+        # v1.7.0: filled by enrichment prompt e2 only (see the version history above).
+        "model_use": [],
     }
 
 

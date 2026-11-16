@@ -20,8 +20,9 @@ VERSION = "1.6.0"
 
 VOCABS = {
     "domain.json": ("domain_vocab.json", {"fields": {"domain_tier1": {"terms": ["Biology"]}}}),
-    "modelling-branch.json": ("modelling_branch_vocab.json", {"fields": {"model_family": {}}}),
-    "model-type-seed.json": ("model_type_seed_vocab.json", {"terms": [{"canonical": "SVM"}]}),
+    # From v1.7.0 the published modelling vocabularies are enrichment prompt e2's (curation_criteria/e2/).
+    "modelling-branch.json": ("e2/modelling_branch_vocab.json", {"fields": {"model_family": {}}}),
+    "model-type-seed.json": ("e2/model_type_seed_vocab.json", {"terms": [{"canonical": "SVM"}]}),
 }
 
 PUBLISHED_SCHEMA = {
@@ -152,6 +153,12 @@ def test_an_example_stamped_with_another_version(pair):
     _json(obs / "schema/releases/v1.6.0/ai-ml-landscape.example.json", {"schema_version": "1.5.1"})
     found = problems(pair)
     assert any("example carries schema_version 1.5.1" in p for p in found), found
+
+
+def test_modelling_vocab_drift_is_read_from_the_e2_files(pair):
+    repo, _ = pair
+    _json(repo / "curation_criteria/e2/modelling_branch_vocab.json", {"fields": {"model_use": {}}})
+    _one(pair, "vocab drift modelling-branch.json")
 
 
 def test_vocab_drift(pair):

@@ -1,10 +1,10 @@
 """Merges an enrichment event log back into moros, in place, by `_id`.
 
-Enrichment fills `content_filters`' six reserved fields and the whole `llm_enrichment` group on
-documents that **already exist**. Both groups were fleshed out in schema v1.0.0 precisely so this
-would be an update rather than a migration.
+Enrichment fills `content_filters`' six reserved fields (seven from v1.7.0: prompt e2 adds
+`model_use`) and the whole `llm_enrichment` group on documents that **already exist**. Both groups
+were fleshed out in schema v1.0.0 precisely so this would be an update rather than a migration.
 
-Safety comes from `moros_write.WRITE_MODES["enrichment"]`, whose allowlist contains those 21 leaf
+Safety comes from `moros_write.WRITE_MODES["enrichment"]`, whose allowlist contains those leaf
 paths and nothing else. `llm_classification` is not reachable from this code path at all, which is
 what makes "enrichment is additive and cannot revise a verdict" a structural property rather than
 a claim about the prompt. A rollback snapshot is taken before the first batch, as for every write.
@@ -15,6 +15,11 @@ Two shape details the event log does not share with the document:
   uniformly) but a **scalar** in the schema. It is unwrapped here.
 - The event has no `mode`; enrichment has no forced-choice variant the way classification does, so
   it stays null rather than being given an invented value.
+- `provider` and `model_id` come from the event's `model_tier`: DeepSeek for `flash`/`pro` (prompt
+  e1), Z.ai for `glm-5.3-flash`/`glm-5.3` (prompt e2).
+- Prompt e2's events also carry `model_use` (written to `content_filters.model_use`) and
+  `family_backfilled` (not stored: the parser's own audit trail, kept in the event log). An e2
+  events file is refused until every document is at schema v1.7.0 (`migrate_v1_7_0.py`).
 
 `parse_error` events are skipped entirely. Re-running `enrich` retries them, and a half-parsed
 enrichment is worse than none.
@@ -39,13 +44,19 @@ from moros_write import SafeWriter, new_run_id
 csv.field_size_limit(sys.maxsize)
 
 # Mirrors mongo_landscape_export/scripts/schema.py's TIER_MODEL_IDS, which itself mirrors
-# llm_classify/deepseek_client.py. Same documented mirror, same reason: this folder cannot import
-# the dome_triage package.
-TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
-PROVIDER = "deepseek"
+# llm_classify/deepseek_client.py and llm_classify/zai_client.py. Same documented mirror, same reason:
+# this folder cannot import the dome_triage package.
+TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro",
+                  "glm-5.3-flash": "glm-5.3-flash", "glm-5.3": "glm-5.3"}
+TIER_PROVIDERS = {"flash": "deepseek", "pro": "deepseek", "glm-5.3-flash": "zai", "glm-5.3": "zai"}
+PROVIDER = "deepseek"  # the provider of every e1 event, and of an event with no tier
 PARSE_ERROR = "parse_error"
 
 LIST_FIELDS = ("domain_tier2", "domain_tier3", "learning_paradigm", "model_family", "model_type")
+# v1.7.0: only prompt e2's events carry it. An e1 event leaves the document's value alone ([] since
+# migrate_v1_7_0.py), because e1 never asked the question.
+E2_LIST_FIELDS = ("model_use",)
+E2_MIN_SCHEMA_VERSION = "1.7.0"
 
 
 def _json_list(value: str) -> list:
@@ -93,7 +104,7 @@ def event_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
         # domain_tier1 is max_tags=1 in the vocabulary, so the event's single-element list becomes
         # the schema's scalar. An empty list means the model named no tier-1 domain.
         "content_filters.domain_tier1": (tier1[0] if tier1 else None),
-        "llm_enrichment.provider": PROVIDER,
+        "llm_enrichment.provider": TIER_PROVIDERS.get(tier or "", PROVIDER),
         "llm_enrichment.model_tier": tier,
         "llm_enrichment.model_id": TIER_MODEL_IDS.get(tier or ""),
         "llm_enrichment.mode": None,
@@ -111,7 +122,35 @@ def event_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
     }
     for field in LIST_FIELDS:
         fields[f"content_filters.{field}"] = _json_list(row.get(field, ""))
+    for field in E2_LIST_FIELDS:
+        if field in row:
+            fields[f"content_filters.{field}"] = _json_list(row.get(field, ""))
     return record_id, fields
+
+
+def _version(value) -> tuple:
+    """'1.10.0' > '1.7.0' numerically; an unparseable or missing version sorts lowest (refused)."""
+    try:
+        return tuple(int(x) for x in str(value).split("."))
+    except ValueError:
+        return (-1,)
+
+
+def carries_e2_fields(path: Path) -> bool:
+    with path.open(newline="", encoding="utf-8") as f:
+        header = next(csv.reader(f), [])
+    return any(field in header for field in E2_LIST_FIELDS)
+
+
+def e2_schema_problem(versions: dict) -> str | None:
+    """e2 events write a v1.7.0 field. Refuse while any document is below 1.7.0, or the values would
+    land under a version whose schema and vocabulary do not have them."""
+    behind = {v: n for v, n in versions.items() if _version(v) < _version(E2_MIN_SCHEMA_VERSION)}
+    if behind:
+        return (f"refusing: these events carry model_use (prompt e2, schema {E2_MIN_SCHEMA_VERSION}) but "
+                f"{sum(behind.values()):,} documents are below it ({behind}). Publish v{E2_MIN_SCHEMA_VERSION} in "
+                f"dome-ml-observatory, run check_alignment.py, then migrate_v1_7_0.py --confirm first.")
+    return None
 
 
 def iter_updates(path: Path, limit: int | None) -> Iterator[tuple[str, dict[str, Any]]]:
@@ -169,6 +208,10 @@ def run(events_path: Path, confirm: bool, limit: int | None) -> None:
         return
 
     with Moros.from_env() as moros:
+        if carries_e2_fields(events_path):
+            problem = e2_schema_problem(moros.histogram("schema_version"))
+            if problem:
+                raise SystemExit(f"[{run_id}] {problem}")
         writer = SafeWriter(moros, mode="enrichment", run_id=run_id, dry_run=not confirm)
         before = moros.count({"llm_enrichment.provider": {"$ne": None}})
         present = moros.existing_ids(doc_id for doc_id, _ in updates)

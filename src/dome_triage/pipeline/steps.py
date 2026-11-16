@@ -61,6 +61,8 @@ from dome_triage.keywords.tfidf_extract import extract_tfidf_terms
 from dome_triage.llm_classify import budget as llm_budget
 from dome_triage.llm_classify import cost_estimator as llm_cost
 from dome_triage.llm_classify import enrichment as llm_enrichment
+from dome_triage.llm_classify import enrichment_e2 as llm_enrichment_e2
+from dome_triage.llm_classify import zai_client as llm_zai
 from dome_triage.llm_classify import landscape_consolidate
 from dome_triage.llm_classify import runner as llm_runner
 from dome_triage.llm_classify.deepseek_client import DeepSeekClient
@@ -3250,6 +3252,137 @@ def step_llm_classify_enrich(
                 "domain_rendering": domain_rendering},
         notes=f"{n_written} enriched (of {len(records)} in scope; rest already done -- resumable), "
         f"cache hit {cache_pct:.1f}%",
+        started_at=started_at,
+    )
+
+
+def _zai_client(concurrency: int, reasoning_effort: str | None) -> "llm_zai.ZaiClient":
+    api_key = os.environ.get("ZAI_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "ZAI_API_KEY is not set -- add it to the repo-root .env (gitignored; see .env.example). "
+            "Use the pay-as-you-go key from https://z.ai/manage-apikey/apikey-list, not a Coding Plan key."
+        )
+    return llm_zai.ZaiClient(api_key=api_key, reasoning_effort=reasoning_effort or llm_zai.DEFAULT_REASONING_EFFORT,
+                             pool_maxsize=max(50, concurrency))
+
+
+def step_llm_classify_enrich_e2(
+    cfg: PipelineConfig,
+    tier: str = "glm-5.3-flash",
+    concurrency: int = 50,
+    limit: int | None = None,
+    input_path: Path | None = None,
+    events_out: str | None = None,
+    reasoning_effort: str | None = None,
+    retry_truncated: bool = False,
+    ignore_lock: bool = False,
+) -> None:
+    """Enrichment with prompt e2 on GLM-5.3 via Z.ai (llm_classify/enrichment_e2.py,
+    curation_criteria/e2/PROVENANCE.md). The e1 step above is untouched; this is its sibling.
+
+    The same contract as e1's: every event streams to disk the moment it completes, one writer per
+    event log (flock), and re-running the same command resumes (parse errors retried, truncations
+    skipped unless --retry-truncated). Differences: the client is Z.ai's, the events carry
+    `model_use` and `family_backfilled`, and the run refuses a render that is not the validated
+    e2 prompt (sha256 c3196ff7...).
+
+    e2 was validated on GLM-5.3-Flash at effort high only, so only Z.ai tiers are accepted; e1
+    stays the DeepSeek prompt. `--concurrency 50` is what every validation run used (~325
+    records/min); raise it on evidence."""
+    started_at = time.monotonic()
+    if not llm_zai.is_zai_tier(tier):
+        raise ValueError(f"prompt e2 runs on Z.ai tiers {list(llm_zai.TIER_MODEL_IDS)} only (it was validated on "
+                         f"glm-5.3-flash); got {tier!r}. For DeepSeek use prompt e1.")
+    if input_path is None:
+        raise ValueError("pass --input: the export from moros_pipeline/scripts/export_journal_for_enrichment.py")
+    if events_out is None:
+        raise ValueError("pass --events-out: one events file per batch (AGENTS.md rule 4)")
+    source_path = Path(input_path)
+    if not source_path.exists():
+        raise ValueError(f"{source_path} does not exist")
+    records = pd.read_csv(source_path, dtype=str)
+
+    static_system_text, _, lookup = llm_enrichment_e2.render_e2(resolve_path("curation_criteria"))
+    problems = llm_enrichment_e2.e2_problems(static_system_text)
+    if problems:
+        raise ValueError("REFUSING: " + "; ".join(problems))
+    prompt_hash = llm_enrichment.vocab_sha256(static_system_text)
+
+    events_path = Path(events_out)
+    events_path.parent.mkdir(parents=True, exist_ok=True)
+    existing_events = (
+        pd.read_csv(events_path, dtype=str) if events_path.exists()
+        else pd.DataFrame(columns=llm_enrichment_e2.E2_EVENT_COLUMNS)
+    )
+    if not existing_events.empty:
+        existing_events["parse_status"] = existing_events["parse_status"].fillna("")
+        if "prompt_version" in existing_events and set(existing_events["prompt_version"].dropna()) - {
+                llm_enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION}:
+            raise ValueError(f"{events_path} already holds events from another prompt version; "
+                             "use a fresh --events-out for e2 (one events file per batch and prompt)")
+
+    done = llm_enrichment_e2.already_enriched_ids(existing_events, tier, prompt_hash, retry_truncated)
+    if limit is not None:
+        remaining = records[~records["record_id"].isin(done)]
+        records = pd.concat([records[records["record_id"].isin(done)], remaining.head(limit)])
+    n_todo = max(len(records) - len(done & set(records["record_id"])), 0)
+    effort = reasoning_effort or llm_zai.DEFAULT_REASONING_EFFORT
+    print(
+        f"llm-classify.enrich (e2): {n_todo:,} record(s) to enrich on {tier}, effort {effort}, concurrency "
+        f"{concurrency} -> ~{n_todo / max(concurrency * 6.5 / 60, 1e-9) / 60:.1f} min (measured ~325/min at 50); "
+        f"projected ~${llm_zai.projected_usd(tier, n_todo):.2f} at list price (measured e2 profile x1.5). "
+        f"prompt e2 {prompt_hash[:12]}... Events stream to disk per record; a re-run never re-pays for finished work."
+    )
+
+    batch_id = f"enrich_e2_{tier}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+    client = _zai_client(concurrency, reasoning_effort)
+    n_written = 0
+    try:
+        with _events_file_lock(events_path, ignore_lock=ignore_lock):
+            n_written = _stream_classify_events_to_disk(
+                events_path,
+                llm_enrichment_e2.enrich_records_e2(
+                    records, tier, client, static_system_text, lookup, batch_id,
+                    existing_events=existing_events, max_workers=concurrency,
+                    retry_truncated=retry_truncated,
+                ),
+                columns=llm_enrichment_e2.E2_EVENT_COLUMNS,
+            )
+    except Exception:
+        print(
+            f"llm-classify.enrich (e2): CRASHED after {n_written} record(s) safely written to {events_path}. "
+            "Re-run the exact same command to resume; already-enriched records are skipped automatically."
+        )
+        raise
+    finally:
+        client.close()
+
+    this_batch = pd.read_csv(events_path, dtype=str)
+    this_batch = this_batch[this_batch["batch_id"] == batch_id]
+    num = lambda col: pd.to_numeric(this_batch.get(col, pd.Series(dtype=str)), errors="coerce").sum()  # noqa: E731
+    tokens_in, tokens_out, tokens_cached = num("input_tokens"), num("output_tokens"), num("cache_hit_tokens")
+    prices = llm_zai.TIER_PRICING_USD_PER_1M_TOKENS.get(tier)
+    list_usd = ((tokens_cached * prices["input_cache_hit"] + (tokens_in - tokens_cached) * prices["input_cache_miss"]
+                 + tokens_out * prices["output"]) / 1e6) if prices else float("nan")
+    n_parse_error = int((this_batch["parse_status"] == llm_enrichment.PARSE_ERROR).sum())
+    n_truncated = int((this_batch.get("finish_reason", pd.Series(dtype=str)) == "length").sum())
+    n_viol = int((this_batch["vocab_violations"].fillna("[]") != "[]").sum())
+    print(
+        f"llm-classify.enrich (e2): {n_written} record(s) this run; {n_parse_error} parse_error (re-run to retry), "
+        f"{n_truncated} truncated at {llm_enrichment.ENRICHMENT_MAX_TOKENS:,}, {n_viol} with a vocab violation or flag. "
+        f"Tokens {int(tokens_in):,} in ({(tokens_cached / tokens_in * 100) if tokens_in else 0:.0f}% cached) / "
+        f"{int(tokens_out):,} out; list price ${list_usd:.4f}. Read the billed figure off the Z.ai billing page."
+    )
+
+    finish_step(
+        "llm-classify.enrich-e2",
+        inputs=[source_path],
+        outputs=[events_path],
+        params={"tier": tier, "provider": llm_zai.PROVIDER, "concurrency": concurrency, "limit": limit,
+                "prompt_version": llm_enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION, "vocab_sha256": prompt_hash,
+                "reasoning_effort": effort},
+        notes=f"{n_written} enriched (of {len(records)} in scope; rest already done -- resumable)",
         started_at=started_at,
     )
 

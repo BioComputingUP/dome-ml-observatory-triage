@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import csv
+
 from load_enrichment import event_to_update, iter_updates
 from moros_write import WRITE_MODES
 
@@ -130,3 +132,46 @@ def test_record_order_is_first_appearance_so_limit_is_stable(tmp_path):
 def test_malformed_json_in_a_field_yields_an_empty_list_not_a_crash():
     _, fields = event_to_update({**BASE, "model_type": "not json at all"})
     assert fields["content_filters.model_type"] == []
+
+
+# --- prompt e2 (GLM-5.3 on Z.ai), schema v1.7.0 ---------------------------------------------------
+
+E2 = {**BASE, "model_tier": "glm-5.3-flash", "prompt_version": "e2",
+      "vocab_sha256": "c3196ff722d6", "model_use": '["trained in this study", "pretrained, applied as-is"]',
+      "family_backfilled": '["ensemble learning<-random forest"]'}
+
+
+def test_e2_events_name_zai_and_write_model_use():
+    _, fields = event_to_update(E2)
+    assert fields["llm_enrichment.provider"] == "zai"
+    assert fields["llm_enrichment.model_id"] == "glm-5.3-flash"
+    assert fields["content_filters.model_use"] == ["trained in this study", "pretrained, applied as-is"]
+    assert not any("family_backfilled" in path for path in fields)
+    assert set(fields) <= WRITE_MODES["enrichment"]
+
+
+def test_e1_events_leave_model_use_alone_and_stay_deepseek():
+    _, fields = event_to_update(BASE)
+    assert "content_filters.model_use" not in fields
+    assert fields["llm_enrichment.provider"] == "deepseek"
+
+
+def test_an_e2_file_is_detected_by_its_header(tmp_path):
+    from load_enrichment import carries_e2_fields
+
+    e2_path, e1_path = tmp_path / "e2.csv", tmp_path / "e1.csv"
+    for path, row in ((e2_path, E2), (e1_path, BASE)):
+        with path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=list(row))
+            writer.writeheader()
+            writer.writerow(row)
+    assert carries_e2_fields(e2_path) and not carries_e2_fields(e1_path)
+
+
+def test_e2_events_are_refused_until_the_corpus_is_at_1_7_0():
+    from load_enrichment import e2_schema_problem
+
+    assert "migrate_v1_7_0.py" in e2_schema_problem({"1.6.0": 10, "1.7.0": 5})
+    assert e2_schema_problem({"1.7.0": 15}) is None
+    assert e2_schema_problem({"1.10.0": 3}) is None  # numeric, not string, comparison
+    assert e2_schema_problem({None: 1})

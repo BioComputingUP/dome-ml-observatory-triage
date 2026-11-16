@@ -21,7 +21,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from dome_triage.llm_classify import enrichment, prompts  # noqa: E402
+from dome_triage.llm_classify import enrichment, enrichment_e2, prompts  # noqa: E402
 
 HERE = REPO / "prompts"
 CRITERIA_DIR = REPO / "curation_criteria"
@@ -39,10 +39,12 @@ def render() -> tuple[dict[str, str], dict]:
     forced = prompts.build_forced_choice_prompt({}, criteria_text)[0]["content"]
     vocabs = enrichment.load_vocabularies(CRITERIA_DIR)
     static = enrichment.build_static_system_text(vocabs, "flat")
+    static_e2, _, _ = enrichment_e2.render_e2(CRITERIA_DIR)
     rendered = {
         f"classification_system_message.{prompts.PROMPT_VERSION}.txt": primary,
         f"classification_forced_choice_system_message.{prompts.PROMPT_VERSION}.txt": forced,
         f"enrichment_system_message.{enrichment.ENRICHMENT_PROMPT_VERSION}.txt": static,
+        f"enrichment_system_message.{enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION}.txt": static_e2,
     }
     hashes = {
         "classification": {
@@ -65,6 +67,26 @@ def render() -> tuple[dict[str, str], dict]:
                 for name in ("domain_vocab.json", "modelling_branch_vocab.json", "model_type_seed_vocab.json")
             },
             "max_tokens": enrichment.ENRICHMENT_MAX_TOKENS,
+        },
+        # Prompt e2 (GLM-5.3-Flash on Z.ai): curation_criteria/e2/PROVENANCE.md. Its vocab_sha256 is the
+        # hash it was validated under; enrichment_e2.EXPECTED_E2_SHA256 pins it in code too.
+        "enrichment_e2": {
+            "prompt_version": enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION,
+            "vocab_sha256": enrichment.vocab_sha256(static_e2),
+            "domain_rendering": "flat",
+            "vocab_files": [
+                "curation_criteria/domain_vocab.json",
+                "curation_criteria/e2/modelling_branch_vocab.json",
+                "curation_criteria/e2/model_type_seed_vocab.json",
+            ],
+            "vocab_file_sha256": {
+                name: hashlib.sha256((CRITERIA_DIR / name).read_bytes()).hexdigest()
+                for name in ("domain_vocab.json", "e2/modelling_branch_vocab.json", "e2/model_type_seed_vocab.json")
+            },
+            "max_tokens": enrichment.ENRICHMENT_MAX_TOKENS,
+            "model_id": "glm-5.3-flash",
+            "provider": "zai",
+            "reasoning_effort": "high",
         },
         "model_id": "deepseek-v4-flash",
         "user_message_template": "Title: {title}\nJournal: {journal}\nYear: {year}\n\nAbstract:\n{abstract}",
@@ -95,7 +117,8 @@ def main() -> int:
                   "(that is a new prompt version), or restore the files if they were edited by hand.")
             return 1
         print(f"ok: classification criteria_sha256 {hashes['classification']['criteria_sha256'][:12]}…, "
-              f"enrichment vocab_sha256 {hashes['enrichment']['vocab_sha256'][:12]}…")
+              f"enrichment vocab_sha256 {hashes['enrichment']['vocab_sha256'][:12]}…, "
+              f"enrichment e2 vocab_sha256 {hashes['enrichment_e2']['vocab_sha256'][:12]}…")
         return 0
 
     for name, text in rendered.items():

@@ -11,6 +11,7 @@ the model sees without running Docker.
 | Classification | `v1` | `src/dome_triage/llm_classify/prompts.py::build_prompt` | `classification_system_message.v1.txt` | `criteria_sha256` = sha256 of `curation_criteria/CRITERIA.md` |
 | Classification, forced choice | `v1` | `prompts.py::build_forced_choice_prompt` | `classification_forced_choice_system_message.v1.txt` | same |
 | Enrichment | `e1` | `src/dome_triage/llm_classify/enrichment.py::build_static_system_text` (`flat` rendering) | `enrichment_system_message.e1.txt` | `vocab_sha256` = sha256 of the rendered system message |
+| Enrichment (GLM-5.3, Z.ai) | `e2` | `src/dome_triage/llm_classify/enrichment_e2.py::build_e2_system_text` (vocabularies in `curation_criteria/e2/`, domain shared with e1) | `enrichment_system_message.e2.txt` | `vocab_sha256` = sha256 of the rendered system message (`c3196ff7…`, the validated one; see `curation_criteria/e2/PROVENANCE.md`) |
 
 `PROMPT_HASHES.json` records both hashes as rendered from the current assets.
 
@@ -44,6 +45,8 @@ or `ENRICHMENT_PROMPT_VERSION`, re-validate, and expect resumption to start a fr
 someone edited a rendered file by hand (then re-render). A key the renderer never reads
 (`parent_ids`, `ontology_mappings`) changes only `vocab_file_sha256`: re-render. The rendered
 message and `vocab_sha256` stay the same, so it is not a new prompt version.
+
+Prompt e2 runs on `glm-5.3-flash` at Z.ai's `reasoning_effort` `high`, with the same temperature, JSON mode, user message and 16,000-token cap as e1 (`docs/enrichment_e2_glm53.md`).
 
 Historical hashes in production: classification criteria `bd9d66dd892e6c0a…` (every record
 classified since 2026-08-21); enrichment vocab `41db952f15118176…` (every enriched record).

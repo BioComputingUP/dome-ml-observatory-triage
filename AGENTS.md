@@ -24,6 +24,9 @@ repositories is tracked as issues on the sibling:
      prompt `v1`, criteria sha256 `bd9d66dd…`, kappa 0.81 against human curation);
    - `curation_criteria/*.json` and `src/dome_triage/llm_classify/enrichment.py` (enrichment prompt
      `e1`, vocab sha256 `41db952f…`);
+   - `curation_criteria/e2/` and `src/dome_triage/llm_classify/enrichment_e2.py` (enrichment prompt
+     `e2`, GLM-5.3-Flash on Z.ai, vocab sha256 `c3196ff7…`; provenance and validation in
+     `curation_criteria/e2/PROVENANCE.md`, rollout in `docs/enrichment_e2_glm53.md`);
    - `mongo_landscape_export/scripts/schema.py` (`SCHEMA_VERSION`, the document shape) and
      `pid.py` (the UUID5 `_id` rule);
    - `moros_pipeline/scripts/moros_write.py` (`WRITE_MODES`, the per-mode field allowlists, and

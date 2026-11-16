@@ -73,6 +73,7 @@ def build_template() -> dict:
             "learning_paradigm": [],
             "model_family": [],
             "model_type": [],
+            "model_use": [],
         },
         # Real leaves, never an empty `{}`: check_alignment.py enumerates leaf paths and an empty
         # dict would collapse the whole group into one path.

@@ -68,6 +68,8 @@ _ENRICHMENT_FIELDS = (
 _ENRICHED_FILTER_FIELDS = (
     "domain_tier1", "domain_tier2", "domain_tier3", "learning_paradigm", "model_family",
     "model_type",
+    # v1.7.0: enrichment prompt e2 only.
+    "model_use",
 )
 # v1.3.0: the Europe PMC identity of the record and, for a preprint, its server.
 PREPRINT_FIELDS = (
@@ -163,6 +165,10 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # 1.5.1 -> 1.6.0: the version, and one constant record_modified (the migration's run time) on
     # every existing document. See migrate_v1_6_0.py for why the stamp is a constant.
     "migrate_v1_6_0": frozenset({_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH}),
+    # 1.6.0 -> 1.7.0: the version, and content_filters.model_use = [] on every existing document (the
+    # "not enriched by e2" value). Cannot reach any other enrichment field. Not a stamping mode: an
+    # empty new field is no change to what the observatory's metadata exposes.
+    "migrate_v1_7_0": frozenset({_SCHEMA_VERSION_PATH, "content_filters.model_use"}),
     # The full-text refresh (fetch_fulltext.py): Europe PMC's inEPMC / inPMC, the rule the bulk
     # match set this flag by. One leaf. Cannot reach `open_access` or `license` (the `licences`
     # mode's) or anything that decides what a record is. Not in STAMPS_RECORD_MODIFIED: the flag is

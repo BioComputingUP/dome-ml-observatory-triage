@@ -94,3 +94,32 @@ until it moves and settles, start no other paid run meanwhile, then append a row
 `balance_delta`).
 
 Then ask: **"Merge these into moros?"** Hand to `moros-write` section B on a yes.
+
+## Prompt e2 on GLM-5.3-Flash (Z.ai)
+
+`--prompt e2` runs the GLM-5.3 enrichment (`curation_criteria/e2/PROVENANCE.md`): the e1 fields plus
+`model_use`, on Z.ai's pay-as-you-go API. It is a separate prompt version beside e1; e1 is unchanged.
+**Before the first e2 run, read [`docs/enrichment_e2_glm53.md`](../../../docs/enrichment_e2_glm53.md)**:
+loading e2 events needs schema v1.7.0 published and migrated first, and `load_enrichment.py` refuses
+otherwise.
+
+- Cost: measured $0.96 per 1,000 records at list price ($0.24 for 250, wave2), against $1.80 billed on
+  V4.1. `export_journal_for_enrichment.py --max-usd` still costs at $1.80, which is stricter for e2,
+  never looser. Read the billed figure off https://z.ai/manage-apikey/billing after the run.
+- Speed: ~325 records/min at `--concurrency 50`, which is what every validation run used and what
+  `--prompt e2` defaults to.
+- The image copies `src/`, so rebuild it once after this code lands: `docker compose build`.
+
+```bash
+docker ps                                   # no pipeline container may be running
+docker compose run --rm pipeline dome-triage llm-classify enrich --prompt e2 \
+    --input /app/moros_pipeline/output/enrich_input_<name>.csv \
+    --events-out /app/moros_pipeline/output/enrichment_e2_<name>_events.csv
+```
+
+The defaults are the validated configuration: `--tier glm-5.3-flash`, effort `high`, concurrency 50.
+Do not pass `--reasoning-effort max` (measured: the same tags, ~6x the reasoning tokens, one record
+truncated). Use a **separate `--events-out`** from any e1 log; the step refuses a log that holds another
+prompt's events. Use `--limit 25` for a smoke run first. To re-enrich records already enriched with e1,
+export with `--include-enriched`. The later e2 load replaces their tags and sets `prompt_version` to
+`e2`, and `moros-write`'s rollback snapshot can undo it.

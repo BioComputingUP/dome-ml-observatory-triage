@@ -32,6 +32,8 @@ services:
     environment:
       # Substituted by Compose from the repo-root .env (gitignored). See .env.example.
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      # Enrichment prompt e2 (GLM-5.3 on Z.ai's pay-as-you-go API). Optional: only `enrich --prompt e2` reads it.
+      - ZAI_API_KEY=${ZAI_API_KEY:-}
       - NCBI_API_KEY=${NCBI_API_KEY:-}
       - CROSSREF_MAILTO=${CROSSREF_MAILTO:-}
       # Python block-buffers stdout when it is not a TTY; a redirected or backgrounded run would

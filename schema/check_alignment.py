@@ -43,10 +43,14 @@ class Authored:
         # Owns WRITE_MODES, where each release's migration mode is declared.
         self.moros_write = repo / "moros_pipeline" / "scripts" / "moros_write.py"
         self.snapshot = repo / "schema" / "observatory_release"
+        # From v1.7.0 the published modelling vocabularies are enrichment prompt e2's
+        # (curation_criteria/e2/), a strict superset of e1's, so every stored value -- e1- or
+        # e2-enriched -- is in the release. The domain (EDAM) vocabulary is shared by both prompts.
+        # e1's own files stay in curation_criteria/ unchanged, so e1 still renders to its hash.
         self.vocabs = {
             "domain.json": repo / "curation_criteria" / "domain_vocab.json",
-            "modelling-branch.json": repo / "curation_criteria" / "modelling_branch_vocab.json",
-            "model-type-seed.json": repo / "curation_criteria" / "model_type_seed_vocab.json",
+            "modelling-branch.json": repo / "curation_criteria" / "e2" / "modelling_branch_vocab.json",
+            "model-type-seed.json": repo / "curation_criteria" / "e2" / "model_type_seed_vocab.json",
         }
 
 

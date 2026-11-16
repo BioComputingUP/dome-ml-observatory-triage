@@ -40,7 +40,7 @@ Europe PMC ──fetch_search_space.py──▶ windows never fetched ──buil
       build_staged_documents.py ──▶ documents JSONL (schema 1.6.0) ──load_documents.py──▶ moros
                                                                   ensure_indexes.py · verify_corpus.py
 
-positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1) ──load_enrichment.py──▶ moros
+positives already in moros ──export_journal_for_enrichment.py──▶ enrich (prompt e1, DeepSeek; or e2, GLM-5.3-Flash on Z.ai) ──load_enrichment.py──▶ moros
 moros ──fetch_citations.py --max-age-days N──▶ join_citations.py ──load_fields.py --mode citations──▶ moros
 moros ──fetch_fulltext.py──▶ load_fields.py --mode fulltext──▶ moros          (Europe PMC inEPMC / inPMC, after embargoes lift)
 moros ──scripts/zenodo_archive.py──▶ Zenodo: a new version of 10.5281/zenodo.22259905 (JSONL.gz + sidecar + schema)
