@@ -290,12 +290,13 @@ def parse_e2(raw_content: str, lookup: dict) -> dict:
 # The resumable loop (e1's hard-codes prompt_version e1)
 # ---------------------------------------------------------------------------
 
-def already_enriched_ids(events: pd.DataFrame, tier: str, prompt_hash: str, retry_truncated: bool = False) -> set:
+def already_enriched_ids(events: pd.DataFrame, tier: str, prompt_hash: str, retry_truncated: bool = False,
+                         prompt_version: str = ENRICHMENT_E2_PROMPT_VERSION) -> set:
     """Same rules as e1's `_already_enriched_ids` (parse errors retried for free, truncations skipped
-    unless `retry_truncated`), keyed on prompt_version e2."""
+    unless `retry_truncated`), keyed on `prompt_version` (e2 unless a later prompt reuses this loop)."""
     if events.empty:
         return set()
-    matches = events[(events["model_tier"] == tier) & (events["prompt_version"] == ENRICHMENT_E2_PROMPT_VERSION)
+    matches = events[(events["model_tier"] == tier) & (events["prompt_version"] == prompt_version)
                      & (events["vocab_sha256"] == prompt_hash)]
     done = set(matches[matches["parse_status"] != PARSE_ERROR]["record_id"])
     if not retry_truncated and "finish_reason" in matches.columns:
@@ -305,14 +306,19 @@ def already_enriched_ids(events: pd.DataFrame, tier: str, prompt_hash: str, retr
 
 def enrich_records_e2(records_df: pd.DataFrame, tier: str, client, static_system_text: str, lookup: dict,
                       batch_id: str, existing_events: Optional[pd.DataFrame] = None, max_workers: int = 50,
-                      retry_truncated: bool = False) -> Iterator[dict]:
+                      retry_truncated: bool = False, prompt_version: str = ENRICHMENT_E2_PROMPT_VERSION,
+                      event_columns: Optional[list] = None) -> Iterator[dict]:
     """Yields one event per newly enriched record as it completes (never in input order). `client` is
     any object with `DeepSeekClient.chat_completion`'s signature; e2 was validated on `ZaiClient`.
     Same failure contract as e1's `enrich_records`: one failed call loses only itself, and the first
-    exception is re-raised after the pool drains."""
-    existing = existing_events if existing_events is not None else pd.DataFrame(columns=E2_EVENT_COLUMNS)
+    exception is re-raised after the pool drains.
+
+    Prompt e3 reuses this loop unchanged with `prompt_version="e3"`. Every event also carries
+    `model_id`, the id the server says answered; the e2 columns do not include it, so e2's events
+    files are unchanged, and e3's do."""
+    existing = existing_events if existing_events is not None else pd.DataFrame(columns=event_columns or E2_EVENT_COLUMNS)
     prompt_hash = e1.vocab_sha256(static_system_text)
-    done_ids = already_enriched_ids(existing, tier, prompt_hash, retry_truncated)
+    done_ids = already_enriched_ids(existing, tier, prompt_hash, retry_truncated, prompt_version)
     records = [r for _, r in records_df[~records_df["record_id"].isin(done_ids)].iterrows()]
 
     def _one(record) -> dict:
@@ -329,7 +335,7 @@ def enrich_records_e2(records_df: pd.DataFrame, tier: str, client, static_system
             "family_backfilled": json.dumps(parsed["family_backfilled"]),
             "parse_status": parsed["parse_status"],
             "model_tier": tier,
-            "prompt_version": ENRICHMENT_E2_PROMPT_VERSION,
+            "prompt_version": prompt_version,
             "vocab_sha256": prompt_hash,
             "batch_id": batch_id,
             "input_tokens": response.prompt_tokens,
@@ -339,6 +345,7 @@ def enrich_records_e2(records_df: pd.DataFrame, tier: str, client, static_system
             "cache_hit_tokens": int(usage.get("prompt_cache_hit_tokens", 0)),
             "parse_fallback_used": str(parsed["parse_fallback_used"]),
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "model_id": (response.raw.get("model") if isinstance(response.raw, dict) else None) or "",
         }
 
     n_ok = n_err = n_viol = 0
@@ -346,7 +353,7 @@ def enrich_records_e2(records_df: pd.DataFrame, tier: str, client, static_system
     first_exception: Optional[BaseException] = None
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(_one, r) for r in records]
-        with tqdm(total=len(futures), desc=f"enrich-e2:{tier}", unit="rec") as bar:
+        with tqdm(total=len(futures), desc=f"enrich-{prompt_version}:{tier}", unit="rec") as bar:
             for future in concurrent.futures.as_completed(futures):
                 try:
                     event = future.result()

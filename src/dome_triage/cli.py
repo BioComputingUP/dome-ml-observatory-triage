@@ -779,9 +779,16 @@ def llm_classify_run_fallback(
 @llm_classify_app.command("enrich")
 def llm_classify_enrich(
     prompt: str = typer.Option(
-        "e1", "--prompt",
-        help='"e1" (default): the validated DeepSeek prompt. "e2": the GLM-5.3 prompt validated on Z.ai '
-             "(curation_criteria/e2/PROVENANCE.md); needs ZAI_API_KEY, --input and --events-out.",
+        "e3", "--prompt",
+        help='"e3" (default, the latest and the production prompt): e2 plus the missing life-science model types '
+             "(curation_criteria/e3/PROVENANCE.md), on GLM-5.3-Flash. Needs --input and --events-out. "
+             '"e2": the GLM-5.3 prompt as validated on Z.ai (needs ZAI_API_KEY). "e1": the original DeepSeek prompt. '
+             "Older prompts stay runnable for reproducibility only.",
+    ),
+    provider: str = typer.Option(
+        "ebi", "--provider",
+        help='e3 only. "ebi" (default): EMBL-EBI\'s gateway, free, configured by EBI_LLM_* in .env, needs the EBI '
+             'network or VPN. "zai": Z.ai pay-as-you-go glm-5.3-flash at effort high (needs ZAI_API_KEY).',
     ),
     tier: str = typer.Option(
         "flash", "--tier",
@@ -795,7 +802,8 @@ def llm_classify_enrich(
         "~400 records/min, 100 gives ~130, 40 gives ~53 (a real 2026-09-03 run crawled for hours "
         "at 40 before this was understood). DeepSeek's documented flash ceiling is 2500 and Step "
         "23a ran classification at 1000. The HTTP pool is sized from this value. With --prompt e2 and "
-        "no --concurrency, 50 is used instead (what every e2 validation run used, ~325 records/min on Z.ai).",
+        "no --concurrency, 50 is used instead (what every e2 validation run used, ~325 records/min on Z.ai). With "
+        "--prompt e3 and no --concurrency: EBI_LLM_MAX_CONCURRENCY from .env (the ramp's measured value), else 16.",
     ),
     events_out: Optional[str] = typer.Option(
         None, "--events-out",
@@ -845,14 +853,29 @@ def llm_classify_enrich(
     Resumable: re-running skips everything already enriched under the current vocabularies and
     retries parse_errors. No cost gate on this command -- real token totals and the prefix-cache
     hit rate are printed at the end and recorded per event."""
+    ctx = click.get_current_context(silent=True)
+    explicit = (lambda name: ctx is not None
+                and ctx.get_parameter_source(name) not in (None, click.core.ParameterSource.DEFAULT))
+    if prompt == "e3":
+        if domain_rendering != "flat":
+            raise typer.BadParameter("prompt e3 always uses the flat domain rendering")
+        if explicit("tier"):
+            raise typer.BadParameter("prompt e3 chooses its model with --provider, not --tier")
+        pipeline_steps.step_llm_classify_enrich_e3(
+            _load_config(config_dir), provider,
+            concurrency if explicit("concurrency") else None, limit,
+            Path(input_path) if input_path else None,
+            events_out,
+            reasoning_effort,
+            retry_truncated,
+            ignore_lock,
+        )
+        return
     if prompt == "e2":
         if domain_rendering != "flat":
             raise typer.BadParameter("prompt e2 always uses the flat domain rendering it was validated with")
         # e1's defaults (DeepSeek flash, 800) mean nothing on Z.ai: when the flag was not given,
         # use the values e2 was validated with.
-        ctx = click.get_current_context(silent=True)
-        explicit = (lambda name: ctx is not None
-                    and ctx.get_parameter_source(name) not in (None, click.core.ParameterSource.DEFAULT))
         pipeline_steps.step_llm_classify_enrich_e2(
             _load_config(config_dir), tier if explicit("tier") else "glm-5.3-flash",
             concurrency if explicit("concurrency") else 50, limit,
@@ -864,7 +887,7 @@ def llm_classify_enrich(
         )
         return
     if prompt != "e1":
-        raise typer.BadParameter(f'--prompt must be "e1" or "e2", got {prompt!r}')
+        raise typer.BadParameter(f'--prompt must be "e3", "e2" or "e1", got {prompt!r}')
     pipeline_steps.step_llm_classify_enrich(
         _load_config(config_dir), tier, concurrency, limit,
         Path(input_path) if input_path else None,

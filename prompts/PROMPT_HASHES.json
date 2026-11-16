@@ -40,6 +40,24 @@
     ],
     "vocab_sha256": "c3196ff722d6a817c034afb7278ebf4266707ba64f98d9afbaf4454927f77c45"
   },
+  "enrichment_e3": {
+    "domain_rendering": "flat",
+    "max_tokens": 16000,
+    "prompt_version": "e3",
+    "provider": "embl-ebi",
+    "reasoning": "server default (thinking on; the gateway exposes no effort level)",
+    "vocab_file_sha256": {
+      "domain_vocab.json": "156fb50433dfacbc9e14ec3fe892f1887d035d382a1deefc6e92ce65a8af891b",
+      "e3/model_type_seed_vocab.json": "e5e4cc4f6754ddd2277274c31ec1e1e2423c129093ca30f8c779d0f07c9e093b",
+      "e3/modelling_branch_vocab.json": "c1f89c479e80dab7834bccd78d001bc8b7a508ab3575e230521b8b35000b5fab"
+    },
+    "vocab_files": [
+      "curation_criteria/domain_vocab.json",
+      "curation_criteria/e3/modelling_branch_vocab.json",
+      "curation_criteria/e3/model_type_seed_vocab.json"
+    ],
+    "vocab_sha256": "3b9d119deb05834f404e541493ba01e221553ad59f23031e8a004c88bccd0239"
+  },
   "model_id": "deepseek-v4-flash",
   "user_message_template": "Title: {title}\nJournal: {journal}\nYear: {year}\n\nAbstract:\n{abstract}"
 }

@@ -288,4 +288,6 @@ def test_cli_routes_e2_and_keeps_e1_defaults():
     assert "step_llm_classify_enrich_e2" in source
     params = inspect.signature(cli.llm_classify_enrich).parameters
     assert params["tier"].default.default == "flash" and params["concurrency"].default.default == 800
-    assert params["prompt"].default.default == "e1"
+    # The default prompt is the latest (e3 since 2026-11-16, tests/test_enrichment_e3.py); e1 and e2 stay
+    # selectable explicitly, and e1's own tier/concurrency defaults are unchanged.
+    assert params["prompt"].default.default == "e3"

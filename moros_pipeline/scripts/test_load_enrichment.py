@@ -175,3 +175,33 @@ def test_e2_events_are_refused_until_the_corpus_is_at_1_7_0():
     assert e2_schema_problem({"1.7.0": 15}) is None
     assert e2_schema_problem({"1.10.0": 3}) is None  # numeric, not string, comparison
     assert e2_schema_problem({None: 1})
+
+
+# --- prompt e3 (GLM-5.3-Flash on the EMBL-EBI gateway) ----------------------------------------------
+
+E3 = {**E2, "model_tier": "ebi-glm-5.3-flash", "prompt_version": "e3", "model_id": "zai-org/GLM-5.3-Flash"}
+
+
+def test_e3_events_name_embl_ebi_and_keep_the_served_model_id_verbatim():
+    _, fields = event_to_update(E3)
+    assert fields["llm_enrichment.provider"] == "embl-ebi"
+    assert fields["llm_enrichment.model_id"] == "zai-org/GLM-5.3-Flash"
+    assert fields["llm_enrichment.prompt_version"] == "e3"
+    assert fields["content_filters.model_use"] == ["trained in this study", "pretrained, applied as-is"]
+    assert set(fields) <= WRITE_MODES["enrichment"]
+
+
+def test_an_e3_event_without_a_model_id_falls_back_to_none_not_a_guess():
+    _, fields = event_to_update({**E3, "model_id": ""})
+    assert fields["llm_enrichment.model_id"] is None and fields["llm_enrichment.provider"] == "embl-ebi"
+
+
+def test_e3_files_need_1_7_0_like_e2(tmp_path):
+    from load_enrichment import carries_e2_fields
+
+    path = tmp_path / "e3.csv"
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(E3))
+        writer.writeheader()
+        writer.writerow(E3)
+    assert carries_e2_fields(path)

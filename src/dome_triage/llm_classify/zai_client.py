@@ -72,6 +72,8 @@ def is_zai_tier(tier: str) -> bool:
 
 
 class ZaiClient:
+    LABEL = "Z.ai"
+
     def __init__(
         self,
         api_key: str,
@@ -147,7 +149,7 @@ class ZaiClient:
 
         if not resp.ok:
             raise requests.HTTPError(
-                f"Z.ai API error {resp.status_code} for model={body['model']}: {resp.text[:2000]}",
+                f"{self.LABEL} API error {resp.status_code} for model={body['model']}: {resp.text[:2000]}",
                 response=resp,
             )
         data = normalise_usage(resp.json())
@@ -177,3 +179,70 @@ def normalise_usage(data: dict) -> dict:
         usage["prompt_cache_hit_tokens"] = int((usage.get("prompt_tokens_details") or {}).get("cached_tokens") or 0)
     data["usage"] = usage
     return data
+
+
+# ---------------------------------------------------------------------------
+# EMBL-EBI's LiteLLM gateway (the production provider from prompt e3)
+# ---------------------------------------------------------------------------
+#
+# The same GLM-5.3-Flash weights, served by EMBL-EBI (vLLM behind LiteLLM, OpenAI-compatible). Free per
+# call; reachable only from the EBI network or VPN. Configuration is read from the environment, never
+# from a tracked file, because this repository is public: EBI_LLM_BASE_URL (ends in /v1),
+# EBI_LLM_API_KEY, EBI_LLM_MODEL (the served id, e.g. "zai-org/GLM-5.3-Flash", recorded on every event
+# and document as `model_id`).
+#
+# What the endpoint was measured to do (2026-11-16 probe; docs/enrichment_ebi.md):
+# - Z.ai's `thinking` and `reasoning_effort` are accepted and IGNORED: effort low, high and max produce
+#   the same reasoning. The switch that works is vLLM's `chat_template_kwargs.enable_thinking`, so the
+#   body sends that (thinking on, the model's own default depth) and no effort level.
+# - `response_format: json_object` and `temperature: 0` are accepted.
+# - Usage carries prompt/completion/total tokens only; no cached-token or reasoning-token detail, so
+#   those event columns read 0.
+
+EBI_PROVIDER = "embl-ebi"
+EBI_TIER = "ebi-glm-5.3-flash"
+EBI_REASONING = "server-default"  # recorded in run params: EBI exposes no effort dial
+
+
+def is_ebi_tier(tier: str) -> bool:
+    return tier == EBI_TIER
+
+
+class EbiClient(ZaiClient):
+    LABEL = "EMBL-EBI gateway"
+
+    def __init__(self, api_key: str, base_url: str, model: str, max_retries: int = 8, backoff_factor: float = 1.0,
+                 timeout: float = 300.0, pool_maxsize: int = 50, session: Optional[requests.Session] = None) -> None:
+        if not api_key:
+            raise ValueError("EBI_LLM_API_KEY is empty -- add it to the repo-root .env (gitignored); see .env.example")
+        if not base_url:
+            raise ValueError("EBI_LLM_BASE_URL is empty -- the gateway's OpenAI-compatible base, ending in /v1")
+        if not model:
+            raise ValueError("EBI_LLM_MODEL is empty -- the served model id, from GET $EBI_LLM_BASE_URL/models")
+        super().__init__(api_key=api_key, base_url=base_url, max_retries=max_retries, backoff_factor=backoff_factor,
+                         timeout=timeout, pool_maxsize=pool_maxsize, session=session)
+        self.reasoning_effort = EBI_REASONING
+        self.model = model
+
+    @classmethod
+    def from_env(cls, environ, pool_maxsize: int = 50) -> "EbiClient":
+        return cls(api_key=environ.get("EBI_LLM_API_KEY", ""), base_url=environ.get("EBI_LLM_BASE_URL", ""),
+                   model=environ.get("EBI_LLM_MODEL", ""), pool_maxsize=pool_maxsize)
+
+    def __repr__(self) -> str:  # never show the key
+        return f"EbiClient(base_url={self.base_url!r}, model={self.model!r})"
+
+    def build_body(self, messages: list[dict], tier: str, max_tokens: int, temperature: float,
+                   request_json_mode: bool) -> dict:
+        if tier != EBI_TIER:
+            raise ValueError(f"EbiClient serves tier {EBI_TIER!r} only, got {tier!r}")
+        body: dict = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "chat_template_kwargs": {"enable_thinking": True},
+        }
+        if request_json_mode:
+            body["response_format"] = {"type": "json_object"}
+        return body

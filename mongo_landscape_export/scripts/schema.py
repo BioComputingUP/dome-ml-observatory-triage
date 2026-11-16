@@ -106,10 +106,11 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # 1.7.0 (2026-11-16, authored; published and migrated when the release procedure in schema/README.md
 # runs): content_filters gains model_use -- how the paper obtains its models (trained in this
 # study / fine-tuned or adapted / pretrained, applied as-is / prompted (zero/few-shot)), filled by
-# enrichment prompt e2 (GLM-5.3-Flash, curation_criteria/e2/PROVENANCE.md). An empty list until an
-# e2 enrichment lands; e1-enriched documents keep [] (e1 never asked). The modelling vocabularies
-# become e2's, a strict superset of e1's (self-supervised; active learning, multimodal learning,
-# physics-informed machine learning; three seed types), so every e1-enriched value stays valid.
+# enrichment prompts e2 and e3 (GLM-5.3-Flash; curation_criteria/e2/ and e3/PROVENANCE.md). An empty
+# list until an e2/e3 enrichment lands; e1-enriched documents keep [] (e1 never asked). The modelling
+# vocabularies become e3's (the production prompt): e2's, a strict superset of e1's (self-supervised;
+# active learning, multimodal learning, physics-informed machine learning; three seed types), plus 20
+# life-science model types and their aliases, so every e1- and e2-enriched value stays valid.
 # Additive -- no existing field changed or removed.
 SCHEMA_VERSION = "1.7.0"
 

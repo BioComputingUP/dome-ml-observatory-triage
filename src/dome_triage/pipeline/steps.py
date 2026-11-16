@@ -62,6 +62,7 @@ from dome_triage.llm_classify import budget as llm_budget
 from dome_triage.llm_classify import cost_estimator as llm_cost
 from dome_triage.llm_classify import enrichment as llm_enrichment
 from dome_triage.llm_classify import enrichment_e2 as llm_enrichment_e2
+from dome_triage.llm_classify import enrichment_e3 as llm_enrichment_e3
 from dome_triage.llm_classify import zai_client as llm_zai
 from dome_triage.llm_classify import landscape_consolidate
 from dome_triage.llm_classify import runner as llm_runner
@@ -3267,6 +3268,10 @@ def _zai_client(concurrency: int, reasoning_effort: str | None) -> "llm_zai.ZaiC
                              pool_maxsize=max(50, concurrency))
 
 
+def _ebi_client(concurrency: int) -> "llm_zai.EbiClient":
+    return llm_zai.EbiClient.from_env(os.environ, pool_maxsize=max(50, concurrency))
+
+
 def step_llm_classify_enrich_e2(
     cfg: PipelineConfig,
     tier: str = "glm-5.3-flash",
@@ -3290,10 +3295,74 @@ def step_llm_classify_enrich_e2(
     e2 was validated on GLM-5.3-Flash at effort high only, so only Z.ai tiers are accepted; e1
     stays the DeepSeek prompt. `--concurrency 50` is what every validation run used (~325
     records/min); raise it on evidence."""
-    started_at = time.monotonic()
     if not llm_zai.is_zai_tier(tier):
         raise ValueError(f"prompt e2 runs on Z.ai tiers {list(llm_zai.TIER_MODEL_IDS)} only (it was validated on "
                          f"glm-5.3-flash); got {tier!r}. For DeepSeek use prompt e1.")
+    _run_glm_enrichment(
+        version=llm_enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION,
+        render=lambda: llm_enrichment_e2.render_e2(resolve_path("curation_criteria")),
+        problems=llm_enrichment_e2.e2_problems,
+        columns=llm_enrichment_e2.E2_EVENT_COLUMNS,
+        tier=tier, provider=llm_zai.PROVIDER,
+        make_client=lambda: _zai_client(concurrency, reasoning_effort),
+        effort=reasoning_effort or llm_zai.DEFAULT_REASONING_EFFORT,
+        concurrency=concurrency, limit=limit, input_path=input_path, events_out=events_out,
+        retry_truncated=retry_truncated, ignore_lock=ignore_lock,
+        billing_note="Read the billed figure off the Z.ai billing page.",
+    )
+
+
+def step_llm_classify_enrich_e3(
+    cfg: PipelineConfig,
+    provider: str = "ebi",
+    concurrency: int | None = None,
+    limit: int | None = None,
+    input_path: Path | None = None,
+    events_out: str | None = None,
+    reasoning_effort: str | None = None,
+    retry_truncated: bool = False,
+    ignore_lock: bool = False,
+) -> None:
+    """Enrichment with prompt e3, the production prompt (llm_classify/enrichment_e3.py,
+    curation_criteria/e3/PROVENANCE.md): e2 plus the life-science model types e2 lacked, nothing else.
+
+    `provider="ebi"` (the default) runs GLM-5.3-Flash on EMBL-EBI's gateway: free, configured from
+    EBI_LLM_* in the environment, the served model id recorded on every event as `model_id`. EBI
+    exposes no effort dial (docs/enrichment_ebi.md), so `--reasoning-effort` is refused there.
+    `provider="zai"` runs the same prompt on Z.ai's glm-5.3-flash at effort high, as e2 was validated.
+
+    Concurrency: EBI_LLM_MAX_CONCURRENCY (what the ramp measured) when not given, else 16."""
+    if provider == "ebi":
+        if reasoning_effort:
+            raise ValueError("the EBI gateway ignores reasoning effort (measured 2026-11-16); omit --reasoning-effort")
+        if concurrency is None:
+            concurrency = int(os.environ.get("EBI_LLM_MAX_CONCURRENCY") or 16)
+        tier, make_client, effort = llm_zai.EBI_TIER, (lambda: _ebi_client(concurrency)), llm_zai.EBI_REASONING
+        provider_label, note = llm_zai.EBI_PROVIDER, "EBI gateway calls are not billed."
+    elif provider == "zai":
+        concurrency = concurrency or 50
+        tier, make_client = "glm-5.3-flash", (lambda: _zai_client(concurrency, reasoning_effort))
+        effort = reasoning_effort or llm_zai.DEFAULT_REASONING_EFFORT
+        provider_label, note = llm_zai.PROVIDER, "Read the billed figure off the Z.ai billing page."
+    else:
+        raise ValueError(f'prompt e3 runs on provider "ebi" (default) or "zai", got {provider!r}')
+    _run_glm_enrichment(
+        version=llm_enrichment_e3.ENRICHMENT_E3_PROMPT_VERSION,
+        render=lambda: llm_enrichment_e3.render_e3(resolve_path("curation_criteria")),
+        problems=llm_enrichment_e3.e3_problems,
+        columns=llm_enrichment_e3.E3_EVENT_COLUMNS,
+        tier=tier, provider=provider_label, make_client=make_client, effort=effort,
+        concurrency=concurrency, limit=limit, input_path=input_path, events_out=events_out,
+        retry_truncated=retry_truncated, ignore_lock=ignore_lock, billing_note=note,
+    )
+
+
+def _run_glm_enrichment(*, version: str, render, problems, columns: list[str], tier: str, provider: str,
+                        make_client, effort: str, concurrency: int, limit: int | None, input_path: Path | None,
+                        events_out: str | None, retry_truncated: bool, ignore_lock: bool, billing_note: str) -> None:
+    """The body shared by prompts e2 and e3: input and events checks, the refusal of a drifted render,
+    resumption, the locked streaming write, the end-of-run summary and the provenance row."""
+    started_at = time.monotonic()
     if input_path is None:
         raise ValueError("pass --input: the export from moros_pipeline/scripts/export_journal_for_enrichment.py")
     if events_out is None:
@@ -3303,40 +3372,36 @@ def step_llm_classify_enrich_e2(
         raise ValueError(f"{source_path} does not exist")
     records = pd.read_csv(source_path, dtype=str)
 
-    static_system_text, _, lookup = llm_enrichment_e2.render_e2(resolve_path("curation_criteria"))
-    problems = llm_enrichment_e2.e2_problems(static_system_text)
-    if problems:
-        raise ValueError("REFUSING: " + "; ".join(problems))
+    static_system_text, _, lookup = render()
+    refused = problems(static_system_text)
+    if refused:
+        raise ValueError("REFUSING: " + "; ".join(refused))
     prompt_hash = llm_enrichment.vocab_sha256(static_system_text)
 
     events_path = Path(events_out)
     events_path.parent.mkdir(parents=True, exist_ok=True)
     existing_events = (
-        pd.read_csv(events_path, dtype=str) if events_path.exists()
-        else pd.DataFrame(columns=llm_enrichment_e2.E2_EVENT_COLUMNS)
+        pd.read_csv(events_path, dtype=str) if events_path.exists() else pd.DataFrame(columns=columns)
     )
     if not existing_events.empty:
         existing_events["parse_status"] = existing_events["parse_status"].fillna("")
-        if "prompt_version" in existing_events and set(existing_events["prompt_version"].dropna()) - {
-                llm_enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION}:
+        if "prompt_version" in existing_events and set(existing_events["prompt_version"].dropna()) - {version}:
             raise ValueError(f"{events_path} already holds events from another prompt version; "
-                             "use a fresh --events-out for e2 (one events file per batch and prompt)")
+                             f"use a fresh --events-out for {version} (one events file per batch and prompt)")
 
-    done = llm_enrichment_e2.already_enriched_ids(existing_events, tier, prompt_hash, retry_truncated)
+    done = llm_enrichment_e2.already_enriched_ids(existing_events, tier, prompt_hash, retry_truncated, version)
     if limit is not None:
         remaining = records[~records["record_id"].isin(done)]
         records = pd.concat([records[records["record_id"].isin(done)], remaining.head(limit)])
     n_todo = max(len(records) - len(done & set(records["record_id"])), 0)
-    effort = reasoning_effort or llm_zai.DEFAULT_REASONING_EFFORT
     print(
-        f"llm-classify.enrich (e2): {n_todo:,} record(s) to enrich on {tier}, effort {effort}, concurrency "
-        f"{concurrency} -> ~{n_todo / max(concurrency * 6.5 / 60, 1e-9) / 60:.1f} min (measured ~325/min at 50); "
-        f"projected ~${llm_zai.projected_usd(tier, n_todo):.2f} at list price (measured e2 profile x1.5). "
-        f"prompt e2 {prompt_hash[:12]}... Events stream to disk per record; a re-run never re-pays for finished work."
+        f"llm-classify.enrich ({version}): {n_todo:,} record(s) to enrich on {tier} ({provider}), effort {effort}, "
+        f"concurrency {concurrency}. prompt {version} {prompt_hash[:12]}... Events stream to disk per record; "
+        "a re-run resumes and never repeats finished work."
     )
 
-    batch_id = f"enrich_e2_{tier}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
-    client = _zai_client(concurrency, reasoning_effort)
+    batch_id = f"enrich_{version}_{tier}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+    client = make_client()
     n_written = 0
     try:
         with _events_file_lock(events_path, ignore_lock=ignore_lock):
@@ -3345,13 +3410,13 @@ def step_llm_classify_enrich_e2(
                 llm_enrichment_e2.enrich_records_e2(
                     records, tier, client, static_system_text, lookup, batch_id,
                     existing_events=existing_events, max_workers=concurrency,
-                    retry_truncated=retry_truncated,
+                    retry_truncated=retry_truncated, prompt_version=version, event_columns=columns,
                 ),
-                columns=llm_enrichment_e2.E2_EVENT_COLUMNS,
+                columns=columns,
             )
     except Exception:
         print(
-            f"llm-classify.enrich (e2): CRASHED after {n_written} record(s) safely written to {events_path}. "
+            f"llm-classify.enrich ({version}): CRASHED after {n_written} record(s) safely written to {events_path}. "
             "Re-run the exact same command to resume; already-enriched records are skipped automatically."
         )
         raise
@@ -3364,24 +3429,23 @@ def step_llm_classify_enrich_e2(
     tokens_in, tokens_out, tokens_cached = num("input_tokens"), num("output_tokens"), num("cache_hit_tokens")
     prices = llm_zai.TIER_PRICING_USD_PER_1M_TOKENS.get(tier)
     list_usd = ((tokens_cached * prices["input_cache_hit"] + (tokens_in - tokens_cached) * prices["input_cache_miss"]
-                 + tokens_out * prices["output"]) / 1e6) if prices else float("nan")
+                 + tokens_out * prices["output"]) / 1e6) if prices else 0.0
     n_parse_error = int((this_batch["parse_status"] == llm_enrichment.PARSE_ERROR).sum())
     n_truncated = int((this_batch.get("finish_reason", pd.Series(dtype=str)) == "length").sum())
     n_viol = int((this_batch["vocab_violations"].fillna("[]") != "[]").sum())
     print(
-        f"llm-classify.enrich (e2): {n_written} record(s) this run; {n_parse_error} parse_error (re-run to retry), "
-        f"{n_truncated} truncated at {llm_enrichment.ENRICHMENT_MAX_TOKENS:,}, {n_viol} with a vocab violation or flag. "
-        f"Tokens {int(tokens_in):,} in ({(tokens_cached / tokens_in * 100) if tokens_in else 0:.0f}% cached) / "
-        f"{int(tokens_out):,} out; list price ${list_usd:.4f}. Read the billed figure off the Z.ai billing page."
+        f"llm-classify.enrich ({version}): {n_written} record(s) this run; {n_parse_error} parse_error (re-run to "
+        f"retry), {n_truncated} truncated at {llm_enrichment.ENRICHMENT_MAX_TOKENS:,}, {n_viol} with a vocab "
+        f"violation or flag. Tokens {int(tokens_in):,} in ({(tokens_cached / tokens_in * 100) if tokens_in else 0:.0f}% "
+        f"cached) / {int(tokens_out):,} out; list price ${list_usd:.4f}. {billing_note}"
     )
 
     finish_step(
-        "llm-classify.enrich-e2",
+        f"llm-classify.enrich-{version}",
         inputs=[source_path],
         outputs=[events_path],
-        params={"tier": tier, "provider": llm_zai.PROVIDER, "concurrency": concurrency, "limit": limit,
-                "prompt_version": llm_enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION, "vocab_sha256": prompt_hash,
-                "reasoning_effort": effort},
+        params={"tier": tier, "provider": provider, "concurrency": concurrency, "limit": limit,
+                "prompt_version": version, "vocab_sha256": prompt_hash, "reasoning_effort": effort},
         notes=f"{n_written} enriched (of {len(records)} in scope; rest already done -- resumable)",
         started_at=started_at,
     )

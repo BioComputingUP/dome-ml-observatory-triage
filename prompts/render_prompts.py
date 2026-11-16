@@ -3,11 +3,11 @@
 
 Imports the engine's own prompt builders from `src/` -- no reimplementation, so what is written
 here is by construction what `dome-triage llm-classify classify|enrich` sends. Host Python is
-enough: the two modules need only the standard library plus pandas/tqdm/requests, which the
-host-side scripts already require.
+enough in principle, but run it in the `pipeline` container, which has the engine's exact libraries
+(prompts/ is mounted read-only there, so only --check runs inside; re-render with the -v override below).
 
-    python3 prompts/render_prompts.py           # (re)write the rendered files + PROMPT_HASHES.json
-    python3 prompts/render_prompts.py --check   # exit 1 if anything on disk differs from a fresh render
+    docker compose run --rm pipeline python prompts/render_prompts.py --check
+    docker compose run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" pipeline python /repo/prompts/render_prompts.py
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from dome_triage.llm_classify import enrichment, enrichment_e2, prompts  # noqa: E402
+from dome_triage.llm_classify import enrichment, enrichment_e2, enrichment_e3, prompts  # noqa: E402
 
 HERE = REPO / "prompts"
 CRITERIA_DIR = REPO / "curation_criteria"
@@ -40,11 +40,13 @@ def render() -> tuple[dict[str, str], dict]:
     vocabs = enrichment.load_vocabularies(CRITERIA_DIR)
     static = enrichment.build_static_system_text(vocabs, "flat")
     static_e2, _, _ = enrichment_e2.render_e2(CRITERIA_DIR)
+    static_e3, _, _ = enrichment_e3.render_e3(CRITERIA_DIR)
     rendered = {
         f"classification_system_message.{prompts.PROMPT_VERSION}.txt": primary,
         f"classification_forced_choice_system_message.{prompts.PROMPT_VERSION}.txt": forced,
         f"enrichment_system_message.{enrichment.ENRICHMENT_PROMPT_VERSION}.txt": static,
         f"enrichment_system_message.{enrichment_e2.ENRICHMENT_E2_PROMPT_VERSION}.txt": static_e2,
+        f"enrichment_system_message.{enrichment_e3.ENRICHMENT_E3_PROMPT_VERSION}.txt": static_e3,
     }
     hashes = {
         "classification": {
@@ -88,6 +90,26 @@ def render() -> tuple[dict[str, str], dict]:
             "provider": "zai",
             "reasoning_effort": "high",
         },
+        # Prompt e3, the production prompt: e2 plus the missing life-science model types
+        # (curation_criteria/e3/PROVENANCE.md). Run on GLM-5.3-Flash on the EMBL-EBI gateway, whose
+        # served model id is recorded per event; enrichment_e3.EXPECTED_E3_SHA256 pins this hash in code.
+        "enrichment_e3": {
+            "prompt_version": enrichment_e3.ENRICHMENT_E3_PROMPT_VERSION,
+            "vocab_sha256": enrichment.vocab_sha256(static_e3),
+            "domain_rendering": "flat",
+            "vocab_files": [
+                "curation_criteria/domain_vocab.json",
+                "curation_criteria/e3/modelling_branch_vocab.json",
+                "curation_criteria/e3/model_type_seed_vocab.json",
+            ],
+            "vocab_file_sha256": {
+                name: hashlib.sha256((CRITERIA_DIR / name).read_bytes()).hexdigest()
+                for name in ("domain_vocab.json", "e3/modelling_branch_vocab.json", "e3/model_type_seed_vocab.json")
+            },
+            "max_tokens": enrichment.ENRICHMENT_MAX_TOKENS,
+            "provider": "embl-ebi",
+            "reasoning": "server default (thinking on; the gateway exposes no effort level)",
+        },
         "model_id": "deepseek-v4-flash",
         "user_message_template": "Title: {title}\nJournal: {journal}\nYear: {year}\n\nAbstract:\n{abstract}",
     }
@@ -118,7 +140,8 @@ def main() -> int:
             return 1
         print(f"ok: classification criteria_sha256 {hashes['classification']['criteria_sha256'][:12]}…, "
               f"enrichment vocab_sha256 {hashes['enrichment']['vocab_sha256'][:12]}…, "
-              f"enrichment e2 vocab_sha256 {hashes['enrichment_e2']['vocab_sha256'][:12]}…")
+              f"enrichment e2 vocab_sha256 {hashes['enrichment_e2']['vocab_sha256'][:12]}…, "
+              f"enrichment e3 vocab_sha256 {hashes['enrichment_e3']['vocab_sha256'][:12]}…")
         return 0
 
     for name, text in rendered.items():

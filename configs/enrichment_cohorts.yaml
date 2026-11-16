@@ -1,0 +1,37 @@
+# Named enrichment cohorts: which journals an enrichment run covers, in run order.
+# Read by scripts/inputs_from_zenodo.py (--cohort NAME). Journal names are matched EXACTLY, as moros
+# stores them (publication_metadata.journal); check a new name against the dump before adding it.
+#
+# core_bioinformatics -- the first production cohort on EBI with prompt e3 (Gavin, 2026-11-16):
+# 13,065 positives without enrichment in Zenodo dump 2026-09-25.
+cohorts:
+  core_bioinformatics:
+    description: "27 core bioinformatics and computational-biology journals"
+    journals:
+      - "BMC bioinformatics"
+      - "Briefings in bioinformatics"
+      - "PLoS computational biology"
+      - "Nucleic acids research"
+      - "Computational and structural biotechnology journal"
+      - "BMC genomics"
+      - "IEEE/ACM transactions on computational biology and bioinformatics"
+      - "IEEE transactions on computational biology and bioinformatics"
+      - "Computational biology and chemistry"
+      - "Genome biology"
+      - "BioData mining"
+      - "Bioinformatics advances"
+      - "Nature methods"
+      - "Frontiers in bioinformatics"
+      - "Proteins"
+      - "Genome research"
+      - "Journal of computational biology : a journal of computational molecular cell biology"
+      - "GigaScience"
+      - "NAR genomics and bioinformatics"
+      - "Protein science : a publication of the Protein Society"
+      - "Journal of bioinformatics and computational biology"
+      - "Cell systems"
+      - "Genomics, proteomics & bioinformatics"
+      - "Molecular systems biology"
+      - "Journal of integrative bioinformatics"
+      - "Bioinformation"
+      - "Bioinformatics (Oxford, England)"

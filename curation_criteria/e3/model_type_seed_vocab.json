@@ -1,0 +1,2039 @@
+{
+  "status": "prompt e3 (production), 2026-11-16: e2's seed plus the life-science model types e2 lacked; see curation_criteria/e3/PROVENANCE.md",
+  "design": "model_type stays OPEN free-text; this seed is coverage assurance + normalization only (emit the canonical spelling when a paper's method matches an entry; otherwise tag verbatim)",
+  "built": "2026-08-27",
+  "n_seed_entries": 99,
+  "sklearn_version_checked": "1.6.1",
+  "sklearn_coverage_check": {
+    "sklearn_inventory_size": 111,
+    "mapped": 95,
+    "ignored_with_reason": 16,
+    "unmapped_gaps": []
+  },
+  "terms": [
+    {
+      "canonical": "linear regression",
+      "aliases": [
+        "ordinary least squares",
+        "OLS",
+        "multiple linear regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LinearRegression"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:LinearRegression",
+          "iri": "https://w3id.org/aio/LinearRegression",
+          "label": "Linear Regression",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "linear regression",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ],
+      "e3": {
+        "aliases_added": [
+          "multiple linear regression"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "logistic regression",
+      "aliases": [
+        "logit model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LogisticRegression",
+        "LogisticRegressionCV"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:LogisticRegression",
+          "iri": "https://w3id.org/aio/LogisticRegression",
+          "label": "Logistic Regression",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "logistic regression",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "ridge regression",
+      "aliases": [
+        "L2-regularized regression",
+        "Tikhonov regularization"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Ridge",
+        "RidgeCV",
+        "RidgeClassifier",
+        "RidgeClassifierCV",
+        "KernelRidge"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:RidgeRegression",
+          "iri": "https://w3id.org/aio/RidgeRegression",
+          "label": "Ridge Regression",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "ridge regression",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "lasso",
+      "aliases": [
+        "L1-regularized regression",
+        "LASSO regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Lasso",
+        "LassoCV",
+        "LassoLars",
+        "LassoLarsCV",
+        "LassoLarsIC",
+        "MultiTaskLasso",
+        "MultiTaskLassoCV",
+        "Lars",
+        "LarsCV"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:LassoRegression",
+          "iri": "https://w3id.org/aio/LassoRegression",
+          "label": "Lasso Regression",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "LASSO regression",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "elastic net",
+      "aliases": [
+        "elastic-net regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "ElasticNet",
+        "ElasticNetCV",
+        "MultiTaskElasticNet",
+        "MultiTaskElasticNetCV"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "support vector machine",
+      "aliases": [
+        "SVM",
+        "SVC",
+        "SVR",
+        "support vector classifier",
+        "support vector regression"
+      ],
+      "family_hint": "classical machine learning",
+      "mesh_id": "D060388",
+      "sklearn": [
+        "SVC",
+        "SVR",
+        "LinearSVC",
+        "LinearSVR",
+        "NuSVC",
+        "NuSVR"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D060388",
+          "iri": "http://id.nlm.nih.gov/mesh/D060388",
+          "label": "Support Vector Machine",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "support vector machine",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:SupportVectorMachine",
+          "iri": "https://w3id.org/aio/SupportVectorMachine",
+          "label": "Support Vector Machine",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "support vector machine",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C78542",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C78542",
+          "label": "Support Vector Machine",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "support vector machine",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "obi",
+          "id": "OBI:0000700",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0000700",
+          "label": "support vector machine",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "support vector machine",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "decision tree",
+      "aliases": [
+        "CART",
+        "classification and regression tree"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "DecisionTreeClassifier",
+        "DecisionTreeRegressor",
+        "ExtraTreeClassifier",
+        "ExtraTreeRegressor"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D003663",
+          "iri": "http://id.nlm.nih.gov/mesh/D003663",
+          "label": "Decision Trees",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "decision tree",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:DecisionTree",
+          "iri": "https://w3id.org/aio/DecisionTree",
+          "label": "Decision Tree",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "decision tree",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "random forest",
+      "aliases": [
+        "RF"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "mesh_id": "D000093743",
+      "sklearn": [
+        "RandomForestClassifier",
+        "RandomForestRegressor",
+        "RandomTreesEmbedding"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000093743",
+          "iri": "http://id.nlm.nih.gov/mesh/D000093743",
+          "label": "Random Forest",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "random forest",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:RandomForest",
+          "iri": "https://w3id.org/aio/RandomForest",
+          "label": "Random Forest",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "random forest",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "extra trees",
+      "aliases": [
+        "extremely randomized trees"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "ExtraTreesClassifier",
+        "ExtraTreesRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "gradient boosting",
+      "aliases": [
+        "GBM",
+        "gradient boosted trees",
+        "GBDT",
+        "gradient boosting machine",
+        "histogram gradient boosting",
+        "HistGradientBoosting"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "GradientBoostingClassifier",
+        "GradientBoostingRegressor",
+        "HistGradientBoostingClassifier",
+        "HistGradientBoostingRegressor"
+      ],
+      "ontology_mappings": [],
+      "aliases_added_by": "E2-V9",
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "XGBoost",
+      "aliases": [
+        "extreme gradient boosting",
+        "xgb"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "LightGBM",
+      "aliases": [
+        "light gradient boosting machine",
+        "lgbm"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "CatBoost",
+      "aliases": [],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "AdaBoost",
+      "aliases": [
+        "adaptive boosting"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "AdaBoostClassifier",
+        "AdaBoostRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "bagging",
+      "aliases": [
+        "bootstrap aggregating"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "BaggingClassifier",
+        "BaggingRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "stacking",
+      "aliases": [
+        "stacked generalization",
+        "stacked ensemble"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [
+        "StackingClassifier",
+        "StackingRegressor",
+        "VotingClassifier",
+        "VotingRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "naive Bayes",
+      "aliases": [
+        "naive bayes classifier"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianNB",
+        "MultinomialNB",
+        "BernoulliNB",
+        "ComplementNB",
+        "CategoricalNB"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "k-nearest neighbors",
+      "aliases": [
+        "kNN",
+        "k-NN",
+        "nearest neighbor classifier"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "KNeighborsClassifier",
+        "KNeighborsRegressor",
+        "RadiusNeighborsClassifier",
+        "RadiusNeighborsRegressor",
+        "NearestCentroid",
+        "NearestNeighbors",
+        "KNeighborsTransformer",
+        "RadiusNeighborsTransformer"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:KnearestNeighborAlgorithm",
+          "iri": "https://w3id.org/aio/KnearestNeighborAlgorithm",
+          "label": "K-nearest Neighbor Algorithm",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "k-nearest neighbors",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "obi",
+          "id": "OBI:0000727",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0000727",
+          "label": "k-nearest neighbors",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "k-nearest neighbors",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "linear discriminant analysis",
+      "aliases": [
+        "LDA (discriminant analysis)",
+        "Fisher discriminant analysis"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LinearDiscriminantAnalysis"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "quadratic discriminant analysis",
+      "aliases": [
+        "QDA"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "QuadraticDiscriminantAnalysis"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Gaussian process",
+      "aliases": [
+        "GP regression",
+        "Gaussian process regression",
+        "kriging"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianProcessClassifier",
+        "GaussianProcessRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "partial least squares",
+      "aliases": [
+        "PLS",
+        "PLS-DA",
+        "PLS regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "PLSRegression",
+        "PLSCanonical",
+        "PLSSVD",
+        "CCA"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "multilayer perceptron",
+      "aliases": [
+        "MLP",
+        "feedforward neural network"
+      ],
+      "family_hint": "classic neural network",
+      "sklearn": [
+        "MLPClassifier",
+        "MLPRegressor",
+        "BernoulliRBM"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098421",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098421",
+          "label": "Multilayer Perceptrons",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "multilayer perceptron",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "stochastic gradient descent classifier",
+      "aliases": [
+        "SGD classifier",
+        "SGD regression"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "SGDClassifier",
+        "SGDRegressor",
+        "SGDOneClassSVM",
+        "Perceptron",
+        "PassiveAggressiveClassifier",
+        "PassiveAggressiveRegressor"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "robust regression",
+      "aliases": [
+        "Huber regression",
+        "RANSAC",
+        "Theil-Sen"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "HuberRegressor",
+        "RANSACRegressor",
+        "TheilSenRegressor",
+        "QuantileRegressor",
+        "TweedieRegressor",
+        "PoissonRegressor",
+        "GammaRegressor",
+        "ARDRegression",
+        "BayesianRidge",
+        "OrthogonalMatchingPursuit",
+        "OrthogonalMatchingPursuitCV",
+        "IsotonicRegression"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "k-means",
+      "aliases": [
+        "k-means clustering",
+        "kmeans"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "KMeans",
+        "MiniBatchKMeans",
+        "BisectingKMeans"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "obi",
+          "id": "OBI:0200041",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0200041",
+          "label": "k-means clustering",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "k-means clustering",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "swo",
+          "id": "SWO:0000588",
+          "iri": "http://www.ebi.ac.uk/swo/SWO_0000588",
+          "label": "k-means",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "k-means",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "hierarchical clustering",
+      "aliases": [
+        "agglomerative clustering",
+        "Ward clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "AgglomerativeClustering",
+        "FeatureAgglomeration"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:HierarchicalClustering",
+          "iri": "https://w3id.org/aio/HierarchicalClustering",
+          "label": "Hierarchical Clustering",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hierarchical clustering",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C63919",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C63919",
+          "label": "Hierarchical Clustering",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hierarchical clustering",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "obi",
+          "id": "OBI:0200042",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0200042",
+          "label": "hierarchical clustering",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hierarchical clustering",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "swo",
+          "id": "SWO:0000573",
+          "iri": "http://www.ebi.ac.uk/swo/SWO_0000573",
+          "label": "Hierarchical clustering",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hierarchical clustering",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "DBSCAN",
+      "aliases": [
+        "density-based clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "DBSCAN",
+        "OPTICS"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "HDBSCAN",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "HDBSCAN"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "spectral clustering",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "SpectralClustering",
+        "SpectralBiclustering",
+        "SpectralCoclustering"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Gaussian mixture model",
+      "aliases": [
+        "GMM",
+        "mixture model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "GaussianMixture",
+        "BayesianGaussianMixture"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "affinity propagation",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "AffinityPropagation"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "mean shift",
+      "aliases": [
+        "mean-shift clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "MeanShift"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "BIRCH",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "Birch"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "fuzzy c-means",
+      "aliases": [
+        "fuzzy clustering"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "self-organizing map",
+      "aliases": [
+        "SOM",
+        "Kohonen map"
+      ],
+      "family_hint": "classic neural network",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C63920",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C63920",
+          "label": "Self-Organizing Map",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "self-organizing map",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "obi",
+          "id": "OBI:0000701",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0000701",
+          "label": "self-organizing map",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "self-organizing map",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "latent profile analysis",
+      "aliases": [
+        "LPA",
+        "latent class analysis",
+        "LCA"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "principal component analysis",
+      "aliases": [
+        "PCA"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "PCA",
+        "IncrementalPCA",
+        "KernelPCA",
+        "SparsePCA",
+        "MiniBatchSparsePCA",
+        "TruncatedSVD"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D025341",
+          "iri": "http://id.nlm.nih.gov/mesh/D025341",
+          "label": "Principal Component Analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "principal component analysis",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:PrincipalComponentAnalysis",
+          "iri": "https://w3id.org/aio/PrincipalComponentAnalysis",
+          "label": "Principal Component Analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "principal component analysis",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C49291",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C49291",
+          "label": "Principal Component Analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "principal component analysis",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "edam",
+          "id": "EDAM:operation_3960",
+          "iri": "http://edamontology.org/operation_3960",
+          "label": "Principal component analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "principal component analysis",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "independent component analysis",
+      "aliases": [
+        "ICA"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "FastICA"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "non-negative matrix factorization",
+      "aliases": [
+        "NMF",
+        "NNMF"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "NMF",
+        "MiniBatchNMF",
+        "DictionaryLearning",
+        "MiniBatchDictionaryLearning",
+        "SparseCoder"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C64257",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C64257",
+          "label": "Non-negative Matrix Factorization",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "non-negative matrix factorization",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "obi",
+          "id": "OBI:0200097",
+          "iri": "http://purl.obolibrary.org/obo/OBI_0200097",
+          "label": "non-negative matrix factorization",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "non-negative matrix factorization",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "factor analysis",
+      "aliases": [],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "FactorAnalysis"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D005163",
+          "iri": "http://id.nlm.nih.gov/mesh/D005163",
+          "label": "Factor Analysis, Statistical",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "factor analysis",
+          "source": "ols4+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "stato",
+          "id": "STATO:0000567",
+          "iri": "http://purl.obolibrary.org/obo/STATO_0000567",
+          "label": "factor analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "factor analysis",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "t-SNE",
+      "aliases": [
+        "t-distributed stochastic neighbor embedding",
+        "tSNE"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "TSNE"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:tDistributedStochasticNeighborembedding",
+          "iri": "https://w3id.org/aio/tDistributedStochasticNeighborembedding",
+          "label": "t-Distributed Stochastic Neighbor embedding",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "t-distributed stochastic neighbor embedding",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "UMAP",
+      "aliases": [
+        "uniform manifold approximation and projection"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "multidimensional scaling",
+      "aliases": [
+        "MDS"
+      ],
+      "family_hint": "classical machine learning + dimensionality reduction",
+      "sklearn": [
+        "MDS",
+        "Isomap",
+        "LocallyLinearEmbedding",
+        "SpectralEmbedding"
+      ],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000084142",
+          "iri": "http://id.nlm.nih.gov/mesh/D000084142",
+          "label": "Multidimensional Scaling Analysis",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "multidimensional scaling",
+          "source": "ols4+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:MultidimensionalScaling",
+          "iri": "https://w3id.org/aio/MultidimensionalScaling",
+          "label": "Multidimensional Scaling",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "multidimensional scaling",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "latent Dirichlet allocation",
+      "aliases": [
+        "LDA (topic model)",
+        "topic modeling"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LatentDirichletAllocation"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "isolation forest",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "IsolationForest"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "one-class SVM",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "OneClassSVM"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "local outlier factor",
+      "aliases": [
+        "LOF"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [
+        "LocalOutlierFactor",
+        "EllipticEnvelope"
+      ],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "hidden Markov model",
+      "aliases": [
+        "HMM"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098448",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098448",
+          "label": "Hidden Markov Models",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hidden Markov model",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C75940",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C75940",
+          "label": "Hidden Markov Model",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hidden Markov model",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "swo",
+          "id": "SWO:0000217",
+          "iri": "http://www.ebi.ac.uk/swo/SWO_0000217",
+          "label": "Hidden Markov Model",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "hidden Markov model",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "conditional random field",
+      "aliases": [
+        "CRF"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Bayesian network",
+      "aliases": [
+        "Bayes net",
+        "probabilistic graphical model"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:BayesianNetwork",
+          "iri": "https://w3id.org/aio/BayesianNetwork",
+          "label": "Bayesian Network",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "Bayesian network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "MaxEnt",
+      "aliases": [
+        "maximum entropy model",
+        "maximum entropy"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "genetic algorithm",
+      "aliases": [
+        "evolutionary algorithm",
+        "genetic programming"
+      ],
+      "family_hint": "classical machine learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098434",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098434",
+          "label": "Genetic Algorithms",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "genetic algorithm",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "neural network",
+      "aliases": [
+        "artificial neural network",
+        "ANN",
+        "deep neural network",
+        "DNN",
+        "BP-ANN",
+        "backpropagation neural network",
+        "BPNN"
+      ],
+      "family_hint": "classic neural network or deep learning (depth-dependent)",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:ArtificialNeuralNetwork",
+          "iri": "https://w3id.org/aio/ArtificialNeuralNetwork",
+          "label": "Artificial Neural Network",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "artificial neural network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "ncit",
+          "id": "NCIT:C17429",
+          "iri": "http://purl.obolibrary.org/obo/NCIT_C17429",
+          "label": "Neural Network",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "neural network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ],
+      "aliases_added_by": "E2-V9",
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "convolutional neural network",
+      "aliases": [
+        "CNN",
+        "ConvNet"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098415",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098415",
+          "label": "Convolutional Neural Networks",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "convolutional neural network",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "recurrent neural network",
+      "aliases": [
+        "RNN"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098424",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098424",
+          "label": "Recurrent Neural Networks",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "recurrent neural network",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:RecurrentNeuralNetwork",
+          "iri": "https://w3id.org/aio/RecurrentNeuralNetwork",
+          "label": "Recurrent Neural Network",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "recurrent neural network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "long short-term memory",
+      "aliases": [
+        "LSTM",
+        "BiLSTM",
+        "bidirectional LSTM"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098417",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098417",
+          "label": "Long Short Term Memory",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "long short-term memory",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:LongShortTermMemory",
+          "iri": "https://w3id.org/aio/LongShortTermMemory",
+          "label": "Long Short Term Memory",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "long short-term memory",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ],
+      "e3": {
+        "aliases_added": [
+          "BiLSTM",
+          "bidirectional LSTM"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "gated recurrent unit",
+      "aliases": [
+        "GRU"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:GatedRecurrentUnit",
+          "iri": "https://w3id.org/aio/GatedRecurrentUnit",
+          "label": "Gated Recurrent Unit",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "gated recurrent unit",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "transformer",
+      "aliases": [
+        "transformer network",
+        "attention-based model"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:TransformerNetwork",
+          "iri": "https://w3id.org/aio/TransformerNetwork",
+          "label": "Transformer Network",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "transformer network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "vision transformer",
+      "aliases": [
+        "ViT",
+        "Swin Transformer"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "Swin Transformer"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "BERT",
+      "aliases": [
+        "bidirectional encoder representations from transformers"
+      ],
+      "family_hint": "deep learning + large language model",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "GPT",
+      "aliases": [
+        "generative pre-trained transformer"
+      ],
+      "family_hint": "deep learning + large language model + generative AI",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "autoencoder",
+      "aliases": [
+        "AE"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098446",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098446",
+          "label": "Autoencoder",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "autoencoder",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:AutoEncoderNetwork",
+          "iri": "https://w3id.org/aio/AutoEncoderNetwork",
+          "label": "Auto Encoder Network",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "autoencoder",
+          "source": "ols4",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "U-Net",
+      "aliases": [
+        "UNet",
+        "nnU-Net",
+        "UNet++"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "nnU-Net",
+          "UNet++"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "ResNet",
+      "aliases": [
+        "residual network",
+        "ResNet-18",
+        "ResNet-34",
+        "ResNet-50",
+        "ResNet-101",
+        "ResNet-152"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "ResNet-18",
+          "ResNet-34",
+          "ResNet-50",
+          "ResNet-101",
+          "ResNet-152"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "graph neural network",
+      "aliases": [
+        "GNN",
+        "graph convolutional network",
+        "GCN",
+        "graph attention network",
+        "GAT",
+        "graph isomorphism network",
+        "GIN",
+        "message passing neural network",
+        "MPNN",
+        "Chemprop"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098422",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098422",
+          "label": "Graph Neural Networks",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "graph neural network",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        }
+      ],
+      "e3": {
+        "aliases_added": [
+          "graph attention network",
+          "GAT",
+          "graph isomorphism network",
+          "GIN",
+          "message passing neural network",
+          "MPNN",
+          "Chemprop"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
+    },
+    {
+      "canonical": "Siamese network",
+      "aliases": [
+        "twin network"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "YOLO",
+      "aliases": [
+        "you only look once"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "word embedding",
+      "aliases": [
+        "word2vec",
+        "GloVe",
+        "fastText"
+      ],
+      "family_hint": "representation learning",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "generative adversarial network",
+      "aliases": [
+        "GAN"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098427",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098427",
+          "label": "Generative Adversarial Networks",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "generative adversarial network",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:GenerativeAdversarialNetwork",
+          "iri": "https://w3id.org/aio/GenerativeAdversarialNetwork",
+          "label": "Generative Adversarial Network",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "generative adversarial network",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "variational autoencoder",
+      "aliases": [
+        "VAE"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:VariationalAutoEncoder",
+          "iri": "https://w3id.org/aio/VariationalAutoEncoder",
+          "label": "Variational Auto Encoder",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "variational autoencoder",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "diffusion model",
+      "aliases": [
+        "denoising diffusion",
+        "DDPM"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "normalizing flow",
+      "aliases": [
+        "flow-based model"
+      ],
+      "family_hint": "deep learning + generative AI",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "large language model",
+      "aliases": [
+        "LLM"
+      ],
+      "family_hint": "large language model",
+      "sklearn": [],
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098342",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098342",
+          "label": "Large Language Models",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "large language model",
+          "source": "ols4+zooma+nlm",
+          "checked": "2026-09-15"
+        },
+        {
+          "ontology": "aio",
+          "id": "AIO:LargeLanguageModel",
+          "iri": "https://w3id.org/aio/LargeLanguageModel",
+          "label": "Large Language Model",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "large language model",
+          "source": "ols4+zooma",
+          "checked": "2026-09-15"
+        }
+      ]
+    },
+    {
+      "canonical": "Q-learning",
+      "aliases": [
+        "deep Q-network",
+        "DQN"
+      ],
+      "family_hint": "reinforcement",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "policy gradient",
+      "aliases": [
+        "PPO",
+        "proximal policy optimization",
+        "actor-critic",
+        "A2C",
+        "A3C"
+      ],
+      "family_hint": "reinforcement",
+      "sklearn": [],
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "causal forest",
+      "aliases": [
+        "generalized random forest",
+        "causal random forest"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "machine-learning interatomic potential",
+      "aliases": [
+        "MLIP",
+        "machine learning potential",
+        "ML potential",
+        "machine-learned interatomic potential",
+        "neural network potential"
+      ],
+      "family_hint": "",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "state space model",
+      "aliases": [
+        "Mamba",
+        "SSM (state space model)",
+        "S4"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "protein language model",
+      "aliases": [
+        "PLM",
+        "ESM",
+        "ESM-2",
+        "ESMFold",
+        "ProtT5",
+        "ProtBERT",
+        "ProtTrans",
+        "Ankh",
+        "ProGen",
+        "SaProt"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "genomic language model",
+      "aliases": [
+        "DNA language model",
+        "RNA language model",
+        "nucleotide language model",
+        "DNABERT",
+        "DNABERT-2",
+        "Nucleotide Transformer",
+        "HyenaDNA",
+        "Evo",
+        "Caduceus",
+        "RNA-FM"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "chemical language model",
+      "aliases": [
+        "molecular language model",
+        "ChemBERTa",
+        "MolFormer",
+        "Chemformer"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "pathology foundation model",
+      "aliases": [
+        "UNI",
+        "CONCH",
+        "Virchow",
+        "Prov-GigaPath"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "graph embedding",
+      "aliases": [
+        "network embedding",
+        "node2vec",
+        "DeepWalk",
+        "knowledge graph embedding"
+      ],
+      "family_hint": "representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "AlphaFold",
+      "aliases": [
+        "AlphaFold2",
+        "AlphaFold3",
+        "AF2",
+        "AF3",
+        "AlphaFold-Multimer",
+        "ColabFold"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Segment Anything Model",
+      "aliases": [
+        "SAM",
+        "SAM 2",
+        "MedSAM"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "DenseNet",
+      "aliases": [
+        "DenseNet-121",
+        "DenseNet-201",
+        "densely connected convolutional network"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "VGG",
+      "aliases": [
+        "VGG16",
+        "VGG19",
+        "VGGNet"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "EfficientNet",
+      "aliases": [
+        "EfficientNet-B0",
+        "EfficientNetV2"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "MobileNet",
+      "aliases": [
+        "MobileNetV2",
+        "MobileNetV3"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Inception",
+      "aliases": [
+        "GoogLeNet",
+        "Inception-v3",
+        "InceptionV3",
+        "Inception-ResNet"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Faster R-CNN",
+      "aliases": [
+        "Faster RCNN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Mask R-CNN",
+      "aliases": [
+        "Mask RCNN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Cox proportional hazards model",
+      "aliases": [
+        "Cox regression",
+        "Cox model",
+        "CoxPH"
+      ],
+      "family_hint": "classical machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "random survival forest",
+      "aliases": [
+        "RSF"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "multiple instance learning",
+      "aliases": [
+        "MIL",
+        "attention-based MIL",
+        "ABMIL",
+        "CLAM",
+        "TransMIL"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098451",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098451",
+          "label": "Multiple-Instance Learning Algorithms",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "multiple instance learning",
+          "source": "ols4+nlm",
+          "checked": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "canonical": "physics-informed neural network",
+      "aliases": [
+        "PINN"
+      ],
+      "family_hint": "deep learning + physics-informed machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Kolmogorov-Arnold network",
+      "aliases": [
+        "KAN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "ARIMA",
+      "aliases": [
+        "autoregressive integrated moving average",
+        "SARIMA",
+        "ARIMAX"
+      ],
+      "family_hint": "classical machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:AutoregressiveIntegratedMovingAverage",
+          "iri": "https://w3id.org/aio/AutoregressiveIntegratedMovingAverage",
+          "label": "Autoregressive Integrated Moving Average",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "autoregressive integrated moving average",
+          "source": "ols4+zooma",
+          "checked": "2026-11-16"
+        }
+      ]
+    }
+  ],
+  "ontology_mappings_added": "2026-09-15 (schema v1.5.1): ontology_mappings added to every term. Each entry is an accepted match of the term's label, MeSH label or an alias to a term in MeSH, AIO, NCIT, OBI, SWO, STATO or EDAM, found with EBI OLS4, corroborated by Zooma, with every MeSH id confirmed at id.nlm.nih.gov. Sources, versions and rules: dome-ml-observatory-triage docs/vocabulary_ontology_mappings.md. Additive: no term, label, alias, mesh_id, definition or max_tags changed, and the key is not rendered into the enrichment prompt. An empty list means no accepted mapping.",
+  "e2": {
+    "status": "prompt e2, adopted for production 2026-11-16 from the glm5.3_test repository; validation: curation_criteria/e2/PROVENANCE.md#validation",
+    "base": "curation_criteria/model_type_seed_vocab.json (prompt e1)",
+    "changes": [
+      "E2-V9"
+    ]
+  },
+  "e3": {
+    "status": "prompt e3, the production enrichment prompt from 2026-11-16",
+    "base": "curation_criteria/e2/model_type_seed_vocab.json (prompt e2)",
+    "rule": ">= 100 positives in the corpus mention it, not covered by an existing canonical or alias, a genuine model or architecture",
+    "added_terms": [
+      "protein language model",
+      "genomic language model",
+      "chemical language model",
+      "pathology foundation model",
+      "graph embedding",
+      "AlphaFold",
+      "Segment Anything Model",
+      "DenseNet",
+      "VGG",
+      "EfficientNet",
+      "MobileNet",
+      "Inception",
+      "Faster R-CNN",
+      "Mask R-CNN",
+      "Cox proportional hazards model",
+      "random survival forest",
+      "multiple instance learning",
+      "physics-informed neural network",
+      "Kolmogorov-Arnold network",
+      "ARIMA"
+    ],
+    "aliases_added_to": [
+      "ResNet",
+      "U-Net",
+      "graph neural network",
+      "vision transformer",
+      "long short-term memory",
+      "linear regression"
+    ],
+    "excluded_below_threshold": {
+      "single-cell foundation model": 69,
+      "RoseTTAFold": 76
+    },
+    "evidence": "docs/e3_model_type_evidence.md"
+  }
+}

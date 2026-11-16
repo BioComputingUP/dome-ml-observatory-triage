@@ -16,8 +16,10 @@ Two shape details the event log does not share with the document:
 - The event has no `mode`; enrichment has no forced-choice variant the way classification does, so
   it stays null rather than being given an invented value.
 - `provider` and `model_id` come from the event's `model_tier`: DeepSeek for `flash`/`pro` (prompt
-  e1), Z.ai for `glm-5.3-flash`/`glm-5.3` (prompt e2).
-- Prompt e2's events also carry `model_use` (written to `content_filters.model_use`) and
+  e1), Z.ai for `glm-5.3-flash`/`glm-5.3` (prompt e2), EMBL-EBI for `ebi-glm-5.3-flash` (prompt e3).
+  When the event carries its own `model_id` (prompt e3: the id the server reported, verbatim, e.g.
+  `zai-org/GLM-5.3-Flash`), that is stored instead of the tier's mirror.
+- Prompt e2's and e3's events also carry `model_use` (written to `content_filters.model_use`) and
   `family_backfilled` (not stored: the parser's own audit trail, kept in the event log). An e2
   events file is refused until every document is at schema v1.7.0 (`migrate_v1_7_0.py`).
 
@@ -48,7 +50,8 @@ csv.field_size_limit(sys.maxsize)
 # this folder cannot import the dome_triage package.
 TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro",
                   "glm-5.3-flash": "glm-5.3-flash", "glm-5.3": "glm-5.3"}
-TIER_PROVIDERS = {"flash": "deepseek", "pro": "deepseek", "glm-5.3-flash": "zai", "glm-5.3": "zai"}
+TIER_PROVIDERS = {"flash": "deepseek", "pro": "deepseek", "glm-5.3-flash": "zai", "glm-5.3": "zai",
+                  "ebi-glm-5.3-flash": "embl-ebi"}
 PROVIDER = "deepseek"  # the provider of every e1 event, and of an event with no tier
 PARSE_ERROR = "parse_error"
 
@@ -106,7 +109,7 @@ def event_to_update(row: dict[str, str]) -> tuple[str, dict[str, Any]] | None:
         "content_filters.domain_tier1": (tier1[0] if tier1 else None),
         "llm_enrichment.provider": TIER_PROVIDERS.get(tier or "", PROVIDER),
         "llm_enrichment.model_tier": tier,
-        "llm_enrichment.model_id": TIER_MODEL_IDS.get(tier or ""),
+        "llm_enrichment.model_id": (row.get("model_id") or "").strip() or TIER_MODEL_IDS.get(tier or ""),
         "llm_enrichment.mode": None,
         "llm_enrichment.rationale": (row.get("rationale") or "").strip() or None,
         "llm_enrichment.prompt_version": (row.get("prompt_version") or "").strip() or None,

@@ -42,10 +42,10 @@ FORWARD_SET = {"schema_version": TO_VERSION, MODEL_USE_PATH: []}
 REVERSE_SET = {"schema_version": REVERSE_VERSION}
 REVERSE_UNSET = (MODEL_USE_PATH,)
 
-# Any of these matching a document means e2 content has landed and --reverse would destroy it.
+# Any of these matching a document means e2/e3 content has landed and --reverse would destroy it.
 POPULATED_MARKERS: tuple[dict, ...] = (
     {"content_filters.model_use.0": {"$exists": True}},
-    {"llm_enrichment.prompt_version": "e2"},
+    {"llm_enrichment.prompt_version": {"$in": ["e2", "e3"]}},
 )
 
 
