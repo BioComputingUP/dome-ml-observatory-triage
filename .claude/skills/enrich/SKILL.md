@@ -1,125 +1,105 @@
 ---
 name: enrich
 description: >
-  Enrich a cohort of positive records in moros with the controlled vocabularies (EDAM domain
-  tiers, learning paradigm, model family, model type) using the validated enrichment prompt (e1,
-  DeepSeek's flash tier), after a live cost estimate, an off-peak timing check and explicit
-  confirmation; then hand the events file to moros-write. Trigger on "enrich journal X", "enrich
-  the new positives", "run the enrichment", "how much would enriching Y cost". Costly: billed at about
-  $1.80 per 1,000 records on V4.1 Flash, roughly nine times classification.
+  Enrich a cohort of positive records with the controlled vocabularies (EDAM domain tiers,
+  learning paradigm, model family, model type, model use) using the LATEST enrichment prompt (e3)
+  on GLM-5.3-Flash served by the EMBL-EBI gateway (per-key budget, ~$2.2/1,000; needs the EBI network or VPN): build the
+  inputs, run the cohort in a watched tmux session with live ETA and 15-minute checkpoints to the
+  private runs repository, then hand the events to moros-write. Trigger on "enrich journal X",
+  "enrich the new positives", "run the enrichment", "enrich the bioinformatics journals". Older
+  prompts (e1 on DeepSeek, e2 on Z.ai) are paid and run only to reproduce earlier work.
 ---
 
 # enrich
 
-Enrichment is a separate, deliberate, costly cycle, run per journal or cohort when wanted. It is
-additive by construction (the prompt never asks the positive/negative question) and the writer's
-allowlist makes that structural. The prompt (`e1`), vocabularies and parser are validated and are
-not changed here.
+Enrichment is additive by construction: the prompt never asks the positive/negative question, and the
+writer's allowlist makes that structural. **Always use the latest prompt**, which is e3 since 2026-11-16
+(`curation_criteria/e3/PROVENANCE.md`). `dome-triage llm-classify enrich` defaults to it, on the
+EMBL-EBI gateway. Read [`docs/enrichment_ebi.md`](../../../docs/enrichment_ebi.md) before the first
+run on a laptop. It covers the configuration, what the endpoint does, the quality check against
+Z.ai and the measured concurrency.
 
-## 1. Choose the cohort
+Everything runs in containers (AGENTS.md rules 8–9). The laptop that runs the model needs no moros
+access. Loading happens wherever moros's `.env` is.
 
-Journal names are matched **verbatim** as stored (`Science` is `Science (New York, N.Y.)`). To see
-what is available, read-only:
+## 1. Choose the cohort and build its inputs
 
-```bash
-cd moros_pipeline/scripts
-python3 - <<'PY'
-from moros_client import Moros
-with Moros.from_env() as m:
-    pipe = [{"$match": {"llm_classification.classification": "positive", "llm_enrichment.batch_id": None}},
-            {"$group": {"_id": "$publication_metadata.journal", "n": {"$sum": 1}}},
-            {"$sort": {"n": -1}}, {"$limit": 40}]
-    for row in m.collection.aggregate(pipe, maxTimeMS=120000):
-        print(f"{row['n']:>7}  {row['_id']}")
-PY
-```
-
-Export (already-enriched records are excluded; `--max-usd` refuses an input whose projection
-exceeds it, default 20):
+Named cohorts live in `configs/enrichment_cohorts.yaml` (journal names matched **exactly**, as stored).
+Build the input chunks from the public Zenodo corpus dump, saved beside the repository in `../zenodo_corpus/`.
+Take the latest version of concept `10.5281/zenodo.22259905`, and check its sha256 against the dump's
+`archive-metadata.json`:
 
 ```bash
-python3 export_journal_for_enrichment.py \
-    --journal "<name>" [--journal "<name 2>" ...] \
-    --out ../output/enrich_input_<name>.csv --max-usd <cap>
+export HOST_UID=$(id -u) HOST_GID=$(id -g)
+docker compose run --rm tools python scripts/inputs_from_zenodo.py \
+    --dump ../zenodo_corpus/<dump>.jsonl.gz --cohort <cohort> \
+    --out-dir ../dome-observatory-enrichment-runs/inputs --zenodo-record <record id>
 ```
 
-Or the batch a refresh just loaded, capped at N records:
+The selection is positives with no enrichment, a title and an abstract, in 5,000-record chunks. Push
+the inputs to the private runs repository, with the privacy check, using `scripts/runs_repo.py`'s
+`commit_and_push`.
+
+On the loading laptop, an alternative source is `moros_pipeline/scripts/export_journal_for_enrichment.py
+--journal … --max-usd 0`, which writes the same columns.
+
+## 2. Say what it will take, then ask
+
+EBI requests count against the key's budget (about $2.2 per 1,000 records, shown in the gateway UI under Usage; the key cannot read it via the API). State that, and the time:
+- a call takes about 45 s, because the gateway thinks at its default depth, about 2,500 output tokens;
+- the gateway caps throughput at about 20 records/min, whatever the concurrency; above 16 it only
+  rejects requests (`EBI_LLM_MAX_CONCURRENCY=16`);
+- so `minutes ≈ N / 20`.
+
+State N, the chunks, the ETA and the budget, and ask: **"Enrich N records on EBI, about H hours and $X of the key's budget, start now?"**
+
+## 3. Run, in a session the user can watch
 
 ```bash
-python3 export_journal_for_enrichment.py \
-    --batch-id <llm_classification.batch_id> --limit <N> \
-    --out ../output/enrich_input_<name>.csv --max-usd <cap>
+docker ps                                          # no pipeline container may already be running
+scripts/run_enrichment.sh <cohort>                 # [--concurrency N] [--limit N] [--chunks c01,c02]
 ```
 
-`--max-usd` costs what the export will write (`--limit` included) at the billed rate.
+This opens tmux session `enrich-e3` with three windows: `run` (the chunks in order, each a foreground
+`docker compose run`), `checkpoint` (a push to the private runs repository every 15 minutes) and `status`
+(live progress, speed, ETA, quality flags and stalls). Tell the user how to watch it:
 
-## 2. Cost and timing, then ask
+- `tmux attach -t enrich-e3`, then Ctrl-b 0/1/2 to switch windows and Ctrl-b d to detach (the run continues);
+- or, without tmux, `docker compose run --rm tools python scripts/enrich_status.py --cohort <cohort>`.
 
-Run the `cost-estimate` skill for `N = rows exported`: at the planning rate in `COST_DASHBOARD.md`
-(billed: $1.80 per 1,000 on V4.1 Flash, from `deepseek_real_cost_log.csv`; never the list-price
-model, which undershot V4-Flash's bill by more than half) and ~418 records/min at `--concurrency 800`, so
-`minutes = N / 418`. Then
-`python3 scripts/offpeak_window.py --minutes <that>`; if the run would cross a peak window,
-propose the earliest fully off-peak start (weekends hold anything). Check the balance covers the
-projection, and read it immediately before starting. State all of it and ask: **"Enrich N records for about $X, starting now / at T?"**
+Watch it yourself with `enrich_status.py --once` in a Monitor or until-loop, and report progress and the ETA.
 
-## 3. Run
-
-```bash
-docker ps                                   # no pipeline container may be running
-docker compose run --rm pipeline dome-triage llm-classify enrich \
-    --tier flash --concurrency 800 \
-    --input /app/moros_pipeline/output/enrich_input_<name>.csv \
-    --events-out /app/moros_pipeline/output/enrichment_<name>_events.csv
-```
-
-**`--events-out` is mandatory**, one file per cohort. **`--input` is mandatory** (the CLI's default
-input is a research file that is not here). Do not pass `--reasoning-effort` or
-`--domain-rendering`: the defaults are the validated configuration, and every alternative was
-measured worse or no cheaper.
-
-Monitor by `wc -l` on the events file and `docker ps`, never by the compose exit code. A second
-run on the same file is refused by the lock; that is correct. `--limit 25` gives a real smoke run
-first if anything is new.
+**Rules:**
+- **Never detach `docker compose run`** (AGENTS.md rule 5).
+- Re-running the same command resumes, because the events file is the state.
+- The script retries a crashed chunk only after `docker ps` shows no pipeline container.
+- It stops on its own if a finished chunk has **parse errors or truncations above 2%**. Report that and
+  ask the user before going on.
 
 ## 4. After the run
 
-From the events file report: ok / parse_error, how many `finish_reason == length` (truncated at
-the 16,000-token cap, ~1.5%; they are **not** retried automatically because retrying at the same
-cap re-truncates — raising `ENRICHMENT_MAX_TOKENS` is a versioned change for the user to decide),
-vocabulary-violation rate (trial baseline 6.8%, production 4.1%), prefix-cache hit share, mean
-output and reasoning tokens, and the real balance delta. The balance lags the run by minutes: poll it
-until it moves and settles, start no other paid run meanwhile, then append a row to
-`data/processed/cost_estimates/deepseek_real_cost_log.csv` (`mode` `enrich`, `source`
-`balance_delta`).
+From `enrich_status.py --once`, report:
+- ok / parse_error and truncated counts;
+- the vocab-flag rate (about 1% on the QC run);
+- output tokens per record and records/min.
 
-Then ask: **"Merge these into moros?"** Hand to `moros-write` section B on a yes.
+Then add any vocabulary gaps (`vocab_violations`) to `docs/e3_vocab_gaps.md`, for a later prompt version.
+Make a final checkpoint push.
 
-## Prompt e2 on GLM-5.3-Flash (Z.ai)
+Then, on the laptop with moros, ask **"Merge these into moros?"**. On a yes:
+- pull the runs repository;
+- `sha256sum -c SHA256SUMS`;
+- hand each events file to `moros-write` section B (`load_enrichment.py`: dry run, then `--limit 50`, then `--confirm`).
 
-`--prompt e2` runs the GLM-5.3 enrichment (`curation_criteria/e2/PROVENANCE.md`): the e1 fields plus
-`model_use`, on Z.ai's pay-as-you-go API. It is a separate prompt version beside e1; e1 is unchanged.
-**Before the first e2 run, read [`docs/enrichment_e2_glm53.md`](../../../docs/enrichment_e2_glm53.md)**:
-loading e2 events needs schema v1.7.0 published and migrated first, and `load_enrichment.py` refuses
-otherwise.
+e3 events write `content_filters.model_use`, so the loader refuses them until moros is at schema 1.7.0.
 
-- Cost: measured $0.96 per 1,000 records at list price ($0.24 for 250, wave2), against $1.80 billed on
-  V4.1. `export_journal_for_enrichment.py --max-usd` still costs at $1.80, which is stricter for e2,
-  never looser. Read the billed figure off https://z.ai/manage-apikey/billing after the run.
-- Speed: ~325 records/min at `--concurrency 50`, which is what every validation run used and what
-  `--prompt e2` defaults to.
-- The image copies `src/`, so rebuild it once after this code lands: `docker compose build`.
+## Older prompts (reproduction only)
 
-```bash
-docker ps                                   # no pipeline container may be running
-docker compose run --rm pipeline dome-triage llm-classify enrich --prompt e2 \
-    --input /app/moros_pipeline/output/enrich_input_<name>.csv \
-    --events-out /app/moros_pipeline/output/enrichment_e2_<name>_events.csv
-```
+| Prompt | How | Notes |
+|---|---|---|
+| e2 on Z.ai | `enrich --prompt e2` (needs `ZAI_API_KEY`) | [`docs/enrichment_e2_glm53.md`](../../../docs/enrichment_e2_glm53.md). Paid, about $0.96 per 1,000 at list price; concurrency 50, effort high |
+| e3 on Z.ai | `enrich --provider zai` | The same prompt at Z.ai's effort high, paid |
+| e1 on DeepSeek | `enrich --prompt e1 --tier flash --concurrency 800` | Paid, $1.80 per 1,000 billed. Run the `cost-estimate` skill and `scripts/offpeak_window.py` first, read the balance, and ask with the dollar figure |
 
-The defaults are the validated configuration: `--tier glm-5.3-flash`, effort `high`, concurrency 50.
-Do not pass `--reasoning-effort max` (measured: the same tags, ~6x the reasoning tokens, one record
-truncated). Use a **separate `--events-out`** from any e1 log; the step refuses a log that holds another
-prompt's events. Use `--limit 25` for a smoke run first. To re-enrich records already enriched with e1,
-export with `--include-enriched`. The later e2 load replaces their tags and sets `prompt_version` to
-`e2`, and `moros-write`'s rollback snapshot can undo it.
+Use a separate `--events-out` for each prompt (the step refuses a mixed log), and always pass `--input`.
+Do not pass `--reasoning-effort` or `--domain-rendering` unless reproducing a measured variant.

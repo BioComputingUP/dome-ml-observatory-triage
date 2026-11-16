@@ -63,6 +63,9 @@ State, in one short table: records, the planning cost (billed rate), the list-pr
 off-peak and peak and GLM-5.3-Flash list (a price comparison only; that model is not validated for
 this pipeline), wall time at the standard
 concurrency (classify 400 → ~4,500 records/min; enrich 800 → ~418 records/min), and the balance.
+Production enrichment (prompt e3) runs on the EMBL-EBI gateway against a per-key budget (about $2.2 per
+1,000 records, visible only in the gateway UI): state records, that figure and the wall time (docs/enrichment_ebi.md has the measured records/min); the DeepSeek and Z.ai
+figures apply to reproducing e1 or e2 only.
 
 Then timing: `python3 scripts/offpeak_window.py --minutes <wall time>`. Peak (double price) is
 01:00–04:00 and 06:00–10:00 UTC, Monday to Friday. Recommend the earliest fully off-peak start;

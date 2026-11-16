@@ -60,13 +60,14 @@ every paid or writing step still stops for a yes.
    (Europe PMC for every record, EBI Search for the positives), build, dry run, `--limit 100` trial, confirm,
    `ensure_indexes.py`, `verify_corpus.py --expect-count`. Report inserted / left out, how many new
    documents carry data links, and how many carry a DOME Registry entry.
-   → **Ask:** enrich now (the `enrich` cohort, capped at `enrich_max_records`; N records at the
-   planning rate in `COST_DASHBOARD.md`, which comes from the bill, never the list-price model;
-   T minutes; off-peak window from `offpeak_window.py`; balance)? A different cohort? Not this time?
-5. **`enrich`** (if yes): `export_journal_for_enrichment.py --batch-id <classification batch id>
-   --limit <enrich_max_records> --max-usd <enrich_max_usd>`, read the balance, `--limit 25` smoke,
-   the rest, poll the balance and log the delta. Then **`moros-write` B** to merge: dry run,
-   `--limit 25 --confirm`, `--confirm`. Report ok / truncated / violations and the billed cost.
+   → **Ask:** enrich now with the latest prompt (e3) on the EBI gateway (the `enrich` cohort, capped at
+   `enrich_max_records`; N records, about N / 20 minutes and $2.2 per 1,000 of the key's budget; needs the
+   EBI network or VPN)? A different cohort? Not this time?
+5. **`enrich`** (if yes), following the `enrich` skill: export the batch with
+   `export_journal_for_enrichment.py --batch-id <classification batch id> --limit <enrich_max_records>
+   --max-usd 0` into the cohort's work folder, run it with `scripts/run_enrichment.sh` (watched tmux
+   session, live ETA), then **`moros-write` B** to merge: dry run, `--limit 50 --confirm`, `--confirm`.
+   Report ok / truncated / violations and the wall time.
 6. **`citations-refresh`** if `citations_refresh` is yes (free); the **full-text refresh** if
    `fulltext_refresh` is yes (free, under a minute): `fetch_fulltext.py`, then `moros-write` C's
    `fulltext` mode -- dry run (it reports how many flags would change; any change *to false* is worth
