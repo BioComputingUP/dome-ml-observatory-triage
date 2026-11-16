@@ -1,0 +1,23 @@
+# The `tools` image: the runtime for every script that is NOT the engine -- the moros_pipeline,
+# mongo_landscape_export and schema scripts, their three test suites, the input builders, the
+# live status view and the checkpoint pusher. Small (no model weights), and it never installs or
+# imports `dome_triage`: that package lives only in the `pipeline` image (AGENTS.md rules 8-9).
+#
+# Running these here rather than on the host Python is what makes a run portable: every laptop
+# gets the same interpreter and the same pinned libraries.
+
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY docker/requirements-tools.txt /tmp/requirements-tools.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-tools.txt
+
+# The repository is bind-mounted and owned by the host user; the container runs as that user
+# (docker-compose.yml `user:`), with a throwaway HOME so git and pip caches never land in the repo.
+ENV HOME=/tmp/home PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN mkdir -p /tmp/home && chmod 1777 /tmp/home \
+    && git config --system --add safe.directory '*'
+
+CMD ["bash"]

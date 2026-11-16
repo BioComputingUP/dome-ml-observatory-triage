@@ -1,10 +1,14 @@
-# One service: the container that runs the validated `dome-triage` CLI (classification and
-# enrichment against the DeepSeek API). Nothing in this container ever connects to the database --
-# every moros read or write is a host-side `python3 moros_pipeline/scripts/<x>.py`.
+# Two services (AGENTS.md rules 8-9):
+#   pipeline -- the validated `dome-triage` CLI (classification on DeepSeek, enrichment on the EBI
+#               gateway). Never connects to the database.
+#   tools    -- every other script: moros_pipeline / mongo_landscape_export / schema scripts and
+#               their test suites, the input builders, the live status view, the checkpoint pusher.
+#               Never imports dome_triage.
 #
 #   docker compose build
 #   docker compose run --rm pipeline dome-triage llm-classify --help
-#   docker compose run --rm pipeline pytest
+#   docker compose run --rm pipeline pytest --ignore=tests/test_curate_page.py
+#   docker compose run --rm tools bash -c 'cd moros_pipeline/scripts && python -m pytest -q .'
 services:
   pipeline:
     build:
@@ -20,6 +24,9 @@ services:
       # llm_classify/prompts.py and llm_classify/enrichment.py. Read-only: nothing in the
       # pipeline ever writes here.
       - ./curation_criteria:/app/curation_criteria:ro
+      # The rendered prompts and PROMPT_HASHES.json: the e2/e3 tests compare the live render with
+      # the committed file. Read-only.
+      - ./prompts:/app/prompts:ro
       # Read-WRITE: a classify run reads its staged CSV from here (written on the host by
       # build_incoming_documents.py) and writes its event log back here via --events-out; an
       # enrichment run reads its export (export_journal_for_enrichment.py) and writes its events
@@ -31,9 +38,14 @@ services:
     stdin_open: true
     environment:
       # Substituted by Compose from the repo-root .env (gitignored). See .env.example.
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
       # Enrichment prompt e2 (GLM-5.3 on Z.ai's pay-as-you-go API). Optional: only `enrich --prompt e2` reads it.
       - ZAI_API_KEY=${ZAI_API_KEY:-}
+      # Production enrichment (the latest prompt) on the EMBL-EBI LiteLLM gateway. See .env.example.
+      - EBI_LLM_BASE_URL=${EBI_LLM_BASE_URL:-}
+      - EBI_LLM_API_KEY=${EBI_LLM_API_KEY:-}
+      - EBI_LLM_MODEL=${EBI_LLM_MODEL:-}
+      - EBI_LLM_MAX_CONCURRENCY=${EBI_LLM_MAX_CONCURRENCY:-}
       - NCBI_API_KEY=${NCBI_API_KEY:-}
       - CROSSREF_MAILTO=${CROSSREF_MAILTO:-}
       # Python block-buffers stdout when it is not a TTY; a redirected or backgrounded run would
@@ -41,3 +53,24 @@ services:
       - PYTHONUNBUFFERED=1
     # Hard memory ceiling so a bug in a long run is contained to this container, not the host.
     mem_limit: 12g
+
+  tools:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tools
+    # The repository's PARENT is mounted, so the sibling folders the scripts expect beside this one
+    # (the runs repository, the Zenodo dump, the test bed, dome-ml-observatory) resolve exactly as
+    # on the host, and a missing sibling is simply absent rather than created root-owned.
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace/${TRIAGE_DIR:-dome-ml-observatory-triage}
+    # Files it writes belong to you, not root. Export HOST_UID/HOST_GID if yours are not 1000
+    # (scripts/run_enrichment.sh does it for you).
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    tty: true
+    stdin_open: true
+    environment:
+      # For scripts/checkpoint_events.py only: a GitHub token, passed per run as
+      # GH_TOKEN=$(gh auth token). Never written to .env.
+      - GH_TOKEN=${GH_TOKEN:-}
+    mem_limit: 8g

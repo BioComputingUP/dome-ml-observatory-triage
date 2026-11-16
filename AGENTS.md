@@ -71,16 +71,22 @@ repositories is tracked as issues on the sibling:
    the paid record of a run and is merged into moros with `load_documents.py` /
    `load_enrichment.py` before it is ever discarded.
 
-8. **Nothing in the container touches the database; nothing on the host imports `dome_triage`.**
-   Keep that split. The container is for the DeepSeek-calling CLI; host Python is for moros.
+8. **Nothing in the `pipeline` container touches the database; nothing in the `tools` container
+   imports `dome_triage`.** Keep that split. `pipeline` is the LLM-calling CLI (classification on
+   DeepSeek, enrichment on the EMBL-EBI gateway); `tools` (`docker/Dockerfile.tools`, pinned
+   libraries, the repository's parent mounted at `/workspace`) runs every other script, moros
+   included. Neither needs anything installed on the host but Docker, git and `gh`.
 
-9. **Docker only for the engine.** No venv, no host `pip install` of the package: the model weights
-   and NLTK corpora are baked into the image and a host run would silently diverge. The gate is
+9. **Docker for everything.** No venv, no host `pip install`: the model weights and NLTK corpora are
+   baked into the `pipeline` image, the other scripts' libraries are pinned in the `tools` image,
+   and a host run would silently diverge. The gate is
    `docker compose run --rm pipeline pytest --ignore=tests/test_curate_page.py` (that one file
    drives the inert Streamlit app and cannot resolve its script path from this repository root).
    Every operational test must pass; if one fails, stop and report rather than patching validated
-   code. The three host suites are `(cd moros_pipeline/scripts && python3 -m pytest .)`,
-   `(cd mongo_landscape_export/scripts && python3 -m pytest .)` and `(cd schema && python3 -m pytest .)`. Rebuilding the
+   code. The three script suites run in `tools`: `docker compose run --rm tools bash -c '(cd
+   moros_pipeline/scripts && python -m pytest -q .); (cd mongo_landscape_export/scripts && python -m
+   pytest -q .); (cd schema && python -m pytest -q .)'`. Export `HOST_UID=$(id -u) HOST_GID=$(id -g)`
+   first so what `tools` writes is yours. Rebuilding the
    image leaves the previous one dangling at ~7 GB; run `docker image prune -f` after a few builds
    and check `df -h /`. Never `docker system prune -a` without asking.
 

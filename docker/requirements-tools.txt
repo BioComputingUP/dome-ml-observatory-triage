@@ -1,0 +1,10 @@
+# Pinned to the versions the `pipeline` image resolved on 2026-11-16, so a script behaves the same
+# in either container. pymongo is the one library the pipeline image does not carry (by design).
+pandas==3.1.1
+numpy==2.5.5
+pytest==9.2.0
+PyYAML==6.0.3
+requests==2.34.2
+tqdm==4.70.1
+matplotlib==3.11.2
+pymongo==4.18.3
