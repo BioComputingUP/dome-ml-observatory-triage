@@ -1,8 +1,8 @@
 {
-  "status": "OFFICIAL -- confirmed by Gavin 2026-08-27",
+  "status": "prompt e3 (production), 2026-11-16: e2's seed plus the life-science model types e2 lacked; see curation_criteria/e3/PROVENANCE.md",
   "design": "model_type stays OPEN free-text; this seed is coverage assurance + normalization only (emit the canonical spelling when a paper's method matches an entry; otherwise tag verbatim)",
   "built": "2026-08-27",
-  "n_seed_entries": 76,
+  "n_seed_entries": 99,
   "sklearn_version_checked": "1.6.1",
   "sklearn_coverage_check": {
     "sklearn_inventory_size": 111,
@@ -15,7 +15,8 @@
       "canonical": "linear regression",
       "aliases": [
         "ordinary least squares",
-        "OLS"
+        "OLS",
+        "multiple linear regression"
       ],
       "family_hint": "classical machine learning",
       "sklearn": [
@@ -33,7 +34,13 @@
           "source": "ols4+zooma",
           "checked": "2026-09-15"
         }
-      ]
+      ],
+      "e3": {
+        "aliases_added": [
+          "multiple linear regression"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "logistic regression",
@@ -292,7 +299,9 @@
         "GBM",
         "gradient boosted trees",
         "GBDT",
-        "gradient boosting machine"
+        "gradient boosting machine",
+        "histogram gradient boosting",
+        "HistGradientBoosting"
       ],
       "family_hint": "classical machine learning + ensemble learning",
       "sklearn": [
@@ -301,7 +310,11 @@
         "HistGradientBoostingClassifier",
         "HistGradientBoostingRegressor"
       ],
-      "ontology_mappings": []
+      "ontology_mappings": [],
+      "aliases_added_by": "E2-V9",
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
     },
     {
       "canonical": "XGBoost",
@@ -1136,7 +1149,10 @@
         "artificial neural network",
         "ANN",
         "deep neural network",
-        "DNN"
+        "DNN",
+        "BP-ANN",
+        "backpropagation neural network",
+        "BPNN"
       ],
       "family_hint": "classic neural network or deep learning (depth-dependent)",
       "sklearn": [],
@@ -1163,7 +1179,11 @@
           "source": "ols4+zooma",
           "checked": "2026-09-15"
         }
-      ]
+      ],
+      "aliases_added_by": "E2-V9",
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
     },
     {
       "canonical": "convolutional neural network",
@@ -1222,7 +1242,9 @@
     {
       "canonical": "long short-term memory",
       "aliases": [
-        "LSTM"
+        "LSTM",
+        "BiLSTM",
+        "bidirectional LSTM"
       ],
       "family_hint": "deep learning",
       "sklearn": [],
@@ -1249,7 +1271,14 @@
           "source": "ols4+zooma",
           "checked": "2026-09-15"
         }
-      ]
+      ],
+      "e3": {
+        "aliases_added": [
+          "BiLSTM",
+          "bidirectional LSTM"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "gated recurrent unit",
@@ -1297,11 +1326,18 @@
     {
       "canonical": "vision transformer",
       "aliases": [
-        "ViT"
+        "ViT",
+        "Swin Transformer"
       ],
       "family_hint": "deep learning",
       "sklearn": [],
-      "ontology_mappings": []
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "Swin Transformer"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "BERT",
@@ -1356,27 +1392,58 @@
     {
       "canonical": "U-Net",
       "aliases": [
-        "UNet"
+        "UNet",
+        "nnU-Net",
+        "UNet++"
       ],
       "family_hint": "deep learning",
       "sklearn": [],
-      "ontology_mappings": []
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "nnU-Net",
+          "UNet++"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "ResNet",
       "aliases": [
-        "residual network"
+        "residual network",
+        "ResNet-18",
+        "ResNet-34",
+        "ResNet-50",
+        "ResNet-101",
+        "ResNet-152"
       ],
       "family_hint": "deep learning",
       "sklearn": [],
-      "ontology_mappings": []
+      "ontology_mappings": [],
+      "e3": {
+        "aliases_added": [
+          "ResNet-18",
+          "ResNet-34",
+          "ResNet-50",
+          "ResNet-101",
+          "ResNet-152"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "graph neural network",
       "aliases": [
         "GNN",
         "graph convolutional network",
-        "GCN"
+        "GCN",
+        "graph attention network",
+        "GAT",
+        "graph isomorphism network",
+        "GIN",
+        "message passing neural network",
+        "MPNN",
+        "Chemprop"
       ],
       "family_hint": "deep learning",
       "sklearn": [],
@@ -1392,7 +1459,19 @@
           "source": "ols4+zooma+nlm",
           "checked": "2026-09-15"
         }
-      ]
+      ],
+      "e3": {
+        "aliases_added": [
+          "graph attention network",
+          "GAT",
+          "graph isomorphism network",
+          "GIN",
+          "message passing neural network",
+          "MPNN",
+          "Chemprop"
+        ],
+        "evidence": "docs/e3_model_type_evidence.md"
+      }
     },
     {
       "canonical": "Siamese network",
@@ -1549,7 +1628,412 @@
       "family_hint": "reinforcement",
       "sklearn": [],
       "ontology_mappings": []
+    },
+    {
+      "canonical": "causal forest",
+      "aliases": [
+        "generalized random forest",
+        "causal random forest"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "machine-learning interatomic potential",
+      "aliases": [
+        "MLIP",
+        "machine learning potential",
+        "ML potential",
+        "machine-learned interatomic potential",
+        "neural network potential"
+      ],
+      "family_hint": "",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "state space model",
+      "aliases": [
+        "Mamba",
+        "SSM (state space model)",
+        "S4"
+      ],
+      "family_hint": "deep learning",
+      "sklearn": [],
+      "ontology_mappings": [],
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v9",
+      "approved": "Gavin, 2026-11-05"
+    },
+    {
+      "canonical": "protein language model",
+      "aliases": [
+        "PLM",
+        "ESM",
+        "ESM-2",
+        "ESMFold",
+        "ProtT5",
+        "ProtBERT",
+        "ProtTrans",
+        "Ankh",
+        "ProGen",
+        "SaProt"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "genomic language model",
+      "aliases": [
+        "DNA language model",
+        "RNA language model",
+        "nucleotide language model",
+        "DNABERT",
+        "DNABERT-2",
+        "Nucleotide Transformer",
+        "HyenaDNA",
+        "Evo",
+        "Caduceus",
+        "RNA-FM"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "chemical language model",
+      "aliases": [
+        "molecular language model",
+        "ChemBERTa",
+        "MolFormer",
+        "Chemformer"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "pathology foundation model",
+      "aliases": [
+        "UNI",
+        "CONCH",
+        "Virchow",
+        "Prov-GigaPath"
+      ],
+      "family_hint": "deep learning + representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "graph embedding",
+      "aliases": [
+        "network embedding",
+        "node2vec",
+        "DeepWalk",
+        "knowledge graph embedding"
+      ],
+      "family_hint": "representation learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "AlphaFold",
+      "aliases": [
+        "AlphaFold2",
+        "AlphaFold3",
+        "AF2",
+        "AF3",
+        "AlphaFold-Multimer",
+        "ColabFold"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Segment Anything Model",
+      "aliases": [
+        "SAM",
+        "SAM 2",
+        "MedSAM"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "DenseNet",
+      "aliases": [
+        "DenseNet-121",
+        "DenseNet-201",
+        "densely connected convolutional network"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "VGG",
+      "aliases": [
+        "VGG16",
+        "VGG19",
+        "VGGNet"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "EfficientNet",
+      "aliases": [
+        "EfficientNet-B0",
+        "EfficientNetV2"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "MobileNet",
+      "aliases": [
+        "MobileNetV2",
+        "MobileNetV3"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Inception",
+      "aliases": [
+        "GoogLeNet",
+        "Inception-v3",
+        "InceptionV3",
+        "Inception-ResNet"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Faster R-CNN",
+      "aliases": [
+        "Faster RCNN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Mask R-CNN",
+      "aliases": [
+        "Mask RCNN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Cox proportional hazards model",
+      "aliases": [
+        "Cox regression",
+        "Cox model",
+        "CoxPH"
+      ],
+      "family_hint": "classical machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "random survival forest",
+      "aliases": [
+        "RSF"
+      ],
+      "family_hint": "classical machine learning + ensemble learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "multiple instance learning",
+      "aliases": [
+        "MIL",
+        "attention-based MIL",
+        "ABMIL",
+        "CLAM",
+        "TransMIL"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": [
+        {
+          "ontology": "mesh",
+          "id": "mesh:D000098451",
+          "iri": "http://id.nlm.nih.gov/mesh/D000098451",
+          "label": "Multiple-Instance Learning Algorithms",
+          "predicate": "skos:exactMatch",
+          "matched_on": "canonical",
+          "match_string": "multiple instance learning",
+          "source": "ols4+nlm",
+          "checked": "2026-11-16"
+        }
+      ]
+    },
+    {
+      "canonical": "physics-informed neural network",
+      "aliases": [
+        "PINN"
+      ],
+      "family_hint": "deep learning + physics-informed machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Kolmogorov-Arnold network",
+      "aliases": [
+        "KAN"
+      ],
+      "family_hint": "deep learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "ARIMA",
+      "aliases": [
+        "autoregressive integrated moving average",
+        "SARIMA",
+        "ARIMAX"
+      ],
+      "family_hint": "classical machine learning",
+      "e3": {
+        "added": "2026-11-16",
+        "evidence": "docs/e3_model_type_evidence.md"
+      },
+      "ontology_mappings": [
+        {
+          "ontology": "aio",
+          "id": "AIO:AutoregressiveIntegratedMovingAverage",
+          "iri": "https://w3id.org/aio/AutoregressiveIntegratedMovingAverage",
+          "label": "Autoregressive Integrated Moving Average",
+          "predicate": "skos:closeMatch",
+          "matched_on": "alias",
+          "match_string": "autoregressive integrated moving average",
+          "source": "ols4+zooma",
+          "checked": "2026-11-16"
+        }
+      ]
     }
   ],
-  "ontology_mappings_added": "2026-09-15 (schema v1.5.1): ontology_mappings added to every term. Each entry is an accepted match of the term's label, MeSH label or an alias to a term in MeSH, AIO, NCIT, OBI, SWO, STATO or EDAM, found with EBI OLS4, corroborated by Zooma, with every MeSH id confirmed at id.nlm.nih.gov. Sources, versions and rules: dome-ml-observatory-triage docs/vocabulary_ontology_mappings.md. Additive: no term, label, alias, mesh_id, definition or max_tags changed, and the key is not rendered into the enrichment prompt. An empty list means no accepted mapping."
+  "ontology_mappings_added": "2026-09-15 (schema v1.5.1): ontology_mappings added to every term. Each entry is an accepted match of the term's label, MeSH label or an alias to a term in MeSH, AIO, NCIT, OBI, SWO, STATO or EDAM, found with EBI OLS4, corroborated by Zooma, with every MeSH id confirmed at id.nlm.nih.gov. Sources, versions and rules: dome-ml-observatory-triage docs/vocabulary_ontology_mappings.md. Additive: no term, label, alias, mesh_id, definition or max_tags changed, and the key is not rendered into the enrichment prompt. An empty list means no accepted mapping.",
+  "e2": {
+    "status": "prompt e2, adopted for production 2026-11-16 from the glm5.3_test repository; validation: curation_criteria/e2/PROVENANCE.md#validation",
+    "base": "curation_criteria/model_type_seed_vocab.json (prompt e1)",
+    "changes": [
+      "E2-V9"
+    ]
+  },
+  "e3": {
+    "status": "prompt e3, the production enrichment prompt from 2026-11-16",
+    "base": "curation_criteria/e2/model_type_seed_vocab.json (prompt e2)",
+    "rule": ">= 100 positives in the corpus mention it, not covered by an existing canonical or alias, a genuine model or architecture",
+    "added_terms": [
+      "protein language model",
+      "genomic language model",
+      "chemical language model",
+      "pathology foundation model",
+      "graph embedding",
+      "AlphaFold",
+      "Segment Anything Model",
+      "DenseNet",
+      "VGG",
+      "EfficientNet",
+      "MobileNet",
+      "Inception",
+      "Faster R-CNN",
+      "Mask R-CNN",
+      "Cox proportional hazards model",
+      "random survival forest",
+      "multiple instance learning",
+      "physics-informed neural network",
+      "Kolmogorov-Arnold network",
+      "ARIMA"
+    ],
+    "aliases_added_to": [
+      "ResNet",
+      "U-Net",
+      "graph neural network",
+      "vision transformer",
+      "long short-term memory",
+      "linear regression"
+    ],
+    "excluded_below_threshold": {
+      "single-cell foundation model": 69,
+      "RoseTTAFold": 76
+    },
+    "evidence": "docs/e3_model_type_evidence.md"
+  }
 }

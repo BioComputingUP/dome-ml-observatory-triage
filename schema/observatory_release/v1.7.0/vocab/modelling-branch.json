@@ -5,7 +5,7 @@
   "fields": {
     "learning_paradigm": {
       "max_tags": 2,
-      "guidance": "How the model learns. Usually exactly 1; use 2 only for genuine hybrids.",
+      "guidance": "How the model is trained IN THIS PAPER. Usually exactly 1; use 2 when the paper has a distinct second learning step (e.g. unsupervised clustering or embedding feeding a supervised model). Use [] when the paper trains nothing (model_use is only 'pretrained, applied as-is' or 'prompted (zero/few-shot)').",
       "terms": [
         {
           "label": "supervised",
@@ -90,9 +90,12 @@
         {
           "label": "semi-supervised",
           "mesh_id": null,
-          "extension": true,
-          "definition": "Learning from a mix of labelled and unlabelled data. Standard textbook category; verified absent from MeSH (exact + contains lookups empty).",
-          "ontology_mappings": []
+          "extension": "e2",
+          "definition": "Learning from a mix of labelled and unlabelled data, including weak supervision (noisy, partial or coarse labels such as image-level tags or multiple-instance learning) and pseudo-labelling. Standard textbook category; verified absent from MeSH (exact + contains lookups empty).",
+          "ontology_mappings": [],
+          "definition_changed_by": "E2-V3",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v3",
+          "approved": "Gavin, 2026-11-05"
         },
         {
           "label": "reinforcement",
@@ -122,8 +125,28 @@
               "checked": "2026-09-15"
             }
           ]
+        },
+        {
+          "label": "self-supervised",
+          "mesh_id": null,
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v2",
+          "approved": "Gavin, 2026-11-05",
+          "definition": "Learning from labels generated from the data itself, e.g. masked or next-token prediction, contrastive pretraining, denoising. Used for pretraining foundation and language models. Verified absent from MeSH.",
+          "ontology_mappings": [
+            {
+              "ontology": "aio",
+              "id": "AIO:SelfsupervisedLearning",
+              "iri": "https://w3id.org/aio/SelfsupervisedLearning",
+              "label": "Self-supervised Learning",
+              "predicate": "skos:exactMatch",
+              "source": "ols4 search (ontology=aio)",
+              "checked": "2026-11-05"
+            }
+          ]
         }
-      ]
+      ],
+      "guidance_changed_by": "E2-V1"
     },
     "model_family": {
       "max_tags": 3,
@@ -475,9 +498,119 @@
           "extension": true,
           "definition": "A multi-component autonomous system orchestrating models, tools, and plans across tasks (e.g. Biomni-style systems) -- a higher degree of agency than a single task-specific AI agent. Verified absent from MeSH.",
           "ontology_mappings": []
+        },
+        {
+          "label": "active learning",
+          "mesh_id": null,
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v4",
+          "approved": "Gavin, 2026-11-05",
+          "definition": "The model chooses which new samples or experiments to label or run next (closed-loop, query-driven design). Verified absent from MeSH.",
+          "ontology_mappings": [
+            {
+              "ontology": "aio",
+              "id": "AIO:ActiveLearning",
+              "iri": "https://w3id.org/aio/ActiveLearning",
+              "label": "Active Learning",
+              "predicate": "skos:exactMatch",
+              "source": "ols4 search (ontology=aio)",
+              "checked": "2026-11-05"
+            }
+          ]
+        },
+        {
+          "label": "multimodal learning",
+          "mesh_id": null,
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v5",
+          "approved": "Gavin, 2026-11-05",
+          "definition": "One model learns jointly from two or more data modalities (e.g. image + text, imaging + omics, several sensor types). Verified absent from MeSH.",
+          "ontology_mappings": [
+            {
+              "ontology": "aio",
+              "id": "AIO:MultimodalLearning",
+              "iri": "https://w3id.org/aio/MultimodalLearning",
+              "label": "Multimodal Learning",
+              "predicate": "skos:exactMatch",
+              "source": "ols4 search (ontology=aio)",
+              "checked": "2026-11-05"
+            }
+          ]
+        },
+        {
+          "label": "physics-informed machine learning",
+          "mesh_id": null,
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v6",
+          "approved": "Gavin, 2026-11-05",
+          "definition": "Physical laws or constraints are built into the model or its loss (e.g. physics-informed neural networks, physics-constrained losses). Project extension: no MeSH descriptor and no AIO term found.",
+          "ontology_mappings": []
+        }
+      ]
+    },
+    "model_use": {
+      "max_tags": 2,
+      "guidance": "How the paper obtains the model(s) it reports. Usually exactly 1; use 2 when the paper both trains its own model and applies or prompts another one.",
+      "extension": "e2",
+      "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v1",
+      "approved": "Gavin, 2026-11-05",
+      "terms": [
+        {
+          "label": "trained in this study",
+          "definition": "The paper fits or trains the model on its own data (including training from scratch a published architecture).",
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v1",
+          "approved": "Gavin, 2026-11-05",
+          "ontology_mappings": []
+        },
+        {
+          "label": "fine-tuned or adapted",
+          "definition": "A pretrained model is further trained, fine-tuned, calibrated or transfer-learned on the paper's data.",
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v1",
+          "approved": "Gavin, 2026-11-05",
+          "ontology_mappings": []
+        },
+        {
+          "label": "pretrained, applied as-is",
+          "definition": "An existing trained model or tool (e.g. AlphaFold, a commercial AI product) is run without further training.",
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v1",
+          "approved": "Gavin, 2026-11-05",
+          "ontology_mappings": []
+        },
+        {
+          "label": "prompted (zero/few-shot)",
+          "definition": "A pretrained model, usually an LLM, is used through prompts or in-context examples, with no weight updates.",
+          "extension": "e2",
+          "provenance": "curation_criteria/e2/PROVENANCE.md#e2-v1",
+          "approved": "Gavin, 2026-11-05",
+          "ontology_mappings": [
+            {
+              "ontology": "aio",
+              "id": "AIO:ZeroshotLearning",
+              "iri": "https://w3id.org/aio/ZeroshotLearning",
+              "label": "Zero-shot Learning",
+              "predicate": "skos:exactMatch",
+              "source": "ols4 search (ontology=aio)",
+              "checked": "2026-11-05"
+            }
+          ]
         }
       ]
     }
   },
-  "ontology_mappings_added": "2026-09-15 (schema v1.5.1): ontology_mappings added to every term. Each entry is an accepted match of the term's label, MeSH label or an alias to a term in MeSH, AIO, NCIT, OBI, SWO, STATO or EDAM, found with EBI OLS4, corroborated by Zooma, with every MeSH id confirmed at id.nlm.nih.gov. Sources, versions and rules: dome-ml-observatory-triage docs/vocabulary_ontology_mappings.md. Additive: no term, label, alias, mesh_id, definition or max_tags changed, and the key is not rendered into the enrichment prompt. An empty list means no accepted mapping."
+  "ontology_mappings_added": "2026-09-15 (schema v1.5.1): ontology_mappings added to every term. Each entry is an accepted match of the term's label, MeSH label or an alias to a term in MeSH, AIO, NCIT, OBI, SWO, STATO or EDAM, found with EBI OLS4, corroborated by Zooma, with every MeSH id confirmed at id.nlm.nih.gov. Sources, versions and rules: dome-ml-observatory-triage docs/vocabulary_ontology_mappings.md. Additive: no term, label, alias, mesh_id, definition or max_tags changed, and the key is not rendered into the enrichment prompt. An empty list means no accepted mapping.",
+  "e2": {
+    "status": "prompt e2, adopted for production 2026-11-16 from the glm5.3_test repository; validation: curation_criteria/e2/PROVENANCE.md#validation",
+    "base": "curation_criteria/modelling_branch_vocab.json (prompt e1)",
+    "changes": [
+      "E2-V1",
+      "E2-V2",
+      "E2-V3",
+      "E2-V4",
+      "E2-V5",
+      "E2-V6"
+    ]
+  }
 }

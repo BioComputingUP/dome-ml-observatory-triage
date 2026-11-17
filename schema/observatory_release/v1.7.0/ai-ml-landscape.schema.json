@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://observatory.dome-ml.org/schema/v1.6.0/ai-ml-landscape.schema.json",
+  "$id": "https://observatory.dome-ml.org/schema/v1.7.0/ai-ml-landscape.schema.json",
   "title": "DOME Observatory AI/ML landscape record",
   "description": "One document per screened publication. Source of truth for this shape is dome-ml-observatory-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside that repo (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
   "type": "object",
@@ -24,7 +24,7 @@
     },
     "schema_version": {
       "type": "string",
-      "description": "The release of the record schema this document was written under, e.g. \"1.6.0\" -- describes the document's structure and vocabularies, not the paper's content or any processing run. Bumped on every release, whether the document shape or a vocabulary changed, and restamped on every document by that release's migration; see schema/CHANGELOG.md."
+      "description": "The release of the record schema this document was written under, e.g. \"1.7.0\" -- describes the document's structure and vocabularies, not the paper's content or any processing run. Bumped on every release, whether the document shape or a vocabulary changed, and restamped on every document by that release's migration; see schema/CHANGELOG.md."
     },
     "record_modified": {
       "type": [
@@ -282,7 +282,7 @@
     },
     "content_filters": {
       "type": "object",
-      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining six are the AI/ML enrichment pass's output -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags). From v1.5.1 every term in vocab/modelling-branch.json and vocab/model-type-seed.json carries ontology_mappings: the MeSH, AIO, NCIT, OBI, SWO, STATO and EDAM terms it matches.",
+      "description": "Content descriptors: the first three sub-fields (mesh_headings/pub_types/keywords_author) come from the source corpus and are populated for every record. The remaining seven are the AI/ML enrichment pass's output (model_use from v1.7.0) -- present in every document but null/empty until that pass actually runs on a given record. See vocab/domain.json and vocab/modelling-branch.json for the controlled vocabularies and their cardinality caps (max_tags). From v1.5.1 every term in vocab/modelling-branch.json and vocab/model-type-seed.json carries ontology_mappings: the MeSH, AIO, NCIT, OBI, SWO, STATO and EDAM terms it matches.",
       "required": [
         "mesh_headings",
         "pub_types",
@@ -292,7 +292,8 @@
         "domain_tier3",
         "learning_paradigm",
         "model_family",
-        "model_type"
+        "model_type",
+        "model_use"
       ],
       "properties": {
         "mesh_headings": {
@@ -356,7 +357,21 @@
           "items": {
             "type": "string"
           },
-          "description": "The specific method(s) used, e.g. \"random forest\", \"XGBoost\". Deliberately OPEN free text, not a closed enum: vocab/model-type-seed.json's 76 canonical terms + aliases are coverage assurance and normalization only -- the canonical spelling is emitted on a match, otherwise the paper's own term is tagged verbatim. Empty until the enrichment pass runs on this record."
+          "description": "The specific method(s) used, e.g. \"random forest\", \"XGBoost\". Deliberately OPEN free text, not a closed enum: vocab/model-type-seed.json's 99 canonical terms (v1.7.0) + aliases are coverage assurance and normalization only -- the canonical spelling is emitted on a match, otherwise the paper's own term is tagged verbatim. Empty until the enrichment pass runs on this record."
+        },
+        "model_use": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "trained in this study",
+              "fine-tuned or adapted",
+              "pretrained, applied as-is",
+              "prompted (zero/few-shot)"
+            ]
+          },
+          "maxItems": 2,
+          "description": "How the paper obtains the model(s) it uses (from v1.7.0): \"trained in this study\", \"fine-tuned or adapted\", \"pretrained, applied as-is\" or \"prompted (zero/few-shot)\". Closed vocabulary, max_tags: 2; see vocab/modelling-branch.json (field model_use). Filled by enrichment prompts e2 and e3; learning_paradigm then describes only learning done in the paper. Empty until such an enrichment runs on this record, and stays empty on records enriched with prompt e1, which never asked (llm_enrichment.prompt_version tells them apart)."
         }
       }
     },
@@ -698,7 +713,7 @@
     },
     "llm_enrichment": {
       "type": "object",
-      "description": "Deliberately PARALLEL in shape to llm_classification (same provenance fields) -- this is the enrichment pass that populates content_filters.domain_tier1-3/learning_paradigm/model_family/model_type. Every field is present now (all null) rather than a single null placeholder, precisely so no schema migration is needed once this pass actually runs on a record.",
+      "description": "Deliberately PARALLEL in shape to llm_classification (same provenance fields) -- this is the enrichment pass that populates content_filters.domain_tier1-3/learning_paradigm/model_family/model_type/model_use. Every field is present now (all null) rather than a single null placeholder, precisely so no schema migration is needed once this pass actually runs on a record.",
       "required": [
         "provider",
         "model_tier",
@@ -722,7 +737,7 @@
             "string",
             "null"
           ],
-          "description": "LLM provider used for enrichment."
+          "description": "LLM provider used for enrichment: \"deepseek\" (prompt e1), \"zai\" (e2) or \"embl-ebi\" (e3, GLM-5.3-Flash served by the EMBL-EBI LLM gateway)."
         },
         "model_tier": {
           "type": [
@@ -736,7 +751,7 @@
             "string",
             "null"
           ],
-          "description": "Exact model id used for enrichment."
+          "description": "Exact model id used for enrichment, as the provider reports it, e.g. \"deepseek-v4-flash\" or \"zai-org/GLM-5.3-Flash\"."
         },
         "mode": {
           "type": [
@@ -757,7 +772,7 @@
             "string",
             "null"
           ],
-          "description": "Version tag of the enrichment prompt template used."
+          "description": "Version tag of the enrichment prompt template used: \"e1\", \"e2\" or \"e3\" (the production prompt from v1.7.0). Each is frozen at a recorded hash in dome-ml-observatory-triage/prompts/PROMPT_HASHES.json."
         },
         "ruleset_sha256": {
           "type": [

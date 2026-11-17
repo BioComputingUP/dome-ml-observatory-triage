@@ -185,11 +185,11 @@ def normalise_usage(data: dict) -> dict:
 # EMBL-EBI's LiteLLM gateway (the production provider from prompt e3)
 # ---------------------------------------------------------------------------
 #
-# The same GLM-5.3-Flash weights, served by EMBL-EBI (vLLM behind LiteLLM, OpenAI-compatible). Free per
-# call; reachable only from the EBI network or VPN. Configuration is read from the environment, never
+# The same GLM-5.3-Flash weights, served by EMBL-EBI (vLLM behind LiteLLM, OpenAI-compatible); reachable
+# only from the EBI network or VPN. Configuration is read from the environment, never
 # from a tracked file, because this repository is public: EBI_LLM_BASE_URL (ends in /v1),
 # EBI_LLM_API_KEY, EBI_LLM_MODEL (the served id, e.g. "zai-org/GLM-5.3-Flash", recorded on every event
-# and document as `model_id`).
+# and document as `model_id`). Requests are priced against the key's budget, which only the gateway UI shows.
 #
 # What the endpoint was measured to do (2026-11-16 probe; docs/enrichment_ebi.md):
 # - Z.ai's `thinking` and `reasoning_effort` are accepted and IGNORED: effort low, high and max produce

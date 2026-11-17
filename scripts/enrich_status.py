@@ -124,7 +124,10 @@ def render(cohort: str, work: Path, runs_repo: Path, now: datetime) -> tuple[str
     rate_recent = len(recent) / (RECENT.total_seconds() / 60)
     rate_all = (len(stamps) / max((stamps[-1] - stamps[0]).total_seconds() / 60, 1e-9)) if len(stamps) > 1 else 0.0
     rate = rate_recent or rate_all
-    remaining = total - done
+    failed = sum(c.parse_errors for c in chunks)
+    # A parse error is a finished call whose answer could not be read (almost always a response cut off
+    # at the token cap). It is not in flight: a re-run retries it, so it is shown, not waited for.
+    remaining = total - done - failed
     eta = (now + timedelta(minutes=remaining / rate)) if rate and remaining else None
     crashes, api_errors = log_problems(work)
     last_age = (now - stamps[-1]) if stamps else None
@@ -133,7 +136,8 @@ def render(cohort: str, work: Path, runs_repo: Path, now: datetime) -> tuple[str
     lines = [
         f"DOME enrichment e3 -- cohort {cohort}            {now.strftime('%Y-%m-%d %H:%M:%S')} UTC",
         "",
-        f"  progress   [{_bar(done / total if total else 0)}] {done:,} / {total:,} ({(done / total if total else 0):.1%})",
+        f"  progress   [{_bar(done / total if total else 0)}] {done:,} / {total:,} ({(done / total if total else 0):.1%})"
+        + (f"   {failed:,} failed (a re-run retries them)" if failed else ""),
         f"  speed      {rate_recent:,.0f} rec/min (last 5 min)   {rate_all:,.0f} rec/min (whole run)",
         f"  ETA        {('~' + _fmt_td(eta - now) + '  -> ' + eta.strftime('%H:%M UTC')) if eta else ('done' if not remaining else 'n/a')}",
         f"  last event {(_fmt_td(last_age) + ' ago') if last_age else 'none yet'}"

@@ -3338,7 +3338,8 @@ def step_llm_classify_enrich_e3(
         if concurrency is None:
             concurrency = int(os.environ.get("EBI_LLM_MAX_CONCURRENCY") or 16)
         tier, make_client, effort = llm_zai.EBI_TIER, (lambda: _ebi_client(concurrency)), llm_zai.EBI_REASONING
-        provider_label, note = llm_zai.EBI_PROVIDER, "EBI gateway calls are not billed."
+        provider_label, note = llm_zai.EBI_PROVIDER, ("The EBI gateway prices requests against the key's budget "
+                                                       "(about $2.2 per 1,000 records); read it in the gateway UI under Usage.")
     elif provider == "zai":
         concurrency = concurrency or 50
         tier, make_client = "glm-5.3-flash", (lambda: _zai_client(concurrency, reasoning_effort))
