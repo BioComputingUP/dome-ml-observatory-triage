@@ -1,0 +1,91 @@
+# Installed in the PRIVATE runs repository as .github/workflows/enrichment-alerts.yml
+# (source of truth: dome-ml-observatory-triage/scripts/runs_repo_workflows/; see README.md there).
+#
+# Opens a GitHub issue -- as github-actions[bot], assigned to and mentioning the repository owner, so GitHub
+# emails them -- when an enrichment run needs attention:
+#   repository_dispatch  from scripts/run_watchdog.py on the laptop: gateway/VPN down, run stalled, stopped
+#                        for review (alert); back to normal (closes the alert); run finished (report, then
+#                        this workflow disables itself so the schedule stops spending Actions minutes).
+#   schedule             the dead-man check: no commit in this repository for 45 min (checkpoints land every
+#                        15 min while a run is enriching) means the laptop is off, asleep, offline, or the
+#                        run is dead. Closes itself when checkpoints resume.
+#   workflow_dispatch    a test alert.
+# One open issue per kind at a time; a repeat alert of the same kind is not re-opened while one is open.
+name: enrichment-alerts
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  repository_dispatch:
+    types: [enrichment-alert, enrichment-recovered, enrichment-finished]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  actions: write
+  contents: read
+
+concurrency:
+  group: enrichment-alerts
+  cancel-in-progress: false
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          STALE_MINUTES: "45"
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const LABEL = 'enrichment-alert';
+            const ensureLabel = async () => {
+              try { await github.rest.issues.getLabel({ owner, repo, name: LABEL }); }
+              catch { await github.rest.issues.createLabel({ owner, repo, name: LABEL, color: 'd73a4a',
+                                                             description: 'Enrichment run watchdog' }); }
+            };
+            const openOf = async (kind) => (await github.paginate(github.rest.issues.listForRepo,
+              { owner, repo, state: 'open', labels: LABEL })).filter(i => i.title.startsWith(`[${kind}]`));
+            const raise = async (kind, title, body) => {
+              if ((await openOf(kind)).length) { core.info(`[${kind}] already open`); return; }
+              await ensureLabel();
+              await github.rest.issues.create({ owner, repo, title: `[${kind}] ${title}`,
+                body: `@${owner} ${body}`, labels: [LABEL], assignees: [owner] });
+            };
+            const settle = async (kind, note) => {
+              for (const i of await openOf(kind)) {
+                await github.rest.issues.createComment({ owner, repo, issue_number: i.number, body: note });
+                await github.rest.issues.update({ owner, repo, issue_number: i.number, state: 'closed' });
+              }
+            };
+            const ev = context.eventName;
+            if (ev === 'repository_dispatch') {
+              const p = context.payload.client_payload || {};
+              const kind = String(p.kind || 'watchdog').replace(/[^a-z0-9-]/gi, '');
+              const action = context.payload.action;
+              if (action === 'enrichment-alert') await raise(kind, p.title || 'alert', p.body || '');
+              else if (action === 'enrichment-recovered') await settle(kind, `Recovered: ${p.title || ''}\n\n${p.body || ''}`);
+              else if (action === 'enrichment-finished') {
+                await raise('finished', p.title || 'run finished', p.body || '');
+                await settle('deadman', 'The run finished; the dead-man check is now disabled.');
+                await settle('stall', 'The run finished.');
+                await github.rest.actions.disableWorkflow({ owner, repo, workflow_id: 'enrichment-alerts.yml' });
+              }
+            } else if (ev === 'workflow_dispatch') {
+              await raise('test', 'test alert', 'If this reached your email, alerts work. Close this issue.');
+            } else {
+              const { data } = await github.rest.repos.listCommits({ owner, repo, per_page: 1 });
+              const last = new Date(data[0].commit.committer.date);
+              const age = Math.round((Date.now() - last.getTime()) / 60000);
+              core.info(`last commit ${last.toISOString()} (${age} min ago)`);
+              if (age > Number(process.env.STALE_MINUTES)) {
+                await raise('deadman', `no checkpoint for ${age} min`,
+                  `The last commit here was at ${last.toISOString()}. Checkpoints land every 15 min while a run ` +
+                  'is enriching, so the laptop is probably off, asleep or offline, the EBI VPN is down, or the run ' +
+                  'stopped. Check `tmux attach -t enrich-e3` on the laptop. This closes itself when checkpoints resume.');
+              } else {
+                await settle('deadman', `Checkpoints resumed (last commit ${last.toISOString()}).`);
+              }
+            }
