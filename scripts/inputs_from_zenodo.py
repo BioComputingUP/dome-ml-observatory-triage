@@ -6,7 +6,9 @@ Two modes:
                   that are not enriched (`llm_enrichment.provider` null) and have a non-empty title and
                   abstract, in the cohort's journals (configs/enrichment_cohorts.yaml, matched exactly).
                   Writes <out-dir>/<cohort>/enrich_input_<cohort>_zenodo-<version>_cNN.csv in chunks of
-                  --chunk-size, in the dump's `_id` order, plus SOURCE.md (record id, version, file sha256,
+                  --chunk-size, in the dump's `_id` order (or, for a cohort with `order: journals`, by the
+                  journal's position in the cohort's list, then `_id`, so the first-listed journals run
+                  first), plus SOURCE.md (record id, version, file sha256,
                   counts, selection), then rewrites the runs repository's SHA256SUMS.
 
   --ids-from CSV  test inputs. Every record whose `_id` is listed in CSV (column `record_id`, optionally
@@ -51,6 +53,18 @@ def load_cohort(name: str, path: Path = COHORTS_FILE) -> list[str]:
     if len(set(journals)) != len(journals):
         raise SystemExit(f"cohort {name!r} lists a journal twice")
     return journals
+
+
+ORDERS = ("dump", "journals")
+
+
+def load_cohort_order(name: str, path: Path = COHORTS_FILE) -> str:
+    """`dump` (the default: the dump's `_id` order) or `journals` (the cohort's journal order, then `_id`)."""
+    cohorts = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("cohorts", {})
+    order = (cohorts.get(name) or {}).get("order", "dump")
+    if order not in ORDERS:
+        raise SystemExit(f"cohort {name!r}: unknown order {order!r}; known: {ORDERS}")
+    return order
 
 
 def iter_docs(dump: Path) -> Iterator[dict]:
@@ -100,6 +114,10 @@ def build_cohort(dump: Path, cohort: str, out_dir: Path, chunk_size: int, zenodo
     journals = load_cohort(cohort)
     wanted = set(journals)
     rows = [to_row(d) for d in iter_docs(dump) if selected(d, wanted)]
+    order = load_cohort_order(cohort)
+    if order == "journals":
+        position = {j: i for i, j in enumerate(journals)}
+        rows.sort(key=lambda r: position[r["journal"]])  # stable: `_id` order within a journal
     per_journal = {j: 0 for j in journals}
     for r in rows:
         per_journal[r["journal"]] += 1
@@ -118,7 +136,9 @@ def build_cohort(dump: Path, cohort: str, out_dir: Path, chunk_size: int, zenodo
         f"- Zenodo record: {zenodo_record or 'not given'}; dump version {version}",
         f"- Dump file: `{dump.name}`, sha256 `{sha256_file(dump)}`",
         "- Selection: classification `positive`, `llm_enrichment.provider` null, non-empty title and abstract,",
-        "  journal exactly one of the cohort's (configs/enrichment_cohorts.yaml). Order: the dump's `_id` order.",
+        "  journal exactly one of the cohort's (configs/enrichment_cohorts.yaml).",
+        "- Order: " + ("the cohort's journal order, then the dump's `_id` order." if order == "journals"
+                       else "the dump's `_id` order."),
         f"- Records: {len(rows):,} in {len(paths)} chunk(s) of at most {chunk_size:,}",
         "",
         "| Journal | Records |",

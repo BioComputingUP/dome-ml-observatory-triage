@@ -35,3 +35,88 @@ cohorts:
       - "Journal of integrative bioinformatics"
       - "Bioinformation"
       - "Bioinformatics (Oxford, England)"
+
+  # batch2_high_impact -- the second e3 cohort on EBI (Gavin, 2026-11-17): about 87.6k positives without
+  # enrichment in Zenodo dump 2026-09-25, to take the enriched corpus to about 100k. Run in tier order
+  # (`order: journals`), so the highest-value records are done first if the run stops early:
+  #   tier 1  flagship and high-impact AI / life-science journals (~27k)
+  #   tier 2  Scientific reports + Scientific data, the high-volume contrast to tier 1 (~25.9k)
+  #   tier 3  the largest remaining AI/ML and life-science journals (~34.6k)
+  # Left out on purpose (a later batch): no journal name (38.9k), Sensors (engineering), Computational
+  # intelligence and neuroscience (mass retractions), Diagnostics, Heliyon, Entropy, EMBC proceedings,
+  # environment / materials / food / physics journals. Case variants of a name are listed after it,
+  # because names match exactly.
+  batch2_high_impact:
+    description: "Batch 2: high-impact, AI/ML and life-science journals, with Scientific reports/data as contrast"
+    order: journals
+    journals:
+      # tier 1 -- flagships and high-impact AI / life-science
+      - "Nature"
+      - "Science (New York, N.Y.)"
+      - "Cell"
+      - "Nature machine intelligence"
+      - "Nature medicine"
+      - "Nature biotechnology"
+      - "Nature computational science"
+      - "Nature biomedical engineering"
+      - "Nature communications"
+      - "Nature Communications"
+      - "nature communications"
+      - "Proceedings of the National Academy of Sciences of the United States of America"
+      - "Science advances"
+      - "eLife"
+      - "Elife"
+      - "Cell genomics"
+      - "Cell reports"
+      - "Cell reports. Medicine"
+      - "Cell reports methods"
+      - "Genome medicine"
+      - "The Lancet. Digital health"
+      - "NPJ digital medicine"
+      - "NPJ precision oncology"
+      - "NPJ systems biology and applications"
+      - "Communications biology"
+      - "Communications medicine"
+      - "Patterns (New York, N.Y.)"
+      - "Radiology"
+      - "Radiology. Artificial intelligence"
+      - "JAMA network open"
+      - "Medical image analysis"
+      - "IEEE transactions on medical imaging"
+      - "IEEE transactions on pattern analysis and machine intelligence"
+      - "IEEE transactions on neural networks and learning systems"
+      - "Neural networks : the official journal of the International Neural Network Society"
+      - "IEEE journal of biomedical and health informatics"
+      - "Journal of chemical information and modeling"
+      - "Journal of cheminformatics"
+      - "Journal of Cheminformatics"
+      - "Artificial intelligence in medicine"
+      - "Journal of the American Medical Informatics Association : JAMIA"
+      - "Journal of biomedical informatics"
+      - "Medical image computing and computer-assisted intervention : MICCAI ... International Conference on Medical Image Computing and Computer-Assisted Intervention"
+      - "PLOS digital health"
+      # tier 2 -- the contrast set
+      - "Scientific reports"
+      - "Scientific Reports"
+      - "Scientific data"
+      # tier 3 -- the largest remaining AI/ML and life-science journals
+      - "PloS one"
+      - "PLoS One"
+      - "PLOS One"
+      - "Frontiers in oncology"
+      - "Frontiers in immunology"
+      - "Frontiers in plant science"
+      - "Frontiers in medicine"
+      - "Frontiers in neuroscience"
+      - "Frontiers in artificial intelligence"
+      - "Frontiers in genetics"
+      - "Frontiers in Genetics"
+      - "Frontiers in microbiology"
+      - "Computers in biology and medicine"
+      - "International journal of molecular sciences"
+      - "BMC medical informatics and decision making"
+      - "Cancers"
+      - "Computer methods and programs in biomedicine"
+      - "iScience"
+      - "NeuroImage"
+      - "Genes"

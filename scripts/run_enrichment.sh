@@ -14,8 +14,10 @@
 # Or:      docker compose run --rm tools python scripts/enrich_status.py --cohort <cohort>
 #
 # Re-running the same command resumes: finished records are skipped (the events file is the state).
-# A chunk whose run crashes is retried up to 3 times, only after `docker ps` confirms no pipeline
-# container is still working on it. A finished chunk with parse errors or truncations above 2% stops
+# The gateway must answer before each chunk and each retry: while it does not (VPN or Wi-Fi down, gateway
+# restarting) the run waits, polling every 60 s, instead of spending its attempts. A chunk whose run
+# crashes is retried up to 3 times, only after `docker ps` confirms no pipeline container is still
+# working on it. The run holds a systemd sleep/idle inhibitor (where available) so the laptop stays awake. A finished chunk with parse errors or truncations above 2% stops
 # the run for review.
 set -euo pipefail
 
@@ -23,8 +25,21 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 SESSION=enrich-e3
 
+# Waits until the gateway lists its models (HTTP 200). The key goes to curl on stdin, never on its command line.
+wait_for_gateway() {
+  local code waited=0
+  while :; do
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -H @- "$EBI_LLM_BASE_URL/models" \
+              <<<"Authorization: Bearer $EBI_LLM_API_KEY" || true)"
+    [[ "$code" == 200 ]] && { (( waited )) && echo "=== $(date -u +%FT%TZ) gateway reachable again" | tee -a "$LOG"; return 0; }
+    (( waited % 600 == 0 )) && echo "=== $(date -u +%FT%TZ) gateway not reachable (HTTP $code; is the EBI VPN up?); waiting" | tee -a "$LOG"
+    sleep 60; waited=$(( waited + 60 ))
+  done
+}
+
 if [[ "${1:-}" == "--run-chunks" ]]; then
   shift; COHORT="$1"; shift
+  set -a; . ./.env; set +a
   CONC=""; LIMIT=""; ONLY=""
   while [[ $# -gt 0 ]]; do case "$1" in
     --concurrency) CONC="$2"; shift 2;; --limit) LIMIT="$2"; shift 2;; --chunks) ONLY="$2"; shift 2;;
@@ -38,6 +53,7 @@ if [[ "${1:-}" == "--run-chunks" ]]; then
     [[ -n "$CONC" ]] && args+=(--concurrency "$CONC")
     [[ -n "$LIMIT" ]] && args+=(--limit "$LIMIT")
     for attempt in 1 2 3 4; do
+      wait_for_gateway
       echo "=== $(date -u +%FT%TZ) $stem attempt $attempt: ${args[*]}" | tee -a "$LOG"
       if docker compose run --rm pipeline "${args[@]}" 2>&1 | tee -a "$LOG"; then break; fi
       if [[ $attempt == 4 ]]; then echo "=== $stem failed 4 times; stopping for review" | tee -a "$LOG"; exit 1; fi
@@ -81,8 +97,10 @@ done
 export HOST_UID="$(id -u)" HOST_GID="$(id -g)"
 # The token goes in through tmux's environment (-e), never on a command line that `ps` would show.
 TMUXENV=(-e "HOST_UID=$HOST_UID" -e "HOST_GID=$HOST_GID" -e "GH_TOKEN=$(gh auth token)")
+INHIBIT=""
+command -v systemd-inhibit >/dev/null && INHIBIT="systemd-inhibit --what=sleep:idle --who=dome-enrichment --why='enrichment run' "
 tmux new-session -d -s "$SESSION" -n run -c "$REPO" "${TMUXENV[@]}" \
-  "bash scripts/run_enrichment.sh --run-chunks $COHORT $*; echo; echo '[run finished: press Enter]'; read"
+  "${INHIBIT}bash scripts/run_enrichment.sh --run-chunks $COHORT $*; echo; echo '[run finished: press Enter]'; read"
 tmux new-window -t "$SESSION" -n checkpoint -c "$REPO" "${TMUXENV[@]}" \
   "docker compose run --rm -e GH_TOKEN tools python scripts/checkpoint_events.py --cohort $COHORT --every 900"
 tmux new-window -t "$SESSION" -n status -c "$REPO" "${TMUXENV[@]}" \

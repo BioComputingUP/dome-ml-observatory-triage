@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 
@@ -66,9 +67,31 @@ def test_cohort_chunks_in_dump_order(tmp_path, monkeypatch):
     assert [r["record_id"] for p in paths for r in _rows(p)] == ["0", "1", "2", "3", "4"]
 
 
+def test_cohort_with_journal_order_runs_the_first_listed_journal_first(tmp_path, monkeypatch):
+    monkeypatch.setattr(iz, "load_cohort", lambda name: ["Nature", "Scientific reports"])
+    monkeypatch.setattr(iz, "load_cohort_order", lambda name: "journals")
+    docs = [_doc("1", journal="Scientific reports"), _doc("2", journal="Nature"),
+            _doc("3", journal="Scientific reports"), _doc("4", journal="Nature")]
+    paths = iz.build_cohort(_dump(tmp_path, docs), "b2", tmp_path / "in", 3, "")
+    assert [r["record_id"] for p in paths for r in _rows(p)] == ["2", "4", "1", "3"]
+    assert "journal order" in (tmp_path / "in" / "b2" / "SOURCE.md").read_text()
+
+
+def test_unknown_order_is_refused(tmp_path):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(yaml.safe_dump({"cohorts": {"odd": {"order": "random", "journals": ["A"]}}}))
+    with pytest.raises(SystemExit, match="unknown order"):
+        iz.load_cohort_order("odd", cfg)
+
+
 def test_the_shipped_cohort_file_loads_and_has_no_duplicates():
     journals = iz.load_cohort("core_bioinformatics")
     assert len(journals) == 27 and "BMC bioinformatics" in journals
+    assert iz.load_cohort_order("core_bioinformatics") == "dump"   # core's inputs rebuild byte-identical
+    batch2 = iz.load_cohort("batch2_high_impact")
+    assert iz.load_cohort_order("batch2_high_impact") == "journals"
+    assert not set(batch2) & set(journals)                          # never re-enrich the core cohort
+    assert batch2[:2] == ["Nature", "Science (New York, N.Y.)"]
 
 
 def test_ids_mode_keeps_listed_order_and_refuses_a_missing_id(tmp_path):

@@ -20,7 +20,7 @@ Documents record `llm_enrichment.provider: "embl-ebi"`, `model_tier: "ebi-glm-5.
 | | Result |
 |---|---|
 | `/models` | One model: `zai-org/GLM-5.3-Flash` |
-| `/key/info` | No request, token, parallel-request or budget limits are reported for the key |
+| `/key/info`, `/spend/logs` | Forbidden for this key (it may call the LLM routes only), so its limits and spend are visible only in the gateway UI |
 | `temperature: 0`, `response_format: json_object` | Accepted |
 | Z.ai's `thinking: {type}` and `reasoning_effort` | Accepted and **ignored**. Low, high and max give the same reasoning, and so does disabling thinking |
 | vLLM's `chat_template_kwargs.enable_thinking` | **The switch that works.** `false` turns thinking off. The client sends `true` |
