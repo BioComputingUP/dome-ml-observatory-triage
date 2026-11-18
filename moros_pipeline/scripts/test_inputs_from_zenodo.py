@@ -131,3 +131,38 @@ def test_push_is_refused_without_a_token_or_a_private_answer(tmp_path, monkeypat
     monkeypatch.setattr(runs_repo.requests, "get", lambda *a, **k: Resp())
     with pytest.raises(SystemExit, match="not confirmed private"):
         runs_repo.assert_private(tmp_path, token="t")
+
+
+def test_checkpoint_push_survives_a_remote_that_moved_with_no_git_identity(tmp_path, monkeypatch):
+    """2026-11-17: a commit added on GitHub made `pull --rebase` replay the local checkpoint; with no git
+    identity in the container the rebase stopped half-way and no checkpoint landed for 14 hours."""
+    import subprocess
+
+    def git(*a, cwd=tmp_path):
+        return subprocess.run(["git", *a], cwd=cwd, check=True, capture_output=True, text=True).stdout
+
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))           # no global identity anywhere
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    for k in ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL", "EMAIL"):
+        monkeypatch.delenv(k, raising=False)
+    ident = ["-c", "user.name=t", "-c", "user.email=t@example.invalid"]
+    git("init", "-q", "--bare", "-b", "main", "remote.git")
+    git("clone", "-q", "remote.git", "laptop")
+    laptop = tmp_path / "laptop"
+    (laptop / "events").mkdir()
+    (laptop / "events" / "a.csv").write_text("1\n")
+    git(*ident, "add", ".", cwd=laptop)
+    git(*ident, "commit", "-q", "-m", "init", cwd=laptop)
+    git("push", "-q", "origin", "main", cwd=laptop)
+    git("clone", "-q", "remote.git", "web")                      # the remote moves (e.g. the API adds a file)
+    (tmp_path / "web" / "wf.yml").write_text("x\n")
+    git(*ident, "add", ".", cwd=tmp_path / "web")
+    git(*ident, "commit", "-q", "-m", "workflow", cwd=tmp_path / "web")
+    git("push", "-q", cwd=tmp_path / "web")
+
+    monkeypatch.setattr(runs_repo, "assert_private", lambda repo: None)
+    (laptop / "events" / "a.csv").write_text("1\n2\n")
+    runs_repo.write_sha256sums(laptop)
+    assert runs_repo.commit_and_push(laptop, "checkpoint") is True
+    assert not (laptop / ".git" / "rebase-merge").exists()
+    assert git("log", "--format=%s", "main", cwd=tmp_path / "remote.git").split() == ["checkpoint", "workflow", "init"]

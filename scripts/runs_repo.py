@@ -22,6 +22,11 @@ import requests
 TRACKED_DIRS = ("inputs", "events", "manifests")
 SUMS = "SHA256SUMS"
 _CRED_HELPER = "!f() { echo username=x-access-token; echo password=$GH_TOKEN; }; f"
+# Every git call carries the identity, not only `commit`: `pull --rebase` re-creates local commits when the
+# remote moved (2026-11-17: a workflow file was added through the API), and without an identity in the
+# container it stopped mid-rebase, the pusher exited, and no checkpoint landed for 14 hours.
+_IDENTITY = ("-c", "user.name=dome-enrichment-checkpoint",
+             "-c", "user.email=dome-enrichment-checkpoint@users.noreply.github.com")
 
 
 def sha256_file(path: Path) -> str:
@@ -47,7 +52,7 @@ def write_sha256sums(repo: Path) -> Path:
 
 
 def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", "-C", str(repo), "-c", f"credential.helper={_CRED_HELPER}", *args],
+    return subprocess.run(["git", "-C", str(repo), "-c", f"credential.helper={_CRED_HELPER}", *_IDENTITY, *args],
                           check=check, capture_output=True, text=True)
 
 
@@ -73,11 +78,12 @@ def assert_private(repo: Path, token: str | None = None) -> None:
 def commit_and_push(repo: Path, message: str) -> bool:
     """Stages the tracked folders and SHA256SUMS, commits if anything changed, pushes. False if no change."""
     assert_private(repo)
+    if (repo / ".git" / "rebase-merge").exists() or (repo / ".git" / "rebase-apply").exists():
+        raise SystemExit(f"refusing: a rebase is in progress in {repo}; finish or abort it first")
     _git(repo, "add", "--", *[d for d in TRACKED_DIRS if (repo / d).exists()], SUMS)
     if _git(repo, "diff", "--cached", "--quiet", check=False).returncode == 0:
         return False
-    _git(repo, "-c", "user.name=dome-enrichment-checkpoint",
-         "-c", "user.email=dome-enrichment-checkpoint@users.noreply.github.com", "commit", "-q", "-m", message)
+    _git(repo, "commit", "-q", "-m", message)
     _git(repo, "pull", "-q", "--rebase")
     _git(repo, "push", "-q")
     return True
