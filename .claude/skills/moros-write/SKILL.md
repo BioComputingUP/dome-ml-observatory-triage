@@ -238,10 +238,14 @@ documents whose values actually change, and `load_documents.py` on every documen
 
 ## After any confirmed write: the manual checklist
 
-1. Ask, then restart `observatory-ws`: its facet cache is boot-loaded with no TTL. The deployed
-   service at observatory.dome-ml.org is the user's host (they restart it, or say you may); the
-   local stack in `dome-ml-observatory` too if it is running (`docker compose -f
-   docker-compose-local.yml up -d --build observatory-ws observatory-ui`).
+1. Ask, then bring production up to date: the sibling's `deploy` skill (it reads the production Docker
+   context from its gitignored `production-context.local.md`). A data-only load needs a restart of
+   `observatory-ws` (its facet cache is boot-loaded with no TTL); a load that came with a schema
+   release or app changes needs a **deploy** of the pushed, CI-built images. **The load is not
+   finished until `https://observatory.dome-ml.org/api/stats` shows it** (`corpus.enriched`, the
+   count, `schema_version`): on 2026-11-20 moros held 103,605 enriched records while production
+   still served a four-week-old build showing 3,532. Restart the local stack too if it is running
+   (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`).
 2. In `dome-ml-observatory`: `python3 schema/generate_facet_stats.py --from-api <url>` and check
    `/api/stats` reconciles with `verify_corpus.py`. Refresh every displayed figure
    `grep -rn corpus-figures` finds there from that `/api/stats`.

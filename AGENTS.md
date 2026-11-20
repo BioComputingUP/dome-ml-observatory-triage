@@ -134,8 +134,10 @@ them; if they are lost, the next refresh simply re-fetches everything (free, ~17
 
 ## After any load — the manual checklist
 
-1. Restart `observatory-ws` in the sibling repository's deployment. Its `FacetsService` is
-   boot-loaded with no TTL; `StatsService`, `CountService` and `JournalsService` are 24h TTL.
+1. Restart `observatory-ws` in production (the sibling's `deploy` skill; deploy instead when the load
+   came with a schema release or app changes). Its `FacetsService` is boot-loaded with no TTL;
+   `StatsService`, `CountService` and `JournalsService` are 24h TTL. The load is finished only when
+   `https://observatory.dome-ml.org/api/stats` shows it.
 2. In `dome-ml-observatory`, `python3 schema/generate_facet_stats.py --from-api <url>` and check
    `/api/stats` reconciles with `verify_corpus.py`.
 3. If `SCHEMA_VERSION` or a vocabulary changed: `python3 schema/check_alignment.py` here, then

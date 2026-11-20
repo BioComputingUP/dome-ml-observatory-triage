@@ -73,10 +73,11 @@ every paid or writing step still stops for a yes.
    `fulltext` mode -- dry run (it reports how many flags would change; any change *to false* is worth
    a look first), `--limit 100 --confirm`, `--confirm`; the **`data-links`** refresh
    (`--max-age-days 180` on the Europe PMC fetches, 30 on the EBI Search dumps; free) when due.
-7. **Post-load checklist** (from `moros-write`): ask, then restart `observatory-ws` so its API picks
-   the load up -- the deployed service at observatory.dome-ml.org (the user's host: they restart it,
-   or say you may) and the local stack if it is running (`docker compose -f docker-compose-local.yml
-   up -d --build observatory-ws observatory-ui` in `dome-ml-observatory`). Then, in
+7. **Post-load checklist** (from `moros-write`): ask, then bring production up to date with the
+   sibling's `deploy` skill -- restart `observatory-ws` after a data-only load, deploy when the round
+   also changed the schema or the apps -- and confirm `https://observatory.dome-ml.org/api/stats`
+   shows the new figures before calling the round done. Restart the local stack too if it is running
+   (`docker compose -f docker-compose-local.yml up -d --build observatory-ws observatory-ui`). Then, in
    `dome-ml-observatory`: reconcile `generate_facet_stats.py --from-api`; refresh every block
    `grep -rn corpus-figures` finds from the restarted `/api/stats` (a handful of dated doc and
    Swagger figures -- the site itself holds no copy, every page reads the API); and if
