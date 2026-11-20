@@ -153,6 +153,10 @@ before any load and whenever a skill in either repository touches the schema; bo
 The `positives_text` index is partial on `llm_classification.classification == "positive"` and
 `observatory-ws` gates `$text` queries on exactly that field: keep it the single classification
 field.
+`observatory-ws` serves stored documents whole, minus what `PUBLIC_RECORD_PROJECTION`
+(`observatory-ws/src/records/schemas/record.schema.ts`) withholds -- today `enrichment_history`. A new
+top-level field that is internal provenance rather than published metadata must be added there in the
+same release, or the API serves it.
 
 **The release procedure** -- what counts as a release (the shape or any vocabulary), who moves first
 (this repository), the order of publish, migrate, load, verify and deploy, and every place a release

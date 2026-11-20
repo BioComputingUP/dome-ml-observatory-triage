@@ -1,5 +1,22 @@
 # Plan: production enrichment on EMBL-EBI GLM-5.3, building on branch `enrichment-e2-glm53`
 
+> **Status 2026-11-20: done, kept as a record.**
+> - The branch is merged into `main` and deleted, and the `-e2` worktree is removed.
+> - The EBI laptop enriched 100,224 records with prompt e3: `core_bioinformatics` 13,065 and
+>   `batch2_high_impact` 87,159. 151 were truncated.
+> - 100,073 were loaded into moros at schema 1.8.0. 1.8.0 adds `enrichment_history`, and every load
+>   now runs the ingestion cleaning `enrichment_clean.py` (`c1`).
+> - The repositories were renamed: `dome-ml-observatory-enrichment-runs`, `dome-ml-observatory-research`
+>   (formerly `dome-triage`), and `dome-ml-observatory-glm53-validation` (the test bed, nested in research).
+>   The names below are the ones in use when this plan was written.
+> - The deviations from Phase 4:
+>   - the loader did not refuse already-enriched records; it now keeps them in `enrichment_history`;
+>   - the vocabulary gaps are generated (`docs/enrichment_vocab_gaps.md`) rather than kept by hand.
+> - Still open:
+>   - the 151 truncated records (re-run on EBI with a higher `ENRICHMENT_MAX_TOKENS`);
+>   - the remaining unenriched positives;
+>   - the human-rater half of the validation (Phase 5).
+
 Written 2026-11-16 so that a fresh session on either laptop can carry it out. Repositories:
 - **triage**: this repository; the work is in worktree `../dome-ml-observatory-triage-e2`, on branch `enrichment-e2-glm53`.
 - **test bed**: `glm5.3_test_dome-ml-observatory-triage`, which is public.

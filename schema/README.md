@@ -85,9 +85,9 @@ It exits 1 on any difference, naming each one with the step that fixes it.
 with, copied by the `schema-sync` skill so a diff is readable offline. It is a copy, not an
 authority.
 
-**Where the three sides stand (2026-11-17).**
-- **Authored and published:** 1.7.0 is authored here and published as v1.7.0 in `dome-ml-observatory` (`227f8b6`), and the snapshot in `observatory_release/` matches it. 1.7.0 adds `content_filters.model_use` and adopts enrichment prompt e3's vocabularies.
-- **`check_alignment.py`:** reports `aligned`.
-- **moros:** still at 1.6.0. Next comes `migrate_v1_7_0.py` (a dry run, then `--confirm`), then the first e3 load: 13,042 core-bioinformatics records, whose events are in the private runs repository. Both run on the laptop with moros access.
+**Where the three sides stand (2026-11-20).**
+- **Authored and published:** 1.8.0 is authored here and published as v1.8.0 in `dome-ml-observatory`, and the snapshot in `observatory_release/` matches it. 1.8.0 adds `enrichment_history`; 1.7.0 added `content_filters.model_use` and adopted enrichment prompt e3's vocabularies.
+- **`check_alignment.py --live`:** reports `aligned`.
+- **moros:** all 876,324 documents at 1.8.0 (`migrate_v1_7_0.py` then `migrate_v1_8_0.py`, 2026-11-20). The first e3 load (100,073 records) followed.
 
 1.6.0 (2026-09-15) added the top-level `record_modified` datestamp. `migrate_v1_6_0.py` stamped all 846,716 documents with it.
