@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from runs_repo import commit_and_push, sha256_file, write_sha256sums  # noqa: E402
+from runs_repo import default_runs_repo, commit_and_push, sha256_file, write_sha256sums  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 WORK_ROOT = REPO / "moros_pipeline" / "output" / "enrichment_e3"
@@ -87,7 +87,7 @@ def checkpoint(cohort: str, runs_repo: Path, work_root: Path = WORK_ROOT, push: 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cohort", required=True)
-    ap.add_argument("--runs-repo", type=Path, default=REPO.parent / "dome-observatory-enrichment-runs")
+    ap.add_argument("--runs-repo", type=Path, default=default_runs_repo(REPO))
     ap.add_argument("--every", type=int, default=0, help="seconds between checkpoints; 0 = once")
     args = ap.parse_args(argv)
     while True:

@@ -1,6 +1,6 @@
 {
   "_id": "8b720ad0-8cf7-5304-a016-3b15feae2815",
-  "schema_version": "1.7.0",
+  "schema_version": "1.8.0",
   "record_modified": null,
   "identifiers": {
     "pmid": "40703513",
@@ -218,5 +218,6 @@
     "output_tokens": null,
     "cache_hit_tokens": null,
     "parse_fallback_used": null
-  }
+  },
+  "enrichment_history": []
 }

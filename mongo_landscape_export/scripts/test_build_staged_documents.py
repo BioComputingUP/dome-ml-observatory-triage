@@ -39,8 +39,9 @@ def test_the_document_is_the_same_shape_as_every_other_path():
     doc = _doc()
     assert set(doc) == {"_id", "schema_version", "record_modified", "identifiers",
                         "publication_metadata", "source", "content_filters", "data_links",
-                        "llm_classification", "llm_enrichment"}
+                        "llm_classification", "llm_enrichment", "enrichment_history"}
     assert doc["schema_version"] == SCHEMA_VERSION
+    assert doc["enrichment_history"] == []
 
 
 def test_the_pid_becomes_the_document_id():

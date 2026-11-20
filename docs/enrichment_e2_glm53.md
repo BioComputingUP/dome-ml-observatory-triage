@@ -24,7 +24,7 @@ It sits **beside** e1, as AGENTS.md rule 1 requires. e1's files are untouched an
 | Cost | $0.96 per 1,000 records at list price (DeepSeek V4.1 billed $1.80) |
 | Speed | ~325 records/min at concurrency 50; 0 parse errors and 0 truncations in 250 |
 
-Full figures and method: the `glm5.3_test_dome-ml-observatory-triage` repository, `validation/`
+Full figures and method: the `dome-ml-observatory-glm53-validation` repository (gavinf97; checked out as `dome-ml-observatory-research/dome-ml-observatory-glm53-validation`), `validation/`
 and `reports/e2_improvement/`.
 
 ## What changed on this branch

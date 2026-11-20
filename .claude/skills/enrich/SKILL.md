@@ -33,7 +33,7 @@ Take the latest version of concept `10.5281/zenodo.22259905`, and check its sha2
 export HOST_UID=$(id -u) HOST_GID=$(id -g)
 docker compose run --rm tools python scripts/inputs_from_zenodo.py \
     --dump ../zenodo_corpus/<dump>.jsonl.gz --cohort <cohort> \
-    --out-dir ../dome-observatory-enrichment-runs/inputs --zenodo-record <record id>
+    --out-dir ../dome-ml-observatory-enrichment-runs/inputs --zenodo-record <record id>
 ```
 
 The selection is positives with no enrichment, a title and an abstract, in 5,000-record chunks. Push
@@ -83,15 +83,18 @@ From `enrich_status.py --once`, report:
 - the vocab-flag rate (about 1% on the QC run);
 - output tokens per record and records/min.
 
-Then add any vocabulary gaps (`vocab_violations`) to `docs/e3_vocab_gaps.md`, for a later prompt version.
-Make a final checkpoint push.
+Make a final checkpoint push. Do not hand-edit an events file or a gap list: the vocabulary gaps are
+generated, deterministically, by `moros_pipeline/scripts/enrichment_clean.py --gaps-md
+docs/enrichment_vocab_gaps.md` on the loading laptop (moros-write B, step 0).
 
 Then, on the laptop with moros, ask **"Merge these into moros?"**. On a yes:
 - pull the runs repository;
 - `sha256sum -c SHA256SUMS`;
-- hand each events file to `moros-write` section B (`load_enrichment.py`: dry run, then `--limit 50`, then `--confirm`).
+- hand the events files to `moros-write` section B: the audit and gap list, then `load_enrichment.py`
+  (dry run, `--limit 50 --confirm`, `--confirm`). The loader cleans closed-vocabulary values (rule set
+  `c1`) and keeps any enrichment it supersedes in `enrichment_history`; both are scripted, not judged here.
 
-e3 events write `content_filters.model_use`, so the loader refuses them until moros is at schema 1.7.0.
+The loader refuses every events file until moros is at schema 1.8.0.
 
 ## Older prompts (reproduction only)
 

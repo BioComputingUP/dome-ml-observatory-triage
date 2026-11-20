@@ -51,6 +51,7 @@ def test_top_level_shape_and_id():
     assert set(doc.keys()) == {
         "_id", "schema_version", "record_modified", "identifiers", "publication_metadata",
         "source", "content_filters", "data_links", "llm_classification", "llm_enrichment",
+        "enrichment_history",
     }
 
 

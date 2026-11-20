@@ -27,6 +27,11 @@ repositories is tracked as issues on the sibling:
    - `curation_criteria/e2/` and `src/dome_triage/llm_classify/enrichment_e2.py` (enrichment prompt
      `e2`, GLM-5.3-Flash on Z.ai, vocab sha256 `c3196ff7…`; provenance and validation in
      `curation_criteria/e2/PROVENANCE.md`, rollout in `docs/enrichment_e2_glm53.md`);
+   - `curation_criteria/e3/` and `src/dome_triage/llm_classify/enrichment_e3.py` (enrichment prompt
+     `e3`, **the production prompt** since 2026-11-16, GLM-5.3-Flash on the EMBL-EBI gateway, vocab
+     sha256 `3b9d119d…`; `curation_criteria/e3/PROVENANCE.md`, `docs/enrichment_ebi.md`);
+   - `moros_pipeline/scripts/enrichment_clean.py` (ingestion cleaning rule set `c1`: what happens to a
+     closed-vocabulary value the parser flagged; a new rule is a new rule set, `c2`, never an edit);
    - `mongo_landscape_export/scripts/schema.py` (`SCHEMA_VERSION`, the document shape) and
      `pid.py` (the UUID5 `_id` rule);
    - `moros_pipeline/scripts/moros_write.py` (`WRITE_MODES`, the per-mode field allowlists, and
@@ -157,6 +162,14 @@ DCAT and schema.org, by `build_release_metadata.py` ([docs/release_metadata.md](
 
 ## Things that have gone wrong before — do not reintroduce
 
+- **Flagged vocabulary values reached moros, and a load could silently overwrite an enrichment**
+  (found 2026-11-20). The parsers flag an off-vocabulary value but keep it, and `load_enrichment.py`
+  wrote events as they came: 137 e1 documents carried terms such as `domain_tier3: Sequence analysis`
+  (a tier-2 term), and 277 of the first 100,073 e3 records would have. The loader also set a new
+  enrichment over an existing one with no trace of the old. Now every load runs `enrichment_clean.py`
+  (cleaning `c1`, each change recorded as `cleaned:c1:...` in `vocab_violations`) and appends any
+  superseded enrichment to `enrichment_history` (schema 1.8.0); `verify_corpus.py` fails on an
+  off-vocabulary closed value. Keep cleaning in that one module and keep it deterministic.
 - **A pmid-only licence fetch left 74,472 documents at `license: null`** (68,103 had no pmid).
   Fetch by `pmid -> doi -> pmcid`; write `""` (looked up, none disclosed) not `null` (never looked
   up) for a key EPMC cannot answer, or every future backfill re-fetches it forever.

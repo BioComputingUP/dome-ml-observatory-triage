@@ -23,12 +23,27 @@ Two shape details the event log does not share with the document:
   `family_backfilled` (not stored: the parser's own audit trail, kept in the event log). An e2
   events file is refused until every document is at schema v1.7.0 (`migrate_v1_7_0.py`).
 
+Two things happen on the way in, both deterministic and both recorded on the document (schema v1.8.0):
+
+- **Vocabulary cleaning** (`enrichment_clean.py`, rule set `c1`): a closed-vocabulary value the parser
+  flagged but kept is moved to its right field, trimmed to the cap or dropped, and each change is
+  appended to `llm_enrichment.vocab_violations` as `cleaned:c1:...`. The events file is never edited.
+- **History**: a document that already holds an enrichment from a different prompt or batch keeps it.
+  The old `llm_enrichment` group and its `content_filters` enrichment values are appended to
+  `enrichment_history` before the new values are set; the observatory reads only the current one.
+  Re-loading the same batch adds nothing.
+
+`--clean-existing` applies the same cleaning to the enrichment already stored in moros (no events
+file), writing only documents whose values change.
+
 `parse_error` events are skipped entirely. Re-running `enrich` retries them, and a half-parsed
 enrichment is worse than none.
 
     python3 load_enrichment.py --events ../output/enrichment_<journal>_events.csv
     python3 load_enrichment.py --events ... --limit 25 --confirm
     python3 load_enrichment.py --events ... --confirm
+    python3 load_enrichment.py --events a_events.csv b_events.csv ... --confirm   # one run per file
+    python3 load_enrichment.py --clean-existing [--confirm]
 """
 
 from __future__ import annotations
@@ -40,8 +55,9 @@ import sys
 from pathlib import Path
 from typing import Any, Iterator
 
-from moros_client import Moros
-from moros_write import SafeWriter, new_run_id
+from enrichment_clean import RULESET, Vocab, clean_fields, clean_values, load_vocab
+from moros_client import ID_FIELD, Moros
+from moros_write import REPORT_DIR, SafeWriter, new_run_id, record_modified_stamp
 
 csv.field_size_limit(sys.maxsize)
 
@@ -60,6 +76,13 @@ LIST_FIELDS = ("domain_tier2", "domain_tier3", "learning_paradigm", "model_famil
 # migrate_v1_7_0.py), because e1 never asked the question.
 E2_LIST_FIELDS = ("model_use",)
 E2_MIN_SCHEMA_VERSION = "1.7.0"
+# v1.8.0: every load may append to enrichment_history, so every load needs the whole corpus at 1.8.0.
+MIN_SCHEMA_VERSION = "1.8.0"
+HISTORY_PATH = "enrichment_history"
+ENRICHED_FILTER_FIELDS = ("domain_tier1", "domain_tier2", "domain_tier3", "learning_paradigm",
+                          "model_family", "model_type", "model_use")
+CURRENT_PROJECTION = {"llm_enrichment": 1, HISTORY_PATH: 1,
+                      **{f"content_filters.{f}": 1 for f in ENRICHED_FILTER_FIELDS}}
 
 
 def _json_list(value: str) -> list:
@@ -145,6 +168,17 @@ def carries_e2_fields(path: Path) -> bool:
     return any(field in header for field in E2_LIST_FIELDS)
 
 
+def schema_problem(versions: dict) -> str | None:
+    """Every load may write `enrichment_history` (v1.8.0). Refuse while any document is below it."""
+    behind = {v: n for v, n in versions.items() if _version(v) < _version(MIN_SCHEMA_VERSION)}
+    if behind:
+        return (f"refusing: enrichment loads write v{MIN_SCHEMA_VERSION} fields but "
+                f"{sum(behind.values()):,} documents are below it ({behind}). Publish v{MIN_SCHEMA_VERSION} in "
+                f"dome-ml-observatory, run check_alignment.py, then the migrations up to "
+                f"migrate_v{MIN_SCHEMA_VERSION.replace('.', '_')}.py --confirm first.")
+    return None
+
+
 def e2_schema_problem(versions: dict) -> str | None:
     """e2 events write a v1.7.0 field. Refuse while any document is below 1.7.0, or the values would
     land under a version whose schema and vocabulary do not have them."""
@@ -196,6 +230,79 @@ def summarise(path: Path) -> dict:
     return {"events": total, "ok": ok, "parse_errors": errors}
 
 
+def history_entry(current: dict, new_fields: dict[str, Any], stamp: str) -> dict:
+    """The enrichment a document holds now, as one `enrichment_history` element."""
+    filters = current.get("content_filters") or {}
+    return {
+        "llm_enrichment": dict(current.get("llm_enrichment") or {}),
+        "content_filters": {f: filters.get(f) for f in ENRICHED_FILTER_FIELDS},
+        "superseded_at": stamp,
+        "superseded_by": {
+            "prompt_version": new_fields.get("llm_enrichment.prompt_version"),
+            "batch_id": new_fields.get("llm_enrichment.batch_id"),
+        },
+    }
+
+
+def supersedes(current: dict | None, new_fields: dict[str, Any]) -> bool:
+    """True when the document already holds an enrichment from another prompt or batch. Re-loading
+    the batch it already holds is not a supersession (a resumed or repeated load stays idempotent)."""
+    enrichment = (current or {}).get("llm_enrichment") or {}
+    if enrichment.get("provider") is None:
+        return False
+    return ((enrichment.get("prompt_version"), enrichment.get("batch_id"))
+            != (new_fields.get("llm_enrichment.prompt_version"), new_fields.get("llm_enrichment.batch_id")))
+
+
+def prepare(updates: list[tuple[str, dict[str, Any]]], current: dict[str, dict], vocab: Vocab,
+            stamp: str) -> tuple[list[tuple[str, dict[str, Any]]], dict, list[tuple[str, str]]]:
+    """Pure: cleans every update and adds `enrichment_history` where a load supersedes an enrichment.
+    `current` maps `_id` -> the document's present enrichment (CURRENT_PROJECTION). Returns
+    `(updates, stats, cleaning rows)`."""
+    out: list[tuple[str, dict[str, Any]]] = []
+    rows: list[tuple[str, str]] = []
+    stats = {"cleaned_documents": 0, "cleaning_changes": 0, "superseded": 0}
+    for doc_id, fields in updates:
+        fields, changes = clean_fields(fields, vocab)
+        if changes:
+            stats["cleaned_documents"] += 1
+            stats["cleaning_changes"] += len(changes)
+            rows.extend((doc_id, change) for change in changes)
+        doc = current.get(doc_id)
+        if supersedes(doc, fields):
+            history = list((doc or {}).get(HISTORY_PATH) or [])
+            fields = {**fields, HISTORY_PATH: history + [history_entry(doc, fields, stamp)]}
+            stats["superseded"] += 1
+        out.append((doc_id, fields))
+    return out, stats, rows
+
+
+def read_current(moros: Moros, ids: list[str]) -> dict[str, dict]:
+    current: dict[str, dict] = {}
+    for start in range(0, len(ids), 5_000):
+        for doc in moros.collection.find({ID_FIELD: {"$in": ids[start:start + 5_000]}}, CURRENT_PROJECTION):
+            current[doc[ID_FIELD]] = doc
+    return current
+
+
+def write_cleaning_rows(run_id: str, rows: list[tuple[str, str]]) -> Path | None:
+    if not rows:
+        return None
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPORT_DIR / f"{run_id}.cleaning.csv"
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["record_id", "change"])
+        writer.writerows(rows)
+    return path
+
+
+def _gate(moros: Moros, run_id: str) -> None:
+    problem = schema_problem(moros.histogram("schema_version"))
+    if problem:
+        raise SystemExit(f"[{run_id}] {problem}")
+
+
 def run(events_path: Path, confirm: bool, limit: int | None) -> None:
     if not events_path.exists():
         raise SystemExit(f"{events_path} does not exist")
@@ -210,29 +317,37 @@ def run(events_path: Path, confirm: bool, limit: int | None) -> None:
         print(f"[{run_id}] nothing to do.")
         return
 
+    vocab = load_vocab()
     with Moros.from_env() as moros:
-        if carries_e2_fields(events_path):
-            problem = e2_schema_problem(moros.histogram("schema_version"))
-            if problem:
-                raise SystemExit(f"[{run_id}] {problem}")
+        _gate(moros, run_id)
         writer = SafeWriter(moros, mode="enrichment", run_id=run_id, dry_run=not confirm)
         before = moros.count({"llm_enrichment.provider": {"$ne": None}})
-        present = moros.existing_ids(doc_id for doc_id, _ in updates)
-        absent = [doc_id for doc_id, _ in updates if doc_id not in present]
+        ids = [doc_id for doc_id, _ in updates]
+        current = read_current(moros, ids)
+        absent = [doc_id for doc_id in ids if doc_id not in current]
         if absent:
             print(f"[{run_id}] !! {len(absent):,} record_ids are not in the collection and will "
                   f"not match. If these came from a non-Mongo export, their record_id is a sha1 "
                   f"rather than the document _id. First few: {absent[:3]}")
+
+        updates, prep, rows = prepare(updates, current, vocab, writer.stamp or record_modified_stamp())
+        cleaning_path = write_cleaning_rows(run_id, rows)
+        print(f"[{run_id}] cleaning {RULESET} (vocab {vocab.sha256[:12]}): {prep['cleaned_documents']:,} "
+              f"documents, {prep['cleaning_changes']:,} changes"
+              + (f" -> {cleaning_path}" if cleaning_path else ""))
+        print(f"[{run_id}] superseding an existing enrichment (kept in {HISTORY_PATH}): {prep['superseded']:,}")
 
         result = writer.apply_streaming(iter(updates), total=len(updates), desc="enrich")
         after = moros.count({"llm_enrichment.provider": {"$ne": None}}) if confirm else before
         if confirm:
             print(f"[{run_id}] enriched documents: {before:,} -> {after:,}")
             violations = moros.count({"llm_enrichment.vocab_violations": {"$nin": [None, []]}})
-            print(f"[{run_id}] documents with at least one vocab violation: {violations:,}")
+            print(f"[{run_id}] documents with at least one vocab violation or cleaning note: {violations:,}")
         writer.write_report({
             "events_file": str(events_path), "event_stats": stats,
             "documents_updated": len(updates), "ids_not_found": len(absent),
+            "cleaning": {"ruleset": RULESET, "vocab_sha256": vocab.sha256, **prep,
+                         "rows": str(cleaning_path) if cleaning_path else None},
             "result": result.as_dict(), "enriched_before": before, "enriched_after": after,
         })
         if confirm:
@@ -240,13 +355,60 @@ def run(events_path: Path, confirm: bool, limit: int | None) -> None:
                   f"the enrichment-coverage banner and facets pick this up.")
 
 
+def clean_existing(confirm: bool, limit: int | None) -> None:
+    """Applies cleaning `c1` to the enrichment already stored in moros. Writes only documents whose
+    closed-vocabulary values change, through the same `enrichment` allowlist."""
+    run_id = new_run_id("clean_existing_enrichment")
+    vocab = load_vocab()
+    with Moros.from_env() as moros:
+        _gate(moros, run_id)
+        writer = SafeWriter(moros, mode="enrichment", run_id=run_id, dry_run=not confirm)
+        projection = {"llm_enrichment.vocab_violations": 1,
+                      **{f"content_filters.{f}": 1 for f in ENRICHED_FILTER_FIELDS}}
+        updates: list[tuple[str, dict[str, Any]]] = []
+        rows: list[tuple[str, str]] = []
+        scanned = 0
+        for doc in moros.collection.find({"llm_enrichment.provider": {"$ne": None}}, projection):
+            scanned += 1
+            filters = doc.get("content_filters") or {}
+            values = {f: filters[f] for f in ENRICHED_FILTER_FIELDS if f in filters and f != "model_type"}
+            cleaned, changes = clean_values(values, vocab)
+            if not changes:
+                continue
+            fields: dict[str, Any] = {f"content_filters.{f}": v for f, v in cleaned.items() if v != values[f]}
+            existing = (doc.get("llm_enrichment") or {}).get("vocab_violations") or []
+            fields["llm_enrichment.vocab_violations"] = list(existing) + changes
+            updates.append((doc[ID_FIELD], fields))
+            rows.extend((doc[ID_FIELD], c) for c in changes)
+            if limit is not None and len(updates) >= limit:
+                break
+        cleaning_path = write_cleaning_rows(run_id, rows)
+        print(f"[{run_id}] scanned {scanned:,} enriched documents; {len(updates):,} change under cleaning "
+              f"{RULESET} ({len(rows):,} changes)" + (f" -> {cleaning_path}" if cleaning_path else ""))
+        if not updates:
+            print(f"[{run_id}] nothing to do.")
+            return
+        result = writer.apply(updates)
+        writer.write_report({"mode": "clean_existing", "ruleset": RULESET, "vocab_sha256": vocab.sha256,
+                             "scanned": scanned, "documents_updated": len(updates),
+                             "rows": str(cleaning_path) if cleaning_path else None,
+                             "result": result.as_dict()})
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--events", type=Path, required=True)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--events", type=Path, nargs="+", help="One or more events files; one run each.")
+    target.add_argument("--clean-existing", action="store_true",
+                        help=f"Apply cleaning {RULESET} to the enrichment already in moros.")
     parser.add_argument("--confirm", action="store_true", help="Actually write. Off by default.")
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
-    run(args.events, args.confirm, args.limit)
+    if args.clean_existing:
+        clean_existing(args.confirm, args.limit)
+        return
+    for events in args.events:
+        run(events, args.confirm, args.limit)
 
 
 if __name__ == "__main__":

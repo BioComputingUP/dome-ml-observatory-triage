@@ -1,6 +1,6 @@
 {
   "_id": null,
-  "schema_version": "1.7.0",
+  "schema_version": "1.8.0",
   "record_modified": null,
   "identifiers": {
     "pmid": null,
@@ -87,5 +87,6 @@
     "output_tokens": null,
     "cache_hit_tokens": null,
     "parse_fallback_used": null
-  }
+  },
+  "enrichment_history": []
 }

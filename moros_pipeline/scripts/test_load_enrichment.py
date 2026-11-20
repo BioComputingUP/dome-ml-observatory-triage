@@ -205,3 +205,81 @@ def test_e3_files_need_1_7_0_like_e2(tmp_path):
         writer.writeheader()
         writer.writerow(E3)
     assert carries_e2_fields(path)
+
+
+# --- v1.8.0: ingestion cleaning and enrichment_history --------------------------------------------
+
+def test_every_load_needs_the_corpus_at_1_8_0():
+    from load_enrichment import schema_problem
+
+    assert "migrate_v1_8_0.py" in schema_problem({"1.7.0": 10, "1.8.0": 5})
+    assert schema_problem({"1.8.0": 15}) is None
+    assert schema_problem({"1.10.0": 3}) is None
+
+
+def _prepare(updates, current):
+    from enrichment_clean import load_vocab
+    from load_enrichment import prepare
+
+    return prepare(updates, current, load_vocab(), "2026-11-20T00:00:00Z")
+
+
+E1_DOC = {
+    "_id": BASE["record_id"],
+    "llm_enrichment": {"provider": "deepseek", "prompt_version": "e1",
+                       "batch_id": "enrich_flash_20260903T000000", "rationale": "old"},
+    "content_filters": {"domain_tier1": "Computational biology", "domain_tier2": ["Bioinformatics"],
+                        "domain_tier3": [], "learning_paradigm": ["supervised"],
+                        "model_family": ["deep learning"], "model_type": ["CNN"], "model_use": []},
+    "enrichment_history": [],
+}
+
+
+def test_an_e3_load_over_an_e1_enrichment_keeps_the_e1_one_in_history():
+    doc_id, fields = event_to_update(E3)
+    [(out_id, out)], stats, _ = _prepare([(doc_id, fields)], {doc_id: E1_DOC})
+    assert out_id == doc_id and stats["superseded"] == 1
+    [entry] = out["enrichment_history"]
+    assert entry["llm_enrichment"]["prompt_version"] == "e1"
+    assert entry["llm_enrichment"]["rationale"] == "old"
+    assert entry["content_filters"]["model_type"] == ["CNN"]
+    assert entry["superseded_at"] == "2026-11-20T00:00:00Z"
+    assert entry["superseded_by"] == {"prompt_version": "e3", "batch_id": E3["batch_id"]}
+    assert out["llm_enrichment.prompt_version"] == "e3"
+    assert set(out) <= WRITE_MODES["enrichment"]
+
+
+def test_reloading_the_batch_a_document_already_holds_adds_no_history():
+    doc_id, fields = event_to_update(E3)
+    held = {**E1_DOC, "llm_enrichment": {"provider": "embl-ebi", "prompt_version": "e3",
+                                         "batch_id": E3["batch_id"]}}
+    [(_, out)], stats, _ = _prepare([(doc_id, fields)], {doc_id: held})
+    assert stats["superseded"] == 0 and "enrichment_history" not in out
+
+
+def test_an_unenriched_document_gets_no_history():
+    doc_id, fields = event_to_update(E3)
+    blank = {**E1_DOC, "llm_enrichment": {"provider": None}}
+    [(_, out)], stats, _ = _prepare([(doc_id, fields)], {doc_id: blank})
+    assert stats["superseded"] == 0 and "enrichment_history" not in out
+
+
+def test_history_accumulates_oldest_first():
+    doc_id, fields = event_to_update({**E3, "batch_id": "enrich_e4_later"})
+    held = {**E1_DOC, "llm_enrichment": {"provider": "embl-ebi", "prompt_version": "e3",
+                                         "batch_id": E3["batch_id"]},
+            "enrichment_history": [{"llm_enrichment": {"provider": "deepseek", "prompt_version": "e1"},
+                                    "superseded_at": "x", "superseded_by": {"batch_id": E3["batch_id"]}}]}
+    [(_, out)], _, _ = _prepare([(doc_id, fields)], {doc_id: held})
+    assert [e["llm_enrichment"]["prompt_version"] for e in out["enrichment_history"]] == ["e1", "e3"]
+
+
+def test_the_loader_cleans_closed_values_and_reports_each_change():
+    doc_id, fields = event_to_update({**E3, "domain_tier2": '["Bioinformatics"]',
+                                      "domain_tier3": '["Sequence analysis"]'})
+    [(_, out)], stats, rows = _prepare([(doc_id, fields)], {})
+    assert out["content_filters.domain_tier2"] == ["Bioinformatics", "Sequence analysis"]
+    assert out["content_filters.domain_tier3"] == []
+    assert stats["cleaned_documents"] == 1
+    assert rows == [(doc_id, "cleaned:c1:domain_tier3:moved_to_domain_tier2:Sequence analysis")]
+    assert out["llm_enrichment.vocab_violations"][-1].startswith("cleaned:c1:")

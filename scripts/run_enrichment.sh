@@ -75,7 +75,9 @@ fi
 
 COHORT="${1:?usage: scripts/run_enrichment.sh <cohort> [--concurrency N] [--limit N] [--chunks c01,c02]}"; shift
 set -a; . ./.env; set +a
-RUNS="${ENRICHMENT_RUNS_REPO:-../dome-observatory-enrichment-runs}"
+RUNS="${ENRICHMENT_RUNS_REPO:-../dome-ml-observatory-enrichment-runs}"
+# Its name until 2026-11-20; a checkout still under it keeps working.
+[ -d "$RUNS" ] || [ -n "${ENRICHMENT_RUNS_REPO:-}" ] || { [ -d ../dome-observatory-enrichment-runs ] && RUNS=../dome-observatory-enrichment-runs; }
 SRC="$RUNS/inputs/$COHORT"
 WORK="moros_pipeline/output/enrichment_e3/$COHORT"
 [[ -d "$SRC" ]] || { echo "no inputs at $SRC: build them with scripts/inputs_from_zenodo.py --cohort $COHORT"; exit 1; }

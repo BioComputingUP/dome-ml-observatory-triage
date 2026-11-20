@@ -66,8 +66,8 @@ every paid or writing step still stops for a yes.
 5. **`enrich`** (if yes), following the `enrich` skill: export the batch with
    `export_journal_for_enrichment.py --batch-id <classification batch id> --limit <enrich_max_records>
    --max-usd 0` into the cohort's work folder, run it with `scripts/run_enrichment.sh` (watched tmux
-   session, live ETA), then **`moros-write` B** to merge: dry run, `--limit 50 --confirm`, `--confirm`.
-   Report ok / truncated / violations and the wall time.
+   session, live ETA), then **`moros-write` B** to merge: the read-only audit and gap list, dry run,
+   `--limit 50 --confirm`, `--confirm`. Report ok / truncated / cleaned / superseded and the wall time.
 6. **`citations-refresh`** if `citations_refresh` is yes (free); the **full-text refresh** if
    `fulltext_refresh` is yes (free, under a minute): `fetch_fulltext.py`, then `moros-write` C's
    `fulltext` mode -- dry run (it reports how many flags would change; any change *to false* is worth

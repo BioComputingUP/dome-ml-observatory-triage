@@ -37,7 +37,9 @@ from pathlib import Path
 from moros_client import Moros
 from link_identifiers import MONGO_MALFORMED_REGEX
 import resolve_duplicates as rd
+from enrichment_clean import CLOSED_FIELDS, clean_values, load_vocab
 from moros_write import (
+    ENRICHMENT_HISTORY_PATH,
     RECORD_MODIFIED_PATH,
     RECORD_MODIFIED_PATTERN,
     REPORT_DIR,
@@ -319,6 +321,46 @@ def verify(moros: Moros, expect_count: int | None) -> tuple[Checks, dict]:
     enriched = moros.count({"llm_enrichment.provider": {"$ne": None}})
     facts["enriched"] = enriched
     checks.note("enriched documents", f"{enriched:,}")
+    by_prompt = moros.histogram("llm_enrichment.prompt_version")
+    facts["enriched_by_prompt"] = {str(k): v for k, v in by_prompt.items() if k is not None}
+    checks.note("enriched by prompt", f"{facts['enriched_by_prompt']}")
+
+    # Closed vocabularies: ingestion cleaning (enrichment_clean.py) leaves nothing a published
+    # vocabulary does not define, so a facet can never show an undefined value.
+    vocab = load_vocab()
+    projection = {f"content_filters.{f}": 1 for f in CLOSED_FIELDS}
+    off_vocab: list[str] = []
+    for doc in moros.collection.find({"llm_enrichment.provider": {"$ne": None}}, projection):
+        filters = doc.get("content_filters") or {}
+        _, changes = clean_values({f: filters[f] for f in CLOSED_FIELDS if f in filters}, vocab)
+        if changes:
+            off_vocab.append(doc["_id"])
+    facts["enriched_off_vocabulary"] = len(off_vocab)
+    checks.add("no enriched document holds an off-vocabulary closed value", not off_vocab,
+               f"{len(off_vocab):,} documents" + (f", e.g. {off_vocab[:3]} -- run load_enrichment.py "
+               f"--clean-existing" if off_vocab else ""))
+
+    # v1.8.0: every document carries enrichment_history, and every entry records an enrichment that
+    # was actually superseded: the newest entry names the batch the document holds now.
+    no_history = moros.count({ENRICHMENT_HISTORY_PATH: {"$exists": False}})
+    bad_history: list[str] = []
+    with_history = 0
+    for doc in moros.collection.find({f"{ENRICHMENT_HISTORY_PATH}.0": {"$exists": True}},
+                                     {ENRICHMENT_HISTORY_PATH: 1, "llm_enrichment.batch_id": 1}):
+        with_history += 1
+        entries = doc[ENRICHMENT_HISTORY_PATH]
+        current_batch = (doc.get("llm_enrichment") or {}).get("batch_id")
+        if (any(not (e.get("llm_enrichment") or {}).get("provider") or not e.get("superseded_at")
+                for e in entries)
+                or (entries[-1].get("superseded_by") or {}).get("batch_id") != current_batch):
+            bad_history.append(doc["_id"])
+    facts["enrichment_history"] = {"missing": no_history, "with_entries": with_history,
+                                   "malformed": len(bad_history)}
+    checks.add("every document has enrichment_history", no_history == 0,
+               f"{no_history:,} without it -- run migrate_v1_8_0.py")
+    checks.add("enrichment_history entries are superseded enrichments", not bad_history,
+               f"{with_history:,} documents with history, {len(bad_history):,} malformed"
+               + (f", e.g. {bad_history[:3]}" if bad_history else ""))
 
     # -- the acceptance probe ----------------------------------------------
     probes = {

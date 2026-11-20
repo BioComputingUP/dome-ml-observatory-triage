@@ -11,7 +11,9 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 set -a; . ./.env; set +a
-RUNS="${ENRICHMENT_RUNS_REPO:-../dome-observatory-enrichment-runs}"
+RUNS="${ENRICHMENT_RUNS_REPO:-../dome-ml-observatory-enrichment-runs}"
+# Its name until 2026-11-20; a checkout still under it keeps working.
+[ -d "$RUNS" ] || [ -n "${ENRICHMENT_RUNS_REPO:-}" ] || { [ -d ../dome-observatory-enrichment-runs ] && RUNS=../dome-observatory-enrichment-runs; }
 export HOST_UID="$(id -u)" HOST_GID="$(id -g)"
 
 slug() { git -C "$RUNS" remote get-url origin | sed -E 's#.*github\.com[:/]([^/]+/[^/.]+)(\.git)?$#\1#'; }

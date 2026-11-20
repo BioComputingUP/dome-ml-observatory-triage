@@ -21,7 +21,7 @@ year`), with the same values, so a run cannot tell which one built its input.
 Runs in the `tools` container, e.g.:
     docker compose run --rm tools python scripts/inputs_from_zenodo.py \\
         --dump ../zenodo_corpus/dome-observatory-corpus-2026-09-25.jsonl.gz \\
-        --cohort core_bioinformatics --out-dir ../dome-observatory-enrichment-runs/inputs
+        --cohort core_bioinformatics --out-dir ../dome-ml-observatory-enrichment-runs/inputs
 """
 
 from __future__ import annotations

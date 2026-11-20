@@ -71,6 +71,8 @@ _ENRICHED_FILTER_FIELDS = (
     # v1.7.0: enrichment prompt e2 only.
     "model_use",
 )
+# v1.8.0: top-level array of the enrichments a later load superseded (load_enrichment.py).
+ENRICHMENT_HISTORY_PATH = "enrichment_history"
 # v1.3.0: the Europe PMC identity of the record and, for a preprint, its server.
 PREPRINT_FIELDS = (
     "identifiers.epmc_id",
@@ -136,8 +138,10 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     }),
     # The enrichment merge. Cannot reach `llm_classification` at all, which is the whole point:
     # enrichment is additive by construction and must not be able to revise a verdict.
+    # v1.8.0: plus `enrichment_history`, the enrichments a load superseded (load_enrichment.py appends
+    # the old group before setting the new one). An array leaf, replaced whole and restored whole.
     "enrichment": frozenset(
-        {_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH}
+        {_SCHEMA_VERSION_PATH, RECORD_MODIFIED_PATH, ENRICHMENT_HISTORY_PATH}
         | {f"content_filters.{f}" for f in _ENRICHED_FILTER_FIELDS}
         | {f"llm_enrichment.{f}" for f in _ENRICHMENT_FIELDS}
     ),
@@ -169,6 +173,9 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # "not enriched by e2" value). Cannot reach any other enrichment field. Not a stamping mode: an
     # empty new field is no change to what the observatory's metadata exposes.
     "migrate_v1_7_0": frozenset({_SCHEMA_VERSION_PATH, "content_filters.model_use"}),
+    # 1.7.0 -> 1.8.0: the version, and enrichment_history = [] on every existing document (nothing
+    # superseded yet). Cannot reach any enrichment value. Not a stamping mode, as for 1.7.0.
+    "migrate_v1_8_0": frozenset({_SCHEMA_VERSION_PATH, ENRICHMENT_HISTORY_PATH}),
     # The full-text refresh (fetch_fulltext.py): Europe PMC's inEPMC / inPMC, the rule the bulk
     # match set this flag by. One leaf. Cannot reach `open_access` or `license` (the `licences`
     # mode's) or anything that decides what a record is. Not in STAMPS_RECORD_MODIFIED: the flag is

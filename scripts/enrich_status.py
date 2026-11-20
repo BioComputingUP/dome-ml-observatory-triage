@@ -24,6 +24,9 @@ from pathlib import Path
 csv.field_size_limit(sys.maxsize)
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runs_repo import default_runs_repo  # noqa: E402
+
 WORK_ROOT = REPO / "moros_pipeline" / "output" / "enrichment_e3"
 PARSE_ERROR = "parse_error"
 THRESHOLD = 0.02
@@ -163,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cohort", required=True)
     ap.add_argument("--work-root", type=Path, default=WORK_ROOT)
-    ap.add_argument("--runs-repo", type=Path, default=REPO.parent / "dome-observatory-enrichment-runs")
+    ap.add_argument("--runs-repo", type=Path, default=default_runs_repo(REPO))
     ap.add_argument("--interval", type=int, default=10)
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--check", action="store_true", help="with --once: exit 1 if a finished chunk is over 2%%")

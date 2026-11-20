@@ -1,4 +1,4 @@
-"""Shared helpers for the PRIVATE enrichment runs repository (gavinf97/dome-observatory-enrichment-runs):
+"""Shared helpers for the PRIVATE enrichment runs repository (gavinf97/dome-ml-observatory-enrichment-runs):
 the SHA256SUMS manifest, the privacy check that must pass before anything is pushed, and the commit and
 push. Used by scripts/inputs_from_zenodo.py and scripts/checkpoint_events.py; runs in the `tools`
 container (stdlib + requests; git from the image).
@@ -27,6 +27,22 @@ _CRED_HELPER = "!f() { echo username=x-access-token; echo password=$GH_TOKEN; };
 # container it stopped mid-rebase, the pusher exited, and no checkpoint landed for 14 hours.
 _IDENTITY = ("-c", "user.name=dome-enrichment-checkpoint",
              "-c", "user.email=dome-enrichment-checkpoint@users.noreply.github.com")
+
+
+RUNS_REPO_NAME = "dome-ml-observatory-enrichment-runs"
+# Its name until 2026-11-20. A checkout still under it (e.g. on the EBI laptop) keeps working.
+_OLD_RUNS_REPO_NAME = "dome-observatory-enrichment-runs"
+
+
+def default_runs_repo(repo_root: Path) -> Path:
+    """`$ENRICHMENT_RUNS_REPO` (relative to this repository's root), else the sibling checkout
+    `../dome-ml-observatory-enrichment-runs`, else one still under the old name."""
+    env = os.environ.get("ENRICHMENT_RUNS_REPO", "").strip()
+    if env:
+        path = Path(env)
+        return path if path.is_absolute() else (repo_root / path).resolve()
+    new, old = repo_root.parent / RUNS_REPO_NAME, repo_root.parent / _OLD_RUNS_REPO_NAME
+    return old if (not new.exists() and old.exists()) else new
 
 
 def sha256_file(path: Path) -> str:

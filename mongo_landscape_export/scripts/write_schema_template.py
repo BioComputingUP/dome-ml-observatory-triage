@@ -118,6 +118,7 @@ def build_template() -> dict:
             "cache_hit_tokens": None,
             "parse_fallback_used": None,
         },
+        "enrichment_history": [],
     }
 
 

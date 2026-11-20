@@ -37,7 +37,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from runs_repo import assert_private, origin_slug  # noqa: E402
+from runs_repo import default_runs_repo, assert_private, origin_slug  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 WORK_ROOT = REPO / "moros_pipeline" / "output" / "enrichment_e3"
@@ -152,7 +152,7 @@ def enable_workflow(slug: str, token: str) -> None:
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cohort", required=True)
-    ap.add_argument("--runs-repo", type=Path, default=REPO.parent / "dome-observatory-enrichment-runs")
+    ap.add_argument("--runs-repo", type=Path, default=default_runs_repo(REPO))
     ap.add_argument("--every", type=int, default=60)
     ap.add_argument("--test", action="store_true", help="send one test alert and exit")
     args = ap.parse_args(argv)

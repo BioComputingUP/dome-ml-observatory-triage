@@ -7,4 +7,6 @@ PyYAML==6.0.3
 requests==2.34.2
 tqdm==4.70.1
 matplotlib==3.11.2
-pymongo==4.18.3
+# 4.17.x is the last PyMongo that speaks to moros: the server is MongoDB 4.2 (wire version 8), and
+# 4.18 requires wire 9 (MongoDB 4.4). Do not upgrade until moros does.
+pymongo==4.17.0

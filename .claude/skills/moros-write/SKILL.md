@@ -82,19 +82,41 @@ new count, and whether every invariant passed. `load_documents.py` refuses to re
 document whose content differs; do not pass `--allow-replace-existing` unless the user has decided
 the existing document should lose what the new one lacks.
 
-## B. Merge an enrichment events file
+## B. Merge enrichment events files
+
+Events come from wherever the model ran (this laptop, or the EBI laptop through the private runs
+repository `../dome-ml-observatory-enrichment-runs`, pulled and checked with `sha256sum -c SHA256SUMS`).
+Ingestion is the same either way, and everything it decides is in scripts, not in this skill:
 
 ```bash
-python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv              # dry run
-python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --limit 25 --confirm
-python3 load_enrichment.py --events ../output/enrichment_<name>_events.csv --confirm
+# 0. Read-only audit of what ingestion will do, and the vocabulary-gap list (no database):
+python3 enrichment_clean.py --events <runs>/events/<cohort>/*_events.csv --gaps-md ../../docs/enrichment_vocab_gaps.md
+# 1. The corpus must be at schema 1.8.0 (the loader refuses otherwise): migrate_v1_7_0.py, migrate_v1_8_0.py,
+#    each a dry run then --confirm, after the release is published and check_alignment.py says aligned.
+# 2. Load: one run per file, several files per command.
+python3 load_enrichment.py --events <files...>                       # dry run
+python3 load_enrichment.py --events <first file> --limit 50 --confirm
+python3 load_enrichment.py --events <files...> --confirm
+# 3. If verify_corpus.py reports off-vocabulary values on documents loaded before cleaning existed:
+python3 load_enrichment.py --clean-existing                          # dry run, then --confirm
 ```
 
-The `enrichment` allowlist covers `content_filters`' six vocabulary fields and the
-`llm_enrichment` group only; it cannot reach `llm_classification`. `parse_error` rows are skipped.
-Never merge an events file written for a comparison (`enrichment_revalidation_*`): it re-enriched
-records that already carry an enrichment, and merging would overwrite what it was compared with.
-Report matched / modified / violations, then `verify_corpus.py`.
+What the loader does to every event, deterministically:
+- **Cleaning `c1`** (`enrichment_clean.py`): closed-vocabulary values the parser flagged but kept are
+  moved to their right field, trimmed to the cap or dropped. Each change is appended to
+  `llm_enrichment.vocab_violations` as `cleaned:c1:...` and listed in `../output/<run_id>.cleaning.csv`.
+  The events file is never edited.
+- **History**: a document that already holds an enrichment from another prompt or batch keeps it in
+  `enrichment_history` (oldest first) before the new values are set. The dry run reports how many
+  documents a load would supersede; say that number to the user before confirming. Re-loading the
+  same batch adds nothing.
+
+The `enrichment` allowlist covers `content_filters`' seven vocabulary fields, the `llm_enrichment`
+group and `enrichment_history` only; it cannot reach `llm_classification`. `parse_error` rows are
+skipped. Never merge an events file written for a comparison (`enrichment_revalidation_*`).
+From the dry run report per file: ok / parse_error, ids not found (must be 0), cleaned documents,
+superseded documents. After `--confirm`: matched / modified and the enriched count; then
+`verify_corpus.py`, which fails on any off-vocabulary closed value or malformed history.
 
 ## C. Field refreshes
 

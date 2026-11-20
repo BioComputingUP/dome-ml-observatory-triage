@@ -8,7 +8,7 @@ used one (where a difference is the point of the new prompt). Also: parse errors
 tokens per record.
 
     docker compose run --rm tools python scripts/compare_enrichment_runs.py \\
-        --reference ../glm5.3_test_dome-ml-observatory-triage/runs/e2/events_wave2.csv \\
+        --reference ../dome-ml-observatory-research/dome-ml-observatory-glm53-validation/runs/e2/events_wave2.csv \\
         --candidate moros_pipeline/output/enrichment_e3/qc_wave2/input_wave2_250_events.csv \\
         --new-terms-from curation_criteria/e3/model_type_seed_vocab.json
 """

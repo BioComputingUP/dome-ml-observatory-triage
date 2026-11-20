@@ -112,7 +112,13 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # active learning, multimodal learning, physics-informed machine learning; three seed types), plus 20
 # life-science model types and their aliases, so every e1- and e2-enriched value stays valid.
 # Additive -- no existing field changed or removed.
-SCHEMA_VERSION = "1.7.0"
+# 1.8.0 (2026-11-20): top-level enrichment_history -- the enrichments a later load superseded, oldest
+# first. Each element is the superseded llm_enrichment group, its content_filters enrichment values
+# (domain_tier1-3, learning_paradigm, model_family, model_type, model_use), superseded_at and
+# superseded_by {prompt_version, batch_id}. Written only by load_enrichment.py when it sets an
+# enrichment from a different prompt or batch over an existing one; [] otherwise. The observatory
+# reads only the current enrichment. Additive -- no existing field changed or removed.
+SCHEMA_VERSION = "1.8.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
@@ -472,6 +478,7 @@ def build_document(row: dict[str, str]) -> dict[str, Any]:
         "data_links": _data_links(row),
         "llm_classification": _llm_classification(row),
         "llm_enrichment": _empty_enrichment(),
+        "enrichment_history": [],
     }
 
 
@@ -500,4 +507,5 @@ def build_curated_document(row: dict[str, str]) -> dict[str, Any]:
         "data_links": _data_links(row),
         "llm_classification": _curated_classification(row),
         "llm_enrichment": _empty_enrichment(),
+        "enrichment_history": [],
     }
