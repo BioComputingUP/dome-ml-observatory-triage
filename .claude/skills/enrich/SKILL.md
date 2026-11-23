@@ -86,6 +86,8 @@ From `enrich_status.py --once`, report:
 Make a final checkpoint push. Do not hand-edit an events file or a gap list: the vocabulary gaps are
 generated, deterministically, by `moros_pipeline/scripts/enrichment_clean.py --gaps-md
 docs/enrichment_vocab_gaps.md` on the loading laptop (moros-write B, step 0).
+Candidate model types for a future prompt (seed-entry format, with counts and examples) are kept in
+`curation_criteria/candidates/`; update them there rather than in `curation_criteria/e3/`, which is frozen.
 
 Then, on the laptop with moros, ask **"Merge these into moros?"**. On a yes:
 - pull the runs repository;

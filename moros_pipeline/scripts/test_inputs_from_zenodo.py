@@ -77,6 +77,39 @@ def test_cohort_with_journal_order_runs_the_first_listed_journal_first(tmp_path,
     assert "journal order" in (tmp_path / "in" / "b2" / "SOURCE.md").read_text()
 
 
+def test_all_scope_reruns_e1_first_excludes_earlier_cohorts_and_puts_no_journal_last(tmp_path, monkeypatch):
+    monkeypatch.setattr(iz, "load_cohort", lambda name: [])
+    monkeypatch.setattr(iz, "load_cohort_order", lambda name: "reruns_then_journal_size")
+    monkeypatch.setattr(iz, "load_cohort_scope",
+                        lambda name: iz.Scope(all_journals=True, rerun=("e1",), exclude_cohorts=("core",)))
+    out = tmp_path / "in"
+    iz.write_csv(out / "core" / "c01.csv", [{"record_id": "done", "title": "", "abstract": "", "journal": "", "year": ""}])
+
+    def enriched(_id, version, journal="Nature"):
+        d = _doc(_id, journal=journal, provider="deepseek" if version == "e1" else "embl-ebi")
+        d["llm_enrichment"]["prompt_version"] = version
+        return d
+
+    docs = [
+        _doc("small", journal="Cell"),
+        _doc("big1", journal="PloS one"), _doc("big2", journal="PloS one"),
+        _doc("nojournal", journal=""),
+        enriched("old", "e1"),                    # redone, and first
+        enriched("current", "e3"),                # already on the latest prompt: never redone
+        _doc("done", journal="PloS one"),         # in an earlier cohort's inputs
+        _doc("neg", journal="Cell", cls="negative"),
+    ]
+    paths = iz.build_cohort(_dump(tmp_path, docs), "b3", out, 100, "")
+    assert [r["record_id"] for r in _rows(paths[0])] == ["old", "big1", "big2", "small", "nojournal"]
+    source = (out / "b3" / "SOURCE.md").read_text()
+    assert "prompt e1 to redo (1 records" in source and "(no journal name) | 1 |" in source and "(1 ids)" in source
+
+
+def test_exclusion_refuses_a_cohort_with_no_inputs(tmp_path):
+    with pytest.raises(SystemExit, match="has no inputs"):
+        iz.excluded_ids(tmp_path, ["core_bioinformatics"])
+
+
 def test_unknown_order_is_refused(tmp_path):
     cfg = tmp_path / "c.yaml"
     cfg.write_text(yaml.safe_dump({"cohorts": {"odd": {"order": "random", "journals": ["A"]}}}))
@@ -92,6 +125,10 @@ def test_the_shipped_cohort_file_loads_and_has_no_duplicates():
     assert iz.load_cohort_order("batch2_high_impact") == "journals"
     assert not set(batch2) & set(journals)                          # never re-enrich the core cohort
     assert batch2[:2] == ["Nature", "Science (New York, N.Y.)"]
+    assert iz.load_cohort_scope("core_bioinformatics") == iz.Scope()             # unchanged defaults
+    b3 = iz.load_cohort_scope("batch3_all_remaining")
+    assert b3.all_journals and b3.rerun == ("e1",)
+    assert set(b3.exclude_cohorts) == {"core_bioinformatics", "batch2_high_impact"}
 
 
 def test_ids_mode_keeps_listed_order_and_refuses_a_missing_id(tmp_path):

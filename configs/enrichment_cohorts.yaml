@@ -120,3 +120,18 @@ cohorts:
       - "iScience"
       - "NeuroImage"
       - "Genes"
+
+  # batch3_all_remaining -- everything else in Zenodo dump 2026-09-25, on prompt e3 (Gavin, 2026-11-23):
+  # 260,342 unenriched positives with a title and abstract outside core_bioinformatics and
+  # batch2_high_impact, plus the 3,532 documents still on prompt e1 (DeepSeek: Bioinformatics 2,643,
+  # Nature 381, Science 188, Cell 121, ...), redone so the whole corpus is on GLM-5.3 / e3. Loading
+  # an e3 event over an e1 document moves the e1 enrichment into `enrichment_history` (schema 1.8.0),
+  # so nothing is lost. Order: the e1 re-runs first, then journals largest first, then the 38,927
+  # records with no journal name. 3,250 positives have no title or abstract and cannot be enriched.
+  batch3_all_remaining:
+    description: "Batch 3: every remaining positive in the dump, and the e1 documents redone on e3"
+    scope: all
+    rerun: [e1]
+    exclude_cohorts: [core_bioinformatics, batch2_high_impact]
+    order: reruns_then_journal_size
+    journals: []

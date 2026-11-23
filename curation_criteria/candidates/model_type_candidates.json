@@ -1,0 +1,1606 @@
+{
+  "status": "CANDIDATES ONLY. Not part of any prompt or published vocabulary; prompt e3 remains the production enrichment prompt. Kept for a future prompt version (decided by Gavin, 2026-11-20).",
+  "base": "curation_criteria/e3/model_type_seed_vocab.json",
+  "format": "proposed_terms entries use the seed's own entry shape (canonical, aliases, family_hint, ontology_mappings) so adoption is a copy, minus the 'candidate' block. proposed_aliases name the existing canonical they extend. proposed_excluded_kinds are regexes for EXCLUDED_KINDS in src/dome_triage/llm_classify/enrichment_e2.py (flag, never drop).",
+  "source": {
+    "runs": [
+      "moros_pipeline/output/enrichment_e3/core_bioinformatics (c01-c03)",
+      "moros_pipeline/output/enrichment_e3/batch2_high_impact (c01-c18)"
+    ],
+    "backup": "private runs repository dome-observatory-enrichment-runs, events/<cohort>/ (commit c50dde2)",
+    "prompt": {
+      "version": "e3",
+      "vocab_sha256": "3b9d119deb05834f404e541493ba01e221553ad59f23031e8a004c88bccd0239",
+      "model": "zai-org/GLM-5.3-Flash on the EMBL-EBI gateway"
+    },
+    "events_window": [
+      "2026-11-16T23:15:07.370258+00:00",
+      "2026-11-20T20:29:47.484778+00:00"
+    ],
+    "records": 100224,
+    "ok": 100073,
+    "model_type_tags": 163902,
+    "model_type_tags_outside_seed": 56890,
+    "model_type_distinct_values": 30512,
+    "zenodo_dump": "../zenodo_corpus/dome-observatory-corpus-2026-09-25.jsonl.gz",
+    "zenodo_positives": 367348
+  },
+  "method": {
+    "tag_count": "model_type tags in parse_status=ok events whose lower-cased value matches the candidate's pattern (spellings listed in observed_spellings); records = distinct papers.",
+    "zenodo_positives_mentioning": "positives in the Zenodo dump whose title or abstract matches the candidate's text patterns, counted once per paper: the basis e3's inclusion rule used (scripts/e3_term_evidence.py). Not the same population as tag_count.",
+    "family_hint": "every hint names existing model_family labels (checked).",
+    "measured": "2026-11-20, read-only, after the run finished"
+  },
+  "adoption": "See curation_criteria/candidates/README.md: adopting any of this is a new prompt version (AGENTS.md rule 1), not an edit to e3.",
+  "proposed_terms": [
+    {
+      "canonical": "spiking neural network",
+      "aliases": [
+        "recurrent spiking neural network",
+        "convolutional spiking neural network"
+      ],
+      "family_hint": "classic neural network or deep learning (depth-dependent)",
+      "candidate": {
+        "action": "add_term",
+        "note": "Neuromorphic networks. Do NOT add the bare acronym 'SNN' as an alias: in single-cell papers SNN means a shared-nearest-neighbour graph.",
+        "tag_count": 490,
+        "records": 482,
+        "by_cohort": {
+          "batch2_high_impact": 469,
+          "core_bioinformatics": 21
+        },
+        "zenodo_positives_mentioning": 727,
+        "observed_spellings": {
+          "spiking neural network": 449,
+          "recurrent spiking neural network": 8,
+          "convolutional spiking neural network": 6,
+          "Spiking Neural Network": 5,
+          "spiking neural network (SNN)": 3,
+          "Long short-term memory Spiking Neural Network (LSNN)": 1,
+          "reward-modulated spiking neural network": 1,
+          "noisy spiking neural network (NSNN)": 1
+        },
+        "examples": [
+          {
+            "record_id": "2f9439ec-419b-59ec-afd3-830c75c80178",
+            "title": "Rapid online learning and robust recall in a neuromorphic olfactory circuit.",
+            "journal": "Nature machine intelligence",
+            "year": "2020",
+            "tagged_as": "spiking neural network"
+          },
+          {
+            "record_id": "05ef1d1b-8fc9-5dc7-af66-9279e62bb406",
+            "title": "Spinal-inspired artificial tactile interneuron with high-order burst spiking for intelligent edge interfaces.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "spiking neural network"
+          },
+          {
+            "record_id": "07e36cb6-48f2-57cb-8441-b25d4424608f",
+            "title": "Decoding phantom limb movements from intraneural recordings.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "Spiking Neural Network"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "extreme learning machine",
+      "aliases": [
+        "ELM",
+        "kernel extreme learning machine",
+        "KELM",
+        "OS-ELM"
+      ],
+      "family_hint": "classic neural network",
+      "candidate": {
+        "action": "add_term",
+        "note": "Single-hidden-layer feed-forward network trained in closed form. 'ELM' is safe as a model_type alias (seed matching is on tags, not text), though in text ELM can also mean the Eukaryotic Linear Motif resource.",
+        "tag_count": 383,
+        "records": 364,
+        "by_cohort": {
+          "batch2_high_impact": 357,
+          "core_bioinformatics": 26
+        },
+        "zenodo_positives_mentioning": 1202,
+        "observed_spellings": {
+          "extreme learning machine": 190,
+          "kernel extreme learning machine": 35,
+          "Extreme Learning Machine": 30,
+          "Extreme Learning Machine (ELM)": 29,
+          "extreme learning machine (ELM)": 10,
+          "Kernel Extreme Learning Machine (KELM)": 9,
+          "ELM": 9,
+          "regularized extreme learning machine": 7
+        },
+        "examples": [
+          {
+            "record_id": "99b18090-0835-5b10-9092-376f91c09149",
+            "title": "Electromagnetic wave-based extreme deep learning with nonlinear time-Floquet entanglement.",
+            "journal": "Nature communications",
+            "year": "2022",
+            "tagged_as": "extreme learning machine"
+          },
+          {
+            "record_id": "cedcfd21-a9eb-594b-b238-08c0c52b0e91",
+            "title": "Nonlinear optical extreme learner via data reverberation with incoherent light.",
+            "journal": "Science advances",
+            "year": "2026",
+            "tagged_as": "extreme learning machine"
+          },
+          {
+            "record_id": "0f1cd25a-1de4-58c6-ac37-a7d4c9915a0e",
+            "title": "Sequential Nonlinear Learning for Distributed Multiagent Systems via Extreme Learning Machines.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2017",
+            "tagged_as": "extreme learning machine"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "temporal convolutional network",
+      "aliases": [
+        "TCN"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Dilated causal convolutions for sequences.",
+        "tag_count": 221,
+        "records": 219,
+        "by_cohort": {
+          "batch2_high_impact": 215,
+          "core_bioinformatics": 6
+        },
+        "zenodo_positives_mentioning": 480,
+        "observed_spellings": {
+          "temporal convolutional network": 134,
+          "temporal convolutional network (TCN)": 21,
+          "Temporal Convolutional Network (TCN)": 18,
+          "Temporal Convolutional Network": 16,
+          "TCN": 12,
+          "bidirectional temporal convolutional network": 2,
+          "Channel-Temporal Attention-Temporal Convolutional Network (CTA-TCN)": 1,
+          "Multi-Level Temporal Convolutional Network (ML-TCN)": 1
+        },
+        "examples": [
+          {
+            "record_id": "8a69d169-33e1-5115-9faf-aae995a2790d",
+            "title": "A universal deep learning framework for empowering nanopore identification by reinforcing temporal signals.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "temporal convolutional network"
+          },
+          {
+            "record_id": "2bc51473-e4b9-5c96-8eb2-ef7884c9c60a",
+            "title": "A deep learning framework for personalised dynamic diagnosis of graft fibrosis after liver transplantation: a retrospective, single Canadian centre, longitudinal study.",
+            "journal": "The Lancet. Digital health",
+            "year": "2023",
+            "tagged_as": "temporal convolutional network"
+          },
+          {
+            "record_id": "192f2456-263c-5ca1-b822-76955f06903a",
+            "title": "Impact of individual and treatment characteristics on wearable sensor-based digital biomarkers of opioid use.",
+            "journal": "NPJ digital medicine",
+            "year": "2022",
+            "tagged_as": "Channel-Temporal Attention-Temporal Convolutional Network (CTA-TCN)"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "radial basis function network",
+      "aliases": [
+        "radial basis function neural network",
+        "RBF neural network",
+        "RBF network",
+        "RBFNN"
+      ],
+      "family_hint": "classic neural network",
+      "candidate": {
+        "action": "add_term",
+        "note": "Seen under four spellings; normalisation alone would merge 199 tags.",
+        "tag_count": 199,
+        "records": 198,
+        "by_cohort": {
+          "batch2_high_impact": 189,
+          "core_bioinformatics": 10
+        },
+        "zenodo_positives_mentioning": 497,
+        "observed_spellings": {
+          "radial basis function network": 86,
+          "radial basis function neural network": 74,
+          "RBF neural network": 8,
+          "RBF network": 5,
+          "Radial Basis Function Network": 5,
+          "RBFNN": 4,
+          "Radial Basis Function Neural Network (RBFNN)": 3,
+          "radial basis function neural network (RBFNN)": 2
+        },
+        "examples": [
+          {
+            "record_id": "256d063f-0671-53c8-8732-a9d628c9bc05",
+            "title": "Concurrent subspace width optimization method for RBF neural network modeling.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2012",
+            "tagged_as": "radial basis function neural network"
+          },
+          {
+            "record_id": "5c7f10fa-c2a2-55cf-b058-188d4e059537",
+            "title": "Dynamic learning from adaptive neural network control of a class of nonaffine nonlinear systems.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2014",
+            "tagged_as": "radial basis function neural network"
+          },
+          {
+            "record_id": "623c3694-8391-5b88-9d5b-91736d228359",
+            "title": "Learning from ISS-modular adaptive NN control of nonlinear strict-feedback systems.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2012",
+            "tagged_as": "radial basis function neural network"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "reservoir computing",
+      "aliases": [
+        "echo state network",
+        "ESN",
+        "liquid state machine",
+        "physical reservoir computing"
+      ],
+      "family_hint": "classic neural network",
+      "candidate": {
+        "action": "add_term",
+        "note": "Echo state networks and liquid state machines are the two classic reservoir models.",
+        "tag_count": 256,
+        "records": 236,
+        "by_cohort": {
+          "batch2_high_impact": 247,
+          "core_bioinformatics": 9
+        },
+        "zenodo_positives_mentioning": 613,
+        "observed_spellings": {
+          "reservoir computing": 122,
+          "echo state network": 41,
+          "Echo State Network": 17,
+          "physical reservoir computing": 11,
+          "Liquid State Machine": 10,
+          "quantum reservoir computing": 6,
+          "liquid state machine": 6,
+          "reservoir computer": 5
+        },
+        "examples": [
+          {
+            "record_id": "0786b3bf-276e-5320-9b8e-668a36eab987",
+            "title": "Neuromorphic hierarchical modular reservoirs.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "reservoir computing"
+          },
+          {
+            "record_id": "0e742ead-317a-5e19-87a6-268b791856f6",
+            "title": "Next generation reservoir computing.",
+            "journal": "Nature communications",
+            "year": "2021",
+            "tagged_as": "reservoir computing"
+          },
+          {
+            "record_id": "1a416318-5c97-5f29-98df-49d38eb3fcb7",
+            "title": "Principled neuromorphic reservoir computing.",
+            "journal": "Nature communications",
+            "year": "2025",
+            "tagged_as": "reservoir computing"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "deep belief network",
+      "aliases": [
+        "deep belief net"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Do NOT add the bare acronym 'DBN': it also means dynamic Bayesian network.",
+        "tag_count": 121,
+        "records": 121,
+        "by_cohort": {
+          "batch2_high_impact": 108,
+          "core_bioinformatics": 13
+        },
+        "zenodo_positives_mentioning": 336,
+        "observed_spellings": {
+          "deep belief network": 87,
+          "Deep Belief Network": 12,
+          "Entropy Deep Belief Network (EDBN)": 2,
+          "Deep Belief Network (DBN)": 2,
+          "adaptive deep belief network": 2,
+          "DBN": 2,
+          "growing deep belief network": 1,
+          "convolutional deep belief network": 1
+        },
+        "examples": [
+          {
+            "record_id": "0fb20295-c6a3-5901-85b7-ac6982525f67",
+            "title": "Unsupervised Feature Extraction via Deep Learning for Histopathological Classification of Colon Tissue Images.",
+            "journal": "IEEE transactions on medical imaging",
+            "year": "2019",
+            "tagged_as": "deep belief network"
+          },
+          {
+            "record_id": "0273bef7-f458-57f1-9eaf-15af09d35e4d",
+            "title": "A Cost-Sensitive Deep Belief Network for Imbalanced Classification.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2019",
+            "tagged_as": "deep belief network"
+          },
+          {
+            "record_id": "5045cb52-7c53-50f1-a36d-3acfeaca622f",
+            "title": "An Adaptive Deep Belief Network With Sparse Restricted Boltzmann Machines.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2020",
+            "tagged_as": "deep belief network"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "capsule network",
+      "aliases": [
+        "CapsNet",
+        "capsule neural network"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "",
+        "tag_count": 159,
+        "records": 157,
+        "by_cohort": {
+          "batch2_high_impact": 137,
+          "core_bioinformatics": 22
+        },
+        "zenodo_positives_mentioning": 310,
+        "observed_spellings": {
+          "capsule network": 87,
+          "CapsNet": 22,
+          "capsule neural network": 18,
+          "Capsule Network": 8,
+          "Efficient-CapsNet": 2,
+          "squeeze-and-excitation capsule network": 1,
+          "Stacked CapsNet": 1,
+          "Squeeze-and-Excitation Capsule Network (SE-CapsNet)": 1
+        },
+        "examples": [
+          {
+            "record_id": "1b5c14c9-aa33-57af-806d-65deeb3d46ff",
+            "title": "Material symmetry recognition and property prediction accomplished by crystal capsule representation.",
+            "journal": "Nature communications",
+            "year": "2023",
+            "tagged_as": "capsule network"
+          },
+          {
+            "record_id": "55996b4e-699b-5f69-9d4f-ee37a4b6a905",
+            "title": "Empowering genetic discoveries and cardiovascular risk assessment by predicting electrocardiograms from genotype.",
+            "journal": "NPJ digital medicine",
+            "year": "2026",
+            "tagged_as": "Capsule Network"
+          },
+          {
+            "record_id": "7c0a2398-d3ad-58f6-a881-dd49aee40a56",
+            "title": "MethylSPWNet and MethylCapsNet: Biologically Motivated Organization of DNAm Neural Networks, Inspired by Capsule Networks.",
+            "journal": "NPJ systems biology and applications",
+            "year": "2021",
+            "tagged_as": "capsule network"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "vision-language model",
+      "aliases": [
+        "vision language model",
+        "large vision-language model",
+        "LVLM",
+        "CLIP",
+        "contrastive language-image pre-training"
+      ],
+      "family_hint": "deep learning + multimodal learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "CLIP is folded in as an alias. 'CLIP' as a model_type tag is unambiguous, but in biology text it also names CLIP-seq, so do not use it as a text-search pattern.",
+        "tag_count": 200,
+        "records": 196,
+        "by_cohort": {
+          "batch2_high_impact": 195,
+          "core_bioinformatics": 5
+        },
+        "zenodo_positives_mentioning": 386,
+        "observed_spellings": {
+          "vision-language model": 88,
+          "CLIP": 85,
+          "vision language model": 12,
+          "large vision-language model": 5,
+          "Vision-Language Model (VLM)": 2,
+          "large vision language model": 1,
+          "Vision-Language Model": 1,
+          "pathology vision-language model": 1
+        },
+        "examples": [
+          {
+            "record_id": "802a6a73-d983-5fa5-9415-4535d4b94955",
+            "title": "Transparent medical image AI via an image-text foundation model grounded in medical literature.",
+            "journal": "Nature medicine",
+            "year": "2024",
+            "tagged_as": "vision-language model"
+          },
+          {
+            "record_id": "940e8932-63af-538b-86de-98e2c5167a55",
+            "title": "An eyecare foundation model for clinical assistance: a randomized controlled trial.",
+            "journal": "Nature medicine",
+            "year": "2025",
+            "tagged_as": "vision-language model"
+          },
+          {
+            "record_id": "857ab905-52ae-53ec-b7b5-cfb1eb3ba4ae",
+            "title": "Collaboration between clinicians and vision-language models in radiology report generation.",
+            "journal": "Nature medicine",
+            "year": "2025",
+            "tagged_as": "vision-language model"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "adaptive neuro-fuzzy inference system",
+      "aliases": [
+        "ANFIS"
+      ],
+      "family_hint": "classic neural network",
+      "candidate": {
+        "action": "add_term",
+        "note": "Neuro-fuzzy hybrid; the model mostly emits the acronym.",
+        "tag_count": 203,
+        "records": 197,
+        "by_cohort": {
+          "batch2_high_impact": 201,
+          "core_bioinformatics": 2
+        },
+        "zenodo_positives_mentioning": 777,
+        "observed_spellings": {
+          "ANFIS": 67,
+          "adaptive neuro-fuzzy inference system (ANFIS)": 59,
+          "Adaptive Neuro-Fuzzy Inference System (ANFIS)": 25,
+          "adaptive neuro-fuzzy inference system": 14,
+          "adaptive network-based fuzzy inference system (ANFIS)": 6,
+          "Adaptive Neuro-Fuzzy Inference System": 3,
+          "adaptive neuro fuzzy inference system (ANFIS)": 3,
+          "Adaptive Network-Based Fuzzy Inference System (ANFIS)": 2
+        },
+        "examples": [
+          {
+            "record_id": "a451ade2-0c7d-5ce0-b892-194f443a7d36",
+            "title": "Tactile perception through fluid-solid interaction.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "adaptive neuro-fuzzy inference system"
+          },
+          {
+            "record_id": "ae0a019e-fc48-5a84-8d50-3727ff48c51b",
+            "title": "Knowledge Implementation and Transfer With an Adaptive Learning Network for Real-Time Power Management of the Plug-in Hybrid Vehicle.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2021",
+            "tagged_as": "adaptive neuro-fuzzy inference system (ANFIS)"
+          },
+          {
+            "record_id": "01790304-1fe9-552a-84cf-4bb89a63ba3c",
+            "title": "A Decision Tree-Initialised Neuro-fuzzy Approach for Clinical Decision Support.",
+            "journal": "Artificial intelligence in medicine",
+            "year": "2021",
+            "tagged_as": "ANFIS"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Bayesian neural network",
+      "aliases": [
+        "variational Bayesian neural network",
+        "BNN"
+      ],
+      "family_hint": "classic neural network or deep learning (depth-dependent)",
+      "candidate": {
+        "action": "add_term",
+        "note": "Below 100 tags in the e3 runs (82); 191 Zenodo positives mention it.",
+        "tag_count": 82,
+        "records": 82,
+        "by_cohort": {
+          "batch2_high_impact": 73,
+          "core_bioinformatics": 9
+        },
+        "zenodo_positives_mentioning": 191,
+        "observed_spellings": {
+          "Bayesian neural network": 76,
+          "variational Bayesian neural network": 2,
+          "BNN": 1,
+          "physics-informed Bayesian neural network": 1,
+          "pruning Bayesian neural network": 1,
+          "Bayesian neural network (BNN)": 1
+        },
+        "examples": [
+          {
+            "record_id": "db84a790-b1d6-5962-a126-d88d97fbc919",
+            "title": "Deep Bayesian active learning using in-memory computing hardware.",
+            "journal": "Nature computational science",
+            "year": "2025",
+            "tagged_as": "Bayesian neural network"
+          },
+          {
+            "record_id": "3b67f99b-b1f2-5b68-b3ea-efd94da19260",
+            "title": "Bayesian deep learning for error estimation in the analysis of anomalous diffusion.",
+            "journal": "Nature communications",
+            "year": "2022",
+            "tagged_as": "Bayesian neural network"
+          },
+          {
+            "record_id": "59da658c-2823-5f89-99b9-05ef4ec6f10b",
+            "title": "Bringing uncertainty quantification to the extreme-edge with memristor-based Bayesian neural networks.",
+            "journal": "Nature communications",
+            "year": "2023",
+            "tagged_as": "Bayesian neural network"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "TabNet",
+      "aliases": [],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Below 100 tags (77); 273 Zenodo positives. Variants such as TabNet-Cox stay verbatim.",
+        "tag_count": 77,
+        "records": 77,
+        "by_cohort": {
+          "batch2_high_impact": 72,
+          "core_bioinformatics": 5
+        },
+        "zenodo_positives_mentioning": 273,
+        "observed_spellings": {
+          "TabNet": 75,
+          "TabNet-Cox": 1,
+          "TabNET": 1
+        },
+        "examples": [
+          {
+            "record_id": "2a899468-d9ce-5f6b-ac2e-0ab8e26d8931",
+            "title": "Fast, accurate, and racially unbiased pan-cancer tumor-only variant calling with tabular machine learning.",
+            "journal": "NPJ precision oncology",
+            "year": "2023",
+            "tagged_as": "TabNet"
+          },
+          {
+            "record_id": "45cd35df-4c06-5c54-8d23-503ca255445a",
+            "title": "Improving severity grading of chemotherapy-induced myelosuppression in AML via data-driven and model-based deep learning.",
+            "journal": "NPJ systems biology and applications",
+            "year": "2026",
+            "tagged_as": "TabNet"
+          },
+          {
+            "record_id": "1801badf-24d1-5546-9477-1fd276fb34d4",
+            "title": "Predicting Functional Improvement in Chronic Pain Using Machine Learning and Digital Health Data From the Manage My Pain App.",
+            "journal": "IEEE journal of biomedical and health informatics",
+            "year": "2026",
+            "tagged_as": "TabNet"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "AlexNet",
+      "aliases": [],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Own canonical by the precedent of ResNet and Inception, which are separate seed entries rather than aliases of 'convolutional neural network'.",
+        "tag_count": 211,
+        "records": 211,
+        "by_cohort": {
+          "batch2_high_impact": 203,
+          "core_bioinformatics": 8
+        },
+        "zenodo_positives_mentioning": 889,
+        "observed_spellings": {
+          "AlexNet": 211
+        },
+        "examples": [
+          {
+            "record_id": "c760d85c-dc16-53d5-90ce-cb89bdf86fab",
+            "title": "An ecologically motivated image dataset for deep learning yields better models of human vision.",
+            "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+            "year": "2021",
+            "tagged_as": "AlexNet"
+          },
+          {
+            "record_id": "d56dde35-51ae-5979-9161-48c1a1c7cfb8",
+            "title": "Enhancing ocular sign detection: AI-based strategic segmentation for improved accuracy and privacy protection.",
+            "journal": "NPJ digital medicine",
+            "year": "2026",
+            "tagged_as": "AlexNet"
+          },
+          {
+            "record_id": "315d9c2f-a12d-5077-bd85-ff51430aa57f",
+            "title": "Detection and Classification of Myocardial Delayed Enhancement Patterns on MR Images with Deep Neural Networks: A Feasibility Study.",
+            "journal": "Radiology. Artificial intelligence",
+            "year": "2019",
+            "tagged_as": "AlexNet"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Xception",
+      "aliases": [
+        "XceptionNet",
+        "Xception65"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Same precedent as AlexNet. 'XceptionTime' is a different (time-series) architecture: not an alias.",
+        "tag_count": 189,
+        "records": 189,
+        "by_cohort": {
+          "batch2_high_impact": 185,
+          "core_bioinformatics": 4
+        },
+        "zenodo_positives_mentioning": 761,
+        "observed_spellings": {
+          "Xception": 179,
+          "XceptionNet": 8,
+          "Xception65": 1,
+          "XceptionTime": 1
+        },
+        "examples": [
+          {
+            "record_id": "e99791f8-d922-591b-9dc3-efc2a52e00d0",
+            "title": "Hybrid AI-assistive diagnostic model permits rapid TBS classification of cervical liquid-based thin-layer cell smears.",
+            "journal": "Nature communications",
+            "year": "2021",
+            "tagged_as": "Xception"
+          },
+          {
+            "record_id": "835dca42-98df-54e7-b746-8b79724116fa",
+            "title": "Multiclass skin lesion localization and classification using deep learning based features fusion and selection framework for smart healthcare.",
+            "journal": "Neural networks : the official journal of the International Neural Network Society",
+            "year": "2023",
+            "tagged_as": "Xception"
+          },
+          {
+            "record_id": "b329c798-9bb8-5bdd-ac8b-3a9ec38c697e",
+            "title": "UnBias: Unveiling Bias Implications in Deep Learning Models for Healthcare Applications.",
+            "journal": "IEEE journal of biomedical and health informatics",
+            "year": "2025",
+            "tagged_as": "Xception"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "ConvNeXt",
+      "aliases": [
+        "ConvNeXt V2",
+        "ConvNeXtV2",
+        "ConvNeXt-Tiny"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Changed from 'alias of CNN' in the first analysis to its own canonical, by the ResNet/Inception precedent.",
+        "tag_count": 122,
+        "records": 122,
+        "by_cohort": {
+          "batch2_high_impact": 116,
+          "core_bioinformatics": 6
+        },
+        "zenodo_positives_mentioning": 315,
+        "observed_spellings": {
+          "ConvNeXt": 76,
+          "ConvNeXt-Tiny": 10,
+          "ConvNeXt V2": 6,
+          "ConvNeXtV2": 5,
+          "ConvNeXT": 5,
+          "ConvNeXt-Base": 3,
+          "ConvNeXtTiny": 3,
+          "ConvNeXt-B": 2
+        },
+        "examples": [
+          {
+            "record_id": "2d220206-f3fd-5c3f-aac9-76c9a779ef85",
+            "title": "Resolution-dependent self-supervised transfer in chest radiograph classification.",
+            "journal": "Communications medicine",
+            "year": "2026",
+            "tagged_as": "ConvNeXt-B"
+          },
+          {
+            "record_id": "749acf99-1452-5bc4-8484-34d654263cde",
+            "title": "From modern CNNs to vision transformers: Assessing the performance, robustness, and classification strategies of deep learning models in histopathology.",
+            "journal": "Medical image analysis",
+            "year": "2023",
+            "tagged_as": "ConvNeXt"
+          },
+          {
+            "record_id": "1d1888eb-01c0-5ff5-bba4-9202b30c6c00",
+            "title": "Multi-level feature fusion networks for smoke recognition in remote sensing imagery.",
+            "journal": "Neural networks : the official journal of the International Neural Network Society",
+            "year": "2025",
+            "tagged_as": "ConvNeXt"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "DeepLab",
+      "aliases": [
+        "DeepLabV3",
+        "DeepLabV3+",
+        "DeepLab v3+",
+        "DeepLab V3",
+        "DeepLab-v3+"
+      ],
+      "family_hint": "deep learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Semantic-segmentation CNN family. 'DeepLabCut' (pose estimation) is a different tool and must NOT become an alias; the 151 tags below exclude its 31.",
+        "tag_count": 151,
+        "records": "not split; see tag_count",
+        "by_cohort": "not split (182 tags including DeepLabCut: batch2_high_impact 178, core_bioinformatics 4)",
+        "zenodo_positives_mentioning": 245,
+        "observed_spellings": {
+          "DeepLabV3+": 44,
+          "DeepLabv3+": 38,
+          "DeepLabV3": 15,
+          "DeepLabv3": 10,
+          "DeepLab v3+": 7,
+          "DeepLab": 6
+        },
+        "examples": [
+          {
+            "record_id": "e2cbb912-55a3-5300-9634-012af59a05a6",
+            "title": "Handling missing MRI sequences in deep learning segmentation of brain metastases: a multicenter study.",
+            "journal": "NPJ digital medicine",
+            "year": "2021",
+            "tagged_as": "DeepLab V3"
+          },
+          {
+            "record_id": "e6b2c853-2334-5a05-a471-3a5e365ef4e9",
+            "title": "Semantic Segmentation of Spontaneous Intracerebral Hemorrhage, Intraventricular Hemorrhage, and Associated Edema on CT Images Using Deep Learning.",
+            "journal": "Radiology. Artificial intelligence",
+            "year": "2022",
+            "tagged_as": "DeepLabv3+"
+          },
+          {
+            "record_id": "9c72a17f-8859-583e-9e95-7481f1a0b87d",
+            "title": "External Attention Assisted Multi-Phase Splenic Vascular Injury Segmentation With Limited Data.",
+            "journal": "IEEE transactions on medical imaging",
+            "year": "2022",
+            "tagged_as": "DeepLab-v3+"
+          }
+        ],
+        "tag_count_including_deeplabcut": 182,
+        "deeplabcut_tags": 31
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "RoBERTa",
+      "aliases": [
+        "XLM-RoBERTa",
+        "DistilRoBERTa",
+        "RoBERTa-base",
+        "RoBERTa-large"
+      ],
+      "family_hint": "deep learning + large language model",
+      "candidate": {
+        "action": "add_term",
+        "note": "Family hint copied from the BERT entry.",
+        "tag_count": 153,
+        "records": 148,
+        "by_cohort": {
+          "batch2_high_impact": 145,
+          "core_bioinformatics": 8
+        },
+        "zenodo_positives_mentioning": 421,
+        "observed_spellings": {
+          "RoBERTa": 119,
+          "XLM-RoBERTa": 13,
+          "DistilRoBERTa": 2,
+          "RoBERTa-base": 2,
+          "RoBERTa-wwm-ext": 2,
+          "RoBERTa-Large": 2,
+          "MedRoBERTa.nl": 2,
+          "CliRoberta": 1
+        },
+        "examples": [
+          {
+            "record_id": "800ceefd-5e87-5bdc-9208-6726e7ae24fd",
+            "title": "On the development and validation of large language model-based classifiers for identifying social determinants of health.",
+            "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+            "year": "2024",
+            "tagged_as": "RoBERTa"
+          },
+          {
+            "record_id": "4039143f-a42d-5950-a7a5-310dc2b5f0ce",
+            "title": "Domain-adapted Large Language Models for Classifying Nuclear Medicine Reports.",
+            "journal": "Radiology. Artificial intelligence",
+            "year": "2023",
+            "tagged_as": "RoBERTa"
+          },
+          {
+            "record_id": "75b5c379-3ce9-5229-89c7-0239c0cb8df7",
+            "title": "Performance of Multiple Pretrained BERT Models to Automate and Accelerate Data Annotation for Large Datasets.",
+            "journal": "Radiology. Artificial intelligence",
+            "year": "2022",
+            "tagged_as": "RoBERTa"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "consensus clustering",
+      "aliases": [],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "A specific resampling method (Monti et al.), common in cancer subtyping; kept distinct from generic 'clustering'.",
+        "tag_count": 403,
+        "records": 403,
+        "by_cohort": {
+          "batch2_high_impact": 362,
+          "core_bioinformatics": 41
+        },
+        "zenodo_positives_mentioning": 1128,
+        "observed_spellings": {
+          "consensus clustering": 398,
+          "Recursive Consensus Clustering": 1,
+          "consensus clustering ensemble": 1,
+          "SC3 consensus clustering": 1,
+          "multiset consensus clustering": 1,
+          "ensemble consensus clustering": 1
+        },
+        "examples": [
+          {
+            "record_id": "1c33ca05-cc7c-54f8-9322-fc4938f472f6",
+            "title": "Transcriptome-based molecular subtypes and differentiation hierarchies improve the classification framework of acute myeloid leukemia.",
+            "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+            "year": "2022",
+            "tagged_as": "consensus clustering"
+          },
+          {
+            "record_id": "2cad1d5b-f518-5066-90c5-644a820e51bf",
+            "title": "A novel multi-network approach reveals tissue-specific cellular modulators of fibrosis in systemic sclerosis.",
+            "journal": "Genome medicine",
+            "year": "2017",
+            "tagged_as": "consensus clustering"
+          },
+          {
+            "record_id": "f0a1bcd9-b294-538f-89c9-2de6bcb3ba93",
+            "title": "Deep learning-based histomorphological subtyping and risk stratification of small cell lung cancer from hematoxylin and eosin-stained whole slide images.",
+            "journal": "Genome medicine",
+            "year": "2025",
+            "tagged_as": "consensus clustering"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "clustering",
+      "aliases": [
+        "unsupervised clustering",
+        "cluster analysis",
+        "clustering analysis"
+      ],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "DECIDE BEFORE ADOPTING: this is a generic name (like the 'family_name' excluded kind), not a model. Seeding it only merges spellings of 'the paper clustered but named no algorithm'. The alternative is to add it to the family_name excluded kind instead.",
+        "tag_count": 1087,
+        "records": 1087,
+        "by_cohort": {
+          "batch2_high_impact": 931,
+          "core_bioinformatics": 156
+        },
+        "zenodo_positives_mentioning": 3941,
+        "observed_spellings": {
+          "clustering": 664,
+          "unsupervised clustering": 186,
+          "cluster analysis": 150,
+          "clustering analysis": 60,
+          "clustering algorithm": 17,
+          "clustering algorithms": 6,
+          "unsupervised clustering algorithm": 2,
+          "clustering methods": 1
+        },
+        "examples": [
+          {
+            "record_id": "5831cf34-571d-5809-a0a0-094c15cdef5d",
+            "title": "High-throughput classification of yeast mutants for functional genomics using metabolic footprinting.",
+            "journal": "Nature biotechnology",
+            "year": "2003",
+            "tagged_as": "clustering"
+          },
+          {
+            "record_id": "77e556a3-ccb3-5b5a-b9a4-87999fd158ed",
+            "title": "The high-dimensional space of human diseases built from diagnosis records and mapped to genetic loci.",
+            "journal": "Nature computational science",
+            "year": "2023",
+            "tagged_as": "clustering"
+          },
+          {
+            "record_id": "00740ec8-ef2c-55fa-be0f-0621d76c797e",
+            "title": "Data-efficient and weakly supervised computational pathology on whole-slide images.",
+            "journal": "Nature biomedical engineering",
+            "year": "2021",
+            "tagged_as": "clustering"
+          }
+        ],
+        "zenodo_basis": "mentions of 'cluster analysis' or 'unsupervised clustering' only; bare 'clustering' appears in far more abstracts"
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "particle swarm optimization",
+      "aliases": [
+        "PSO",
+        "binary particle swarm optimization",
+        "particle swarm optimisation"
+      ],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Optimiser. Seeding it only merges spellings, as 'genetic algorithm' already does in e3; the optimiser_check flag (E2-V8) still marks it for review because an optimiser is a model type only when it is the paper's own method.",
+        "tag_count": 465,
+        "records": 454,
+        "by_cohort": {
+          "batch2_high_impact": 433,
+          "core_bioinformatics": 32
+        },
+        "zenodo_positives_mentioning": 2177,
+        "observed_spellings": {
+          "particle swarm optimization": 327,
+          "Particle Swarm Optimization": 35,
+          "binary particle swarm optimization": 9,
+          "multi-objective particle swarm optimization": 8,
+          "improved particle swarm optimization": 5,
+          "quantum particle swarm optimization": 4,
+          "improved particle swarm optimization (IPSO)": 3,
+          "Particle Swarm Optimization (PSO)": 3
+        },
+        "examples": [
+          {
+            "record_id": "a513503c-5e2d-5460-8430-651e58bbe843",
+            "title": "Crystal structure prediction by combining graph network and optimization algorithm.",
+            "journal": "Nature communications",
+            "year": "2022",
+            "tagged_as": "particle swarm optimization"
+          },
+          {
+            "record_id": "722e7336-e3cc-5427-9d44-cb065358cf16",
+            "title": "Training of quantum circuits on a hybrid quantum computer.",
+            "journal": "Science advances",
+            "year": "2019",
+            "tagged_as": "particle swarm optimization"
+          },
+          {
+            "record_id": "c1258b70-6d56-5a15-91a9-98ef59bb6576",
+            "title": "Development and validation of a machine learning model to predict myocardial blood flow and clinical outcomes from patients' electrocardiograms.",
+            "journal": "Cell reports. Medicine",
+            "year": "2024",
+            "tagged_as": "particle swarm optimization"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "Bayesian optimization",
+      "aliases": [
+        "Bayesian optimisation"
+      ],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Optimiser. Seeding it only merges spellings, as 'genetic algorithm' already does in e3; the optimiser_check flag (E2-V8) still marks it for review because an optimiser is a model type only when it is the paper's own method.",
+        "tag_count": 198,
+        "records": 198,
+        "by_cohort": {
+          "batch2_high_impact": 182,
+          "core_bioinformatics": 16
+        },
+        "zenodo_positives_mentioning": 1402,
+        "observed_spellings": {
+          "Bayesian optimization": 171,
+          "Bayesian optimisation": 8,
+          "multi-objective Bayesian optimization": 6,
+          "physics-informed Bayesian optimization": 2,
+          "trust-region Bayesian optimization": 2,
+          "parallelized hybrid-space Bayesian optimization (PHBO)": 1,
+          "Bayesian optimization algorithm (BOA)": 1,
+          "composite Bayesian optimization": 1
+        },
+        "examples": [
+          {
+            "record_id": "4a90da4b-ef3b-5a7c-b760-da5494e30f1a",
+            "title": "Calibrated geometric deep learning improves kinase-drug binding predictions.",
+            "journal": "Nature machine intelligence",
+            "year": "2023",
+            "tagged_as": "Bayesian optimization"
+          },
+          {
+            "record_id": "31c7feb6-c965-5b3f-9541-81f15ffc8994",
+            "title": "A generative artificial intelligence approach for peptide antibiotic optimization.",
+            "journal": "Nature machine intelligence",
+            "year": "2026",
+            "tagged_as": "Bayesian optimization"
+          },
+          {
+            "record_id": "6eaa9873-7436-5d4e-b20c-f1db8611d2a9",
+            "title": "Wearable full-body motion tracking of activities of daily living predicts disease trajectory in Duchenne muscular dystrophy.",
+            "journal": "Nature medicine",
+            "year": "2023",
+            "tagged_as": "Bayesian optimization"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "grey wolf optimizer",
+      "aliases": [
+        "grey wolf optimization",
+        "gray wolf optimizer",
+        "GWO"
+      ],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Optimiser. Seeding it only merges spellings, as 'genetic algorithm' already does in e3; the optimiser_check flag (E2-V8) still marks it for review because an optimiser is a model type only when it is the paper's own method.",
+        "tag_count": 177,
+        "records": 176,
+        "by_cohort": {
+          "batch2_high_impact": 170,
+          "core_bioinformatics": 7
+        },
+        "zenodo_positives_mentioning": 577,
+        "observed_spellings": {
+          "grey wolf optimizer": 37,
+          "Grey Wolf Optimizer": 25,
+          "grey wolf optimization": 22,
+          "Grey Wolf Optimization": 12,
+          "gray wolf optimization": 6,
+          "Gray Wolf Optimizer": 5,
+          "binary grey wolf optimization": 4,
+          "grey wolf optimization algorithm": 4
+        },
+        "examples": [
+          {
+            "record_id": "0a12d99c-6c0d-53b9-a693-a3c962e0b28a",
+            "title": "Sync-GWO: Highly Private and Bandwidth-Efficient Federated Learning With a Case Study in Healthcare.",
+            "journal": "IEEE journal of biomedical and health informatics",
+            "year": "2026",
+            "tagged_as": "Grey Wolf Optimizer"
+          },
+          {
+            "record_id": "4e068c4a-0ea1-5b59-aafd-520689041d47",
+            "title": "Optimized artificial neural network based performance analysis of wheelchair movement for ALS patients.",
+            "journal": "Artificial intelligence in medicine",
+            "year": "2020",
+            "tagged_as": "Grey wolf optimization Neural Network (GWONN)"
+          },
+          {
+            "record_id": "fdf392e8-c623-57cd-937b-8b83fd3a1a00",
+            "title": "MultiMindNet: AI-based mental health analysis using hybrid deep learning approach and Hybrid Ant-Grey Wolf Optimization (HAGWO) algorithm.",
+            "journal": "PLOS digital health",
+            "year": "2026",
+            "tagged_as": "Hybrid Ant-Grey Wolf Optimization (HAGWO)"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    },
+    {
+      "canonical": "differential evolution",
+      "aliases": [
+        "binary differential evolution"
+      ],
+      "family_hint": "classical machine learning",
+      "candidate": {
+        "action": "add_term",
+        "note": "Optimiser. Seeding it only merges spellings, as 'genetic algorithm' already does in e3; the optimiser_check flag (E2-V8) still marks it for review because an optimiser is a model type only when it is the paper's own method.",
+        "tag_count": 109,
+        "records": 103,
+        "by_cohort": {
+          "batch2_high_impact": 98,
+          "core_bioinformatics": 11
+        },
+        "zenodo_positives_mentioning": 347,
+        "observed_spellings": {
+          "differential evolution": 73,
+          "Differential Evolution": 11,
+          "binary differential evolution": 3,
+          "discrete differential evolution (DDE)": 1,
+          "success history-based adaptive differential evolution": 1,
+          "adaptive differential evolution": 1,
+          "nondominated sorting differential evolution": 1,
+          "Self-Adaptive Differential Evolution": 1
+        },
+        "examples": [
+          {
+            "record_id": "4c3a77ab-6bf9-5e9e-847b-a8075f5923b0",
+            "title": "Non-Gradient Hash Factor Learning for High-Dimensional and Incomplete Data Representation Learning.",
+            "journal": "IEEE transactions on pattern analysis and machine intelligence",
+            "year": "2026",
+            "tagged_as": "discrete differential evolution (DDE)"
+          },
+          {
+            "record_id": "660c76bd-79de-564c-8c98-323451a8e206",
+            "title": "Graph Theory Based Large-Scale Machine Learning With Multi-Dimensional Constrained Optimization Approaches for Exact Epidemiological Modeling of Pandemic Diseases.",
+            "journal": "IEEE transactions on pattern analysis and machine intelligence",
+            "year": "2023",
+            "tagged_as": "success history-based adaptive differential evolution"
+          },
+          {
+            "record_id": "0273bef7-f458-57f1-9eaf-15af09d35e4d",
+            "title": "A Cost-Sensitive Deep Belief Network for Imbalanced Classification.",
+            "journal": "IEEE transactions on neural networks and learning systems",
+            "year": "2019",
+            "tagged_as": "adaptive differential evolution"
+          }
+        ]
+      },
+      "ontology_mappings": []
+    }
+  ],
+  "proposed_aliases": [
+    {
+      "add_to": "YOLO",
+      "aliases": [
+        "YOLOv3",
+        "YOLOv4",
+        "YOLOv5",
+        "YOLOv7",
+        "YOLOv8",
+        "YOLOv11",
+        "YOLOX"
+      ],
+      "candidate": {
+        "action": "add_alias",
+        "note": "The e3 YOLO entry only aliases 'you only look once', so every versioned name stays verbatim today.",
+        "tag_count": 352,
+        "records": 251,
+        "by_cohort": {
+          "batch2_high_impact": 351,
+          "core_bioinformatics": 1
+        },
+        "zenodo_positives_mentioning": 3016,
+        "observed_spellings": {
+          "YOLOv8": 78,
+          "YOLOv5": 63,
+          "YOLOv7": 36,
+          "YOLOv11": 17,
+          "YOLOv5s": 16,
+          "YOLOv10": 16,
+          "YOLOv4": 14,
+          "YOLOX": 12
+        },
+        "examples": [
+          {
+            "record_id": "745a6964-1d18-5e4f-99e9-4b0a51468b93",
+            "title": "Multicentric data challenge for artificial intelligence-based classification of leukocytes: results from the CytologIA consortium.",
+            "journal": "NPJ precision oncology",
+            "year": "2026",
+            "tagged_as": "YOLOX"
+          },
+          {
+            "record_id": "3de2c7e6-8344-5af8-889c-f1c35e54fc15",
+            "title": "AIDMAN: An AI-based object detection system for malaria diagnosis from smartphone thin-blood-smear images.",
+            "journal": "Patterns (New York, N.Y.)",
+            "year": "2023",
+            "tagged_as": "YOLOv5"
+          },
+          {
+            "record_id": "63b7dfc5-e93c-55e0-b516-b4de053412f5",
+            "title": "SpindlesTracker: An Automatic and Low-Cost Labeled Workflow for Spindle Analysis.",
+            "journal": "IEEE journal of biomedical and health informatics",
+            "year": "2023",
+            "tagged_as": "YOLOX-SP"
+          }
+        ]
+      }
+    },
+    {
+      "add_to": "BERT",
+      "aliases": [
+        "BioBERT",
+        "PubMedBERT",
+        "ClinicalBERT",
+        "SciBERT",
+        "BioClinicalBERT",
+        "BlueBERT"
+      ],
+      "candidate": {
+        "action": "add_alias",
+        "note": "Domain-adapted BERT checkpoints; same architecture.",
+        "tag_count": 134,
+        "records": 112,
+        "by_cohort": {
+          "batch2_high_impact": 108,
+          "core_bioinformatics": 26
+        },
+        "zenodo_positives_mentioning": 431,
+        "observed_spellings": {
+          "BioBERT": 71,
+          "PubMedBERT": 18,
+          "ClinicalBERT": 17,
+          "SciBERT": 13,
+          "BioClinicalBERT": 7,
+          "BlueBERT": 2,
+          "BioClinical-BERT": 1,
+          "bioBERT": 1
+        },
+        "examples": [
+          {
+            "record_id": "abef4bc7-6b3e-5126-a061-dccf1e32ec69",
+            "title": "Clinically-applicable prediction of hospital stay and patient similarity retrieval in paediatric cardiology using machine learning.",
+            "journal": "Nature communications",
+            "year": "2026",
+            "tagged_as": "BioClinical-BERT"
+          },
+          {
+            "record_id": "4f6df9cd-faef-5f5c-8b3b-49d454d7f818",
+            "title": "Development and validation of a pre-trained language model for neonatal morbidities: a retrospective, multicentre, prognostic study.",
+            "journal": "The Lancet. Digital health",
+            "year": "2025",
+            "tagged_as": "BioBERT"
+          },
+          {
+            "record_id": "936216ea-7b3b-518b-beab-a83eecae16ea",
+            "title": "Comparison of NLP machine learning models with human physicians for ASA Physical Status classification.",
+            "journal": "NPJ digital medicine",
+            "year": "2024",
+            "tagged_as": "BioClinicalBERT"
+          }
+        ]
+      }
+    },
+    {
+      "add_to": "generative adversarial network",
+      "aliases": [
+        "CycleGAN",
+        "cycle-consistent generative adversarial network"
+      ],
+      "candidate": {
+        "action": "add_alias",
+        "note": "Below 100 tags (85).",
+        "tag_count": 85,
+        "records": 85,
+        "by_cohort": {
+          "batch2_high_impact": 82,
+          "core_bioinformatics": 3
+        },
+        "zenodo_positives_mentioning": 333,
+        "observed_spellings": {
+          "CycleGAN": 70,
+          "Cycle-GAN": 5,
+          "cycleGAN": 4,
+          "cycle-consistent generative adversarial network (CycleGAN)": 2,
+          "cycle-GAN": 1,
+          "cycle GAN": 1,
+          "SinusCycle-GAN": 1,
+          "cycle-consistent adversarial network (CycleGAN)": 1
+        },
+        "examples": [
+          {
+            "record_id": "f062f091-be41-5de8-b303-ed2d7cb4b6a8",
+            "title": "Democratising deep learning for microscopy with ZeroCostDL4Mic.",
+            "journal": "Nature communications",
+            "year": "2021",
+            "tagged_as": "CycleGAN"
+          },
+          {
+            "record_id": "e4d0d2ac-75ed-5cdf-959f-4741d60c5cf7",
+            "title": "Manifold fitting with CycleGAN.",
+            "journal": "Proceedings of the National Academy of Sciences of the United States of America",
+            "year": "2024",
+            "tagged_as": "CycleGAN"
+          },
+          {
+            "record_id": "e0c64c9e-e04a-555c-a95d-c6b006a7e36f",
+            "title": "Virtual formalin-fixed and paraffin-embedded staining of fresh brain tissue via stimulated Raman CycleGAN model.",
+            "journal": "Science advances",
+            "year": "2024",
+            "tagged_as": "CycleGAN"
+          }
+        ]
+      }
+    }
+  ],
+  "proposed_excluded_kinds": [
+    {
+      "kind": "statistics",
+      "pattern": "\\bnomogram",
+      "why": "A nomogram is a graphical calculator for a fitted (usually logistic or Cox) regression model, not a model type. When the paper says 'radiomics nomogram', the underlying model (e.g. logistic regression) should be tagged instead.",
+      "candidate": {
+        "action": "flag_kind",
+        "tag_count": 557,
+        "records": 557,
+        "by_cohort": {
+          "batch2_high_impact": 546,
+          "core_bioinformatics": 11
+        },
+        "zenodo_positives_mentioning": 7167,
+        "observed_spellings": {
+          "nomogram": 540,
+          "radiomics nomogram": 5,
+          "Nomogram": 3,
+          "deep learning radiomics nomogram (DLRN)": 2,
+          "MSKCC nomogram": 2,
+          "prognostic nomogram": 1,
+          "Oncotype DX recurrence score nomogram": 1,
+          "dynamic nomogram": 1
+        },
+        "examples": [
+          {
+            "record_id": "93d24633-330d-5dcc-a8d8-5fd34fcda4d0",
+            "title": "Artificial intelligence-based personalized treatment strategies for unresectable hepatocellular carcinoma: integrating HSP90α for prognosis and survival prediction.",
+            "journal": "NPJ digital medicine",
+            "year": "2025",
+            "tagged_as": "nomogram"
+          },
+          {
+            "record_id": "cc3ff838-5dc4-5d9d-832c-471abf7a3579",
+            "title": "Interpretable deep learning for multicenter gastric cancer T staging from CT images.",
+            "journal": "NPJ digital medicine",
+            "year": "2025",
+            "tagged_as": "nomogram"
+          },
+          {
+            "record_id": "fb0f7915-d08e-5b9e-a5dd-b69a88a69f3d",
+            "title": "Prognostic model and U-shaped SBP-risk correlation in unstable pelvic fractures with TBI.",
+            "journal": "NPJ digital medicine",
+            "year": "2025",
+            "tagged_as": "Nomogram"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "pipeline",
+      "pattern": "\\bcibersort",
+      "why": "Immune-cell deconvolution tool (built on nu-SVR) used as an analysis step, like the tools already in the 'pipeline' kind (WGCNA, SCENIC, CellChat).",
+      "candidate": {
+        "action": "flag_kind",
+        "tag_count": 356,
+        "records": 355,
+        "by_cohort": {
+          "batch2_high_impact": 343,
+          "core_bioinformatics": 13
+        },
+        "zenodo_positives_mentioning": 1634,
+        "observed_spellings": {
+          "CIBERSORT": 320,
+          "CIBERSORTx": 31,
+          "Cibersort": 2,
+          "CiberSortx": 2,
+          "methylCIBERSORT": 1
+        },
+        "examples": [
+          {
+            "record_id": "e0dbcc00-6bf5-5007-8c4c-dd3dc79a76e2",
+            "title": "The prognostic landscape of genes and infiltrating immune cells across human cancers.",
+            "journal": "Nature medicine",
+            "year": "2015",
+            "tagged_as": "CIBERSORT"
+          },
+          {
+            "record_id": "b0497fe3-b6e1-54f1-932c-2bfaadc5fc6c",
+            "title": "Determining cell type abundance and expression from bulk tissues with digital cytometry.",
+            "journal": "Nature biotechnology",
+            "year": "2019",
+            "tagged_as": "CIBERSORTx"
+          },
+          {
+            "record_id": "163644af-10d6-5a68-8498-ea534e602261",
+            "title": "Single-cell analysis reveals prognostic fibroblast subpopulations linked to molecular and immunological subtypes of lung cancer.",
+            "journal": "Nature communications",
+            "year": "2023",
+            "tagged_as": "CIBERSORTx"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "task",
+      "pattern": "\\bboruta\\b",
+      "why": "Feature-selection wrapper. 'Boruta-SHAP' is already caught by the explainability kind.",
+      "candidate": {
+        "action": "flag_kind",
+        "tag_count": 218,
+        "records": 218,
+        "by_cohort": {
+          "batch2_high_impact": 203,
+          "core_bioinformatics": 15
+        },
+        "zenodo_positives_mentioning": 1807,
+        "observed_spellings": {
+          "Boruta": 206,
+          "Boruta algorithm": 9,
+          "Boruta feature selection": 2,
+          "BORUTA": 1
+        },
+        "examples": [
+          {
+            "record_id": "803c18df-5d0e-504b-ba1b-75acb9940f79",
+            "title": "Development, validation, and user-centric evaluation of an interpretable machine learning decision support tool for the preoperative prediction of mild bleeding disorders (MBD-Check): a prospective di",
+            "journal": "The Lancet. Digital health",
+            "year": "2026",
+            "tagged_as": "Boruta"
+          },
+          {
+            "record_id": "a1019a72-f252-5046-a529-14d5a896d482",
+            "title": "Divergent inflammatory and neurology-related protein levels in long COVID following primary and breakthrough SARS-CoV-2 infections.",
+            "journal": "Communications medicine",
+            "year": "2026",
+            "tagged_as": "Boruta"
+          },
+          {
+            "record_id": "d38a361b-6bd1-5b1d-b0eb-2e58f43012c0",
+            "title": "Two-Stage Training Framework Using Multicontrast MRI Radiomics for &lt;i&gt;IDH&lt;/i&gt; Mutation Status Prediction in Glioma.",
+            "journal": "Radiology. Artificial intelligence",
+            "year": "2024",
+            "tagged_as": "Boruta"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "task",
+      "pattern": "svm-?rfe|recursive feature elimination",
+      "why": "Feature selection, which the 'task' kind already covers by phrase but not by these names.",
+      "candidate": {
+        "action": "flag_kind",
+        "tag_count": 142,
+        "records": 141,
+        "by_cohort": {
+          "batch2_high_impact": 126,
+          "core_bioinformatics": 16
+        },
+        "zenodo_positives_mentioning": 3580,
+        "observed_spellings": {
+          "SVM-RFE": 96,
+          "recursive feature elimination": 24,
+          "Recursive Feature Elimination": 4,
+          "support vector machine-recursive feature elimination": 2,
+          "Recursive Feature Elimination (RFE)": 2,
+          "SVM-RFE(AC)": 1,
+          "random forest-recursive feature elimination": 1,
+          "recursive feature elimination (RFE)": 1
+        },
+        "examples": [
+          {
+            "record_id": "7170a3fc-e6ad-53fb-9181-7c66955ead50",
+            "title": "Recursive Statistical Invariants Elimination for High-Risk Disease Diagnosis With Feature Selection.",
+            "journal": "IEEE journal of biomedical and health informatics",
+            "year": "2026",
+            "tagged_as": "recursive feature elimination"
+          },
+          {
+            "record_id": "296a11e3-35d1-52fd-bebc-d15278ed0008",
+            "title": "The feature selection bias problem in relation to high-dimensional gene data.",
+            "journal": "Artificial intelligence in medicine",
+            "year": "2016",
+            "tagged_as": "support vector machine-recursive feature elimination"
+          },
+          {
+            "record_id": "e2376a2c-91b4-5959-9536-91c011e62c37",
+            "title": "Absolute cosine-based SVM-RFE feature selection method for prostate histopathological grading.",
+            "journal": "Artificial intelligence in medicine",
+            "year": "2018",
+            "tagged_as": "SVM-RFE(AC)"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "statistics",
+      "pattern": "response surface",
+      "why": "Design-of-experiments statistics, usually beside the ML model rather than instead of it.",
+      "candidate": {
+        "action": "flag_kind",
+        "tag_count": 102,
+        "records": 102,
+        "by_cohort": {
+          "batch2_high_impact": 102
+        },
+        "zenodo_positives_mentioning": 431,
+        "observed_spellings": {
+          "response surface methodology": 69,
+          "Response Surface Methodology": 20,
+          "Response Surface Methodology (RSM)": 6,
+          "Response surface methodology": 2,
+          "polynomial response surface": 1,
+          "response surface methodology (RSM)": 1,
+          "response surface model": 1,
+          "response surface method": 1
+        },
+        "examples": [
+          {
+            "record_id": "02591dbf-aef0-5bd9-a7ae-49325b2752d1",
+            "title": "Synergistic effects of fly ash and graphene oxide composites at high temperatures and prediction using ANN and RSM approach.",
+            "journal": "Scientific reports",
+            "year": "2025",
+            "tagged_as": "Response Surface Methodology"
+          },
+          {
+            "record_id": "0327032a-43c5-533e-8db2-d4552002b20a",
+            "title": "A sustainable hybrid FEA-AI optimization framework for multistage deep drawing of unidirectionally rolled copper micro-cups.",
+            "journal": "Scientific reports",
+            "year": "2026",
+            "tagged_as": "Response Surface Methodology (RSM)"
+          },
+          {
+            "record_id": "089b867f-c4cd-5715-bf92-af433d6d3a88",
+            "title": "Mechanical properties optimization and cost analysis of agricultural waste as an alternative in brick production.",
+            "journal": "Scientific reports",
+            "year": "2024",
+            "tagged_as": "Response Surface Methodology"
+          }
+        ]
+      }
+    }
+  ],
+  "proposed_domain_terms": [
+    {
+      "label": "Rehabilitation medicine",
+      "tier": "domain_tier2",
+      "edam_id": null,
+      "seen": 4,
+      "note": "Model put it in tier 2; not in the domain vocab. EDAM id to confirm against EDAM 1.25 before adoption. Too rare to justify a vocab change on its own."
+    },
+    {
+      "label": "Ophthalmology",
+      "tier": "domain_tier2",
+      "edam_id": null,
+      "seen": 1,
+      "note": "EDAM id to confirm. Rare."
+    },
+    {
+      "label": "Geology",
+      "tier": "domain_tier2",
+      "edam_id": null,
+      "seen": 1,
+      "note": "Outside the life-science scope of the vocab; listed for completeness, not recommended."
+    }
+  ]
+}
