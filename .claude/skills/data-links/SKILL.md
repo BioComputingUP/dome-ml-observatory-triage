@@ -34,8 +34,11 @@ calls. Both have headroom; start there or higher.
 
 ## Preconditions
 
-1. `python3 ../../schema/check_alignment.py` says authored 1.5.1 = published v1.5.1. If the
-   release is not cut, stop: `schema-sync` first.
+1. `python3 ../../schema/check_alignment.py` says `aligned` (authored `SCHEMA_VERSION` = the
+   published `CURRENT`). If the release is not cut, stop: `schema-sync` first.
+   A resource slug added to `datalinks_resources.RESOURCES` needs its entry in
+   `curation_criteria/data_resources_vocab.json` (kind, host, designations) in the same change;
+   `test_datalinks_resources.py` fails until it has one, and the vocabulary change is a release.
 2. `python3 verify_corpus.py` — note the count and the schema_version histogram.
 
 ## Procedure

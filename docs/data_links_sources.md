@@ -175,7 +175,9 @@ left empty and the record keeps what it had.
 
 ## 9. The corpus build (2026-09-14)
 
-Built for all 846,716 documents with EBI Search for the 366,234 positives; not yet loaded.
+Built for all 846,716 documents with EBI Search for the 366,234 positives, and loaded on
+2026-09-14/15 (`load_data_links_20260914T214321.report.json`: 846,716 matched, 538,999 modified, 0
+errors).
 
 | Measure | Documents |
 |---|---|

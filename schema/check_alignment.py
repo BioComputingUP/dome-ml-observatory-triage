@@ -52,6 +52,9 @@ class Authored:
             "domain.json": repo / "curation_criteria" / "domain_vocab.json",
             "modelling-branch.json": repo / "curation_criteria" / "e3" / "modelling_branch_vocab.json",
             "model-type-seed.json": repo / "curation_criteria" / "e3" / "model_type_seed_vocab.json",
+            # From v1.9.0: what each data-link resource slug is and who runs it. Its entries must
+            # cover datalinks_resources.RESOURCES (test_datalinks_resources.py checks that).
+            "data-resources.json": repo / "curation_criteria" / "data_resources_vocab.json",
         }
 
 

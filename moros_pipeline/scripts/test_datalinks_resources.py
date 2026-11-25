@@ -76,3 +76,28 @@ def test_empiar_and_emdb_pages_are_not_typed_as_pdb():
     assert r.slug(r.scheme_from_uri("https://www.ebi.ac.uk/pdbe/emdb/empiar/entry/10164")) == "empiar"
     assert r.slug(r.scheme_from_uri("https://www.ebi.ac.uk/emdb/EMD-1234")) == "emdb"
     assert r.slug(r.scheme_from_uri("https://www.ebi.ac.uk/pdbe/entry/pdb/6vw1")) == "pdb"
+
+
+def test_every_catalogue_resource_has_a_data_resources_vocabulary_entry():
+    """The published data-resources vocabulary (schema v1.9.0) must describe every slug the merge
+    can emit, with the same label and category, or the Observatory's Data page shows a resource it
+    cannot classify. A new Resource here needs its entry in curation_criteria/data_resources_vocab.json."""
+    import json
+    from pathlib import Path
+
+    vocab_path = Path(__file__).resolve().parents[2] / "curation_criteria" / "data_resources_vocab.json"
+    vocab = json.loads(vocab_path.read_text(encoding="utf-8"))
+    entries = {e["slug"]: e for e in vocab["resources"]}
+    assert set(entries) == set(r.RESOURCES), (set(r.RESOURCES) ^ set(entries))
+    for slug_, res in r.RESOURCES.items():
+        assert (entries[slug_]["label"], entries[slug_]["category"]) == (res.label, res.category), slug_
+    kinds = set(vocab["kinds"])
+    designations = set(vocab["designations"])
+    node_codes = {n["code"] for n in vocab["elixir_nodes"]}
+    for e in entries.values():
+        assert e["kind"] in kinds, e["slug"]
+        assert isinstance(e["embl_ebi"], bool), e["slug"]
+        assert set(e["elixir_nodes"]) <= node_codes, e["slug"]
+        for key in ("gcbr", "elixir_cdr", "elixir_edd"):
+            assert key in designations
+            assert e[key] is None or isinstance(e[key], str), (e["slug"], key)

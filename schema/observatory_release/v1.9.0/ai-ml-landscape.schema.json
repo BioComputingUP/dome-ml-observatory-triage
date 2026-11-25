@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://observatory.dome-ml.org/schema/v1.8.0/ai-ml-landscape.schema.json",
+  "$id": "https://observatory.dome-ml.org/schema/v1.9.0/ai-ml-landscape.schema.json",
   "title": "DOME Observatory AI/ML landscape record",
   "description": "One document per screened publication. Source of truth for this shape is dome-ml-observatory-triage/mongo_landscape_export/scripts/schema.py (build_document()) -- this file documents that shape for consumers outside that repo (this repo's frontend and, from Phase 5, its backend). See schema/README.md for how this file is versioned and kept in sync.",
   "type": "object",
@@ -344,7 +344,7 @@
           "items": {
             "type": "string"
           },
-          "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
+          "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement / self-supervised; self-supervised from v1.7.0). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
         },
         "model_family": {
           "type": "array",
@@ -474,7 +474,7 @@
             "properties": {
               "resource": {
                 "type": "string",
-                "description": "Stable resource key from the pipeline catalogue (datalinks_resources.py), e.g. \"pdb\", \"uniprot\", \"ena\", \"geo\", \"zenodo\", \"biostudies\", \"clinicaltrials\", and from schema v1.5.0 \"biotools\", \"dome_registry\", \"iprox\", \"massive\", \"eva\". An unlisted resource keeps a slug of its raw scheme or publisher name."
+                "description": "Stable resource key from the pipeline catalogue (datalinks_resources.py), e.g. \"pdb\", \"uniprot\", \"ena\", \"geo\", \"zenodo\", \"biostudies\", \"clinicaltrials\", and from schema v1.5.0 \"biotools\", \"dome_registry\", \"iprox\", \"massive\", \"eva\". An unlisted resource keeps a slug of its raw scheme or publisher name. From v1.9.0 vocab/data-resources.json describes every catalogue slug: its kind (data, ontology, code, ...), who runs it, and whether it is hosted at EMBL-EBI, a Global Core Biodata Resource, an ELIXIR Core Data Resource or Deposition Database, and which ELIXIR Nodes run it."
               },
               "label": {
                 "type": "string",
@@ -1012,7 +1012,7 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
+                "description": "How the model learns -- textbook-consensus axis (supervised / unsupervised / semi-supervised / reinforcement / self-supervised; self-supervised from v1.7.0). Multi-select -- max_tags: 2. See vocab/modelling-branch.json. Empty until the enrichment pass runs on this record."
               },
               "model_family": {
                 "type": "array",

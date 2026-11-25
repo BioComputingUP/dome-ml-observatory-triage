@@ -176,6 +176,9 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     # 1.7.0 -> 1.8.0: the version, and enrichment_history = [] on every existing document (nothing
     # superseded yet). Cannot reach any enrichment value. Not a stamping mode, as for 1.7.0.
     "migrate_v1_8_0": frozenset({_SCHEMA_VERSION_PATH, ENRICHMENT_HISTORY_PATH}),
+    # 1.8.0 -> 1.9.0: the version stamp only; v1.9.0 adds the data-resources vocabulary, which
+    # documents never store (they keep the slug).
+    "migrate_v1_9_0": frozenset({_SCHEMA_VERSION_PATH}),
     # The full-text refresh (fetch_fulltext.py): Europe PMC's inEPMC / inPMC, the rule the bulk
     # match set this flag by. One leaf. Cannot reach `open_access` or `license` (the `licences`
     # mode's) or anything that decides what a record is. Not in STAMPS_RECORD_MODIFIED: the flag is

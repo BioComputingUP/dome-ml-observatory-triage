@@ -118,7 +118,13 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # superseded_by {prompt_version, batch_id}. Written only by load_enrichment.py when it sets an
 # enrichment from a different prompt or batch over an existing one; [] otherwise. The observatory
 # reads only the current enrichment. Additive -- no existing field changed or removed.
-SCHEMA_VERSION = "1.8.0"
+# 1.9.0 (2026-11-25): no document shape change. A fourth vocabulary, data-resources
+# (curation_criteria/data_resources_vocab.json), describes every data-link resource slug: its kind
+# (data, ontology, code, ...), who runs it, and whether it is hosted at EMBL-EBI, a Global Core
+# Biodata Resource, an ELIXIR Core Data Resource or Deposition Database, and which ELIXIR Nodes run
+# it. Documents keep only the slug in data_links.resources[].resource. Minor, because a vocabulary
+# is added; migrate_v1_9_0.py moves the stamp only.
+SCHEMA_VERSION = "1.9.0"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat

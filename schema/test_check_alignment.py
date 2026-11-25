@@ -23,6 +23,7 @@ VOCABS = {
     # From v1.7.0 the published modelling vocabularies are enrichment prompt e3's (curation_criteria/e3/).
     "modelling-branch.json": ("e3/modelling_branch_vocab.json", {"fields": {"model_family": {}}}),
     "model-type-seed.json": ("e3/model_type_seed_vocab.json", {"terms": [{"canonical": "SVM"}]}),
+    "data-resources.json": ("data_resources_vocab.json", {"resources": [{"slug": "pdb"}]}),
 }
 
 PUBLISHED_SCHEMA = {
