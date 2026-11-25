@@ -341,7 +341,8 @@ Measured on 2026-09-14:
 - **`/datalinks` returned HTTP 500 for every id tried**, including Europe PMC's own documented
   example, after ~30 s each; `labsLinks` at 32 concurrent workers saw 27% timeouts. It was still
   failing at the end of the corpus run (20 of 20 after retries), so the corpus build used
-  `--datalinks-scope none`. That is why the Scholix route is the residual and has short timeouts,
+  `--datalinks-scope none`. It answered again on 2026-11-25 (a spot check of two records, both 200
+  with links), so the next data-links refresh should run it across the corpus. That is why the Scholix route is the residual and has short timeouts,
   and why the build can run without it.
 - **`PMID:` is not a search field** (0 hits); `EXT_ID:` is, as `build_clause()` already does.
 - **A BioStudies supplementary entry needs no call**: a PMC article with supplementary files is

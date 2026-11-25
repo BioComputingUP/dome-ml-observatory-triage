@@ -88,10 +88,19 @@ python3 load_fields.py --mode identifiers --confirm
 python3 verify_corpus.py
 ```
 
+`/datalinks` answered again on 2026-11-25 (spot-checked: 200 with links, and `reduce_datalinks()` reads
+the payload unchanged) after failing through the 2026-09-14 corpus build, so the corpus has no
+`ext_links` yet. The next refresh should run it for the whole corpus, not only for the batch.
+
 If `/datalinks` is down, build with `--datalinks-scope none`: records are completed from the
 annotations API and the derived BioStudies entry, and a later `fetch_datalinks.py` +
 `build_data_links.py` + `load_fields.py --mode data_links` re-dates and completes them.
 `import_textmined_bulk.py` is the zero-call fallback if the annotations API throttles.
+
+**After the build, check the resource vocabulary.** The build report lists every slug it emitted.
+Any slug without an entry in `curation_criteria/data_resources_vocab.json` (kind, host, EMBL-EBI,
+GCBR, ELIXIR designations) needs one before the load, and that is a schema release. The Observatory's
+Data page classifies resources by that file alone.
 
 **Identifiers are repaired in the merge, and the merge needs doi.org.** Europe PMC's text-mined
 strings carry the punctuation and words around them (`10.5281/zenodo.18675888.`); stored verbatim

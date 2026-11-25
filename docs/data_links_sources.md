@@ -14,7 +14,7 @@ evidence for a curated fact is not an asset from the paper and is refused.
 | Route | `obtained_by` | What it finds | Matched by | Records |
 |---|---|---|---|---|
 | Europe PMC annotations API | `tm_accession`, `tm_supplementary` | accessions text-mined from the article and its supplementary files | Europe PMC id | all |
-| Europe PMC `/datalinks` (Scholix) | `ext_links` | data citations and external links Europe PMC holds | Europe PMC id | residual; the endpoint answered HTTP 500 on 2026-09-14, so the corpus built without it |
+| Europe PMC `/datalinks` (Scholix) | `ext_links` | data citations and external links Europe PMC holds | Europe PMC id | residual; the endpoint answered HTTP 500 on 2026-09-14, so the corpus built without it. It answered again on 2026-11-25 (spot check), so the next refresh can fill it |
 | Derived | `derived` | the BioStudies `S-EPMC` entry holding a PMC article's supplementary files | PMCID | all with a PMCID |
 | EBI Search cross-references | `ebisearch_xref` | entries in the large accepted domains that name the paper | PMID | positives |
 | EBI Search domain dumps | `ebisearch_domain` | entries in the other accepted domains whose publication fields name the paper | PMID, PMCID or DOI | positives |

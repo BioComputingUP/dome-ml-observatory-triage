@@ -213,6 +213,15 @@ DCAT and schema.org, by `build_release_metadata.py` ([docs/release_metadata.md](
   entry against its count; `moros_pipeline/scripts/ebisearch_resources.py` is the only accept list
   for EBI Search domains, and [`docs/data_links_sources.md`](docs/data_links_sources.md) must
   agree with it. EBI Search links go to positives only and pass the same four gates.
+- **Every resource slug the merge can emit has an entry in `curation_criteria/data_resources_vocab.json`**
+  (schema v1.9.0): its kind, who runs it, and its EMBL-EBI, Global Core Biodata Resource and ELIXIR
+  designations. The Observatory's Data page ranks and filters on it, so a slug with no entry would
+  show up unclassified. Adding a `Resource` to `datalinks_resources.py` means adding its entry in the
+  same change (`test_datalinks_resources.py` fails until you do), and any change to the file is a
+  schema release (the `schema-version` skill in the sibling). The designation lists change about once a
+  year: re-check them against the source URLs in the file's `designations` block at each release, and
+  never fill one from memory. The ELIXIR ones were still `pending` on 2026-11-25 because
+  elixir-europe.org refuses automated requests; they need a copy of the pages.
 - **The same paper was loaded twice, under two `_id`s** (2026-09-15: 10,572 documents, 9,995 of them
   an August copy beside a 2026-09-03 one). The `_id` is UUID5 of the first of `pmcid > doi > pmid`, so
   a paper fetched before and after Europe PMC gave it a PMCID mints two different ids, and a staging
