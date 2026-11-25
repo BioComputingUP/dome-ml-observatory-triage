@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -95,6 +96,13 @@ def main(argv: list[str] | None = None) -> None:
             checkpoint(args.cohort, args.runs_repo)
         except SystemExit as exc:  # a refused push must be loud but must not kill the loop silently
             print(f"CHECKPOINT REFUSED: {exc}", flush=True)
+            if not args.every:
+                raise
+        except (subprocess.CalledProcessError, OSError) as exc:
+            # A network drop fails `git pull`/`push` (2026-11-25: the pusher died at 15:46 and nothing was
+            # pushed for 3 h). The commit is kept locally; the next round pushes it with whatever is new.
+            detail = (getattr(exc, "stderr", "") or "").strip().splitlines()[-1:] or [str(exc)]
+            print(f"CHECKPOINT FAILED (retrying in {args.every}s): {detail[0]}", flush=True)
             if not args.every:
                 raise
         if not args.every:
