@@ -86,7 +86,7 @@ with, copied by the `schema-sync` skill so a diff is readable offline. It is a c
 authority.
 
 **Where the three sides stand (2026-11-25).**
-- **Authored and published:** 1.9.1 is authored here and published as v1.9.1 in `dome-ml-observatory`, and the snapshot in `observatory_release/` matches it. 1.9.0 added the data-resources vocabulary (`curation_criteria/data_resources_vocab.json`); 1.9.1 completed it (every designation list sourced, hosts and ELIXIR Nodes per resource).
+- **Authored and published:** 1.9.2 is authored here and published as v1.9.2 in `dome-ml-observatory`, and the snapshot in `observatory_release/` matches it. 1.9.0 added the data-resources vocabulary (`curation_criteria/data_resources_vocab.json`); 1.9.1 completed it (every designation list sourced, hosts and ELIXIR Nodes per resource).
 - **moros:** all 876,324 documents at 1.9.1 (`migrate_v1_9_1.py`, 2026-11-25); `check_alignment.py --live` reports `aligned`.
 
 1.6.0 (2026-09-15) added the top-level `record_modified` datestamp. `migrate_v1_6_0.py` stamped all 846,716 documents with it.

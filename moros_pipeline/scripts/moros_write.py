@@ -181,6 +181,8 @@ WRITE_MODES: dict[str, frozenset[str]] = {
     "migrate_v1_9_0": frozenset({_SCHEMA_VERSION_PATH}),
     # 1.8.0 or 1.9.0 -> 1.9.1: the version stamp only (vocabulary completed; v1.9.0 never ran).
     "migrate_v1_9_1": frozenset({_SCHEMA_VERSION_PATH}),
+    # 1.9.1 -> 1.9.2: the version stamp only (ModelArchive added to the data-resources vocabulary).
+    "migrate_v1_9_2": frozenset({_SCHEMA_VERSION_PATH}),
     # The full-text refresh (fetch_fulltext.py): Europe PMC's inEPMC / inPMC, the rule the bulk
     # match set this flag by. One leaf. Cannot reach `open_access` or `license` (the `licences`
     # mode's) or anything that decides what a record is. Not in STAMPS_RECORD_MODIFIED: the flag is

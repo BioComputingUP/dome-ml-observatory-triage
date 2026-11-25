@@ -92,6 +92,8 @@ their page, so those links use the entry's own `full_dataset_link`.
 | `atlas-experiments` (Expression Atlas bulk experiments) | A curated re-analysis of an ArrayExpress or GEO deposit the paper already links. |
 | `geo_datasets` (GEO DataSets) | An NCBI-curated collection over GEO series the paper already links. |
 | Any other domain EBI Search returns | Not on the accept list. It is rejected at merge time and counted by name in the `build_data_links.py` report. |
+| Europe PMC `/datalinks` external links (IDScheme `URL`), except Dryad, EMDB and ModelArchive | Measured 2026-11-25: 31,673 links on 13,236 records from about 40 providers. Almost all are a curated database's reference page for the paper (MGI, FlyBase, SGD, WormBase, RGD, ZFIN, GOA, GlyGen, IUPHAR, ENCODE's publication pages), refused on the same grounds as the EBI Search curation domains above; metrics and reviews (Altmetric, Faculty Opinions, Publons, Kudos, Wikipedia); copies of the paper in institutional archives; or the paper's own `S-EPMC` BioStudies record, which the derived route already gives. `build_data_links.deposit_link` keeps the three depositors and the report counts the rest by publisher. |
+| DOIs Europe PMC's `/datalinks` route names with itself as Publisher | Text-mined DOIs, data only by a repository prefix, as on the annotations route; the rest are literature (13,183 links on 5,753 records were filed as a resource `europepmc` before this rule). |
 | ScholeXplorer | Not introduced. A 3,000-positive sample gave 287 papers with 1,521 distinct targets, every one `IsRelatedTo`, with a long tail of third-party tools. |
 | DataCite | Not introduced. The same sample gave 106 papers, mostly publisher supplement copies on figshare. |
 

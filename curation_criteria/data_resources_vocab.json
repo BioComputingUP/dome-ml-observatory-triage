@@ -1,7 +1,7 @@
 {
  "source": "dome-ml-observatory-triage moros_pipeline/scripts/datalinks_resources.py (slug, label, category), with designations from the lists below",
  "decided": "2026-11-25",
- "version_note": "v1.9.1 (2026-11-25): every designation sourced; host, host_source and ELIXIR Nodes read from each resource's own pages. FAIRsharing could not be read as a cross-check (its records render in the browser and its API needs a login).",
+ "version_note": "v1.9.2 (2026-11-25): adds ModelArchive (an ELIXIR Deposition Database), which Europe PMC's /datalinks route lists. v1.9.1 (2026-11-25): every designation sourced; host, host_source and ELIXIR Nodes read from each resource's own pages. FAIRsharing could not be read as a cross-check (its records render in the browser and its API needs a login).",
  "decision_note": "One entry per data-link resource slug, so the Observatory can group and filter linked resources by who runs them and how they are designated without stamping every document. `kind` says whether a slug is a data resource at all: only `data` resources are ranked on the Data page; software registries, transparency reports, code hosts, model hubs, generic identifiers and ontologies are listed but not ranked. A designation field holds the name of the designated entry the resource is, or belongs to (PRIDE carries ProteomeXchange Consortium), and null when it has none. A designation whose list has status `pending` has not been sourced yet, so its nulls mean unknown, not no.",
  "kinds": {
   "data": "a database or archive holding research data or curated knowledge records",
@@ -40,7 +40,7 @@
    "source": "https://elixir-europe.org/platforms/data/elixir-deposition-databases",
    "retrieved": "2026-11-25",
    "entries": 18,
-   "note": "Read from the Internet Archive's copy of the page dated 2026-08-31 (https://web.archive.org/web/20260831071102/https://elixir-europe.org/platforms/data/elixir-deposition-databases), as elixir-europe.org refuses automated requests. It includes the January 2026 additions (BioImage Archive, DisProt). ELIXIR's announcement of that round gives the total as 17 while the page lists 18; the page is followed here. DisProt, LIPID MAPS and ModelArchive are on the list but have no slug in the catalogue yet."
+   "note": "Read from the Internet Archive's copy of the page dated 2026-08-31 (https://web.archive.org/web/20260831071102/https://elixir-europe.org/platforms/data/elixir-deposition-databases), as elixir-europe.org refuses automated requests. It includes the January 2026 additions (BioImage Archive, DisProt). ELIXIR's announcement of that round gives the total as 17 while the page lists 18; the page is followed here. DisProt and LIPID MAPS are on the list but have no slug in the catalogue yet."
   },
   "elixir_nodes": {
    "label": "ELIXIR Node",
@@ -1086,6 +1086,21 @@
    "elixir_nodes": [
     "EMBL-EBI",
     "IT"
+   ]
+  },
+  {
+   "slug": "modelarchive",
+   "label": "ModelArchive",
+   "category": "Protein Structures",
+   "kind": "data",
+   "host": "SIB Swiss Institute of Bioinformatics and Biozentrum, University of Basel",
+   "host_source": "https://www.modelarchive.org/",
+   "embl_ebi": false,
+   "gcbr": null,
+   "elixir_cdr": null,
+   "elixir_edd": "ModelArchive",
+   "elixir_nodes": [
+    "CH"
    ]
   },
   {

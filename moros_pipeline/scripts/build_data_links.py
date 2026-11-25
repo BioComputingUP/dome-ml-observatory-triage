@@ -78,7 +78,8 @@ from pathlib import Path
 from urllib.parse import quote
 
 from classification_events import latest_verdicts
-from datalinks_resources import describe, doi_prefix, is_reference_section, scheme_from_uri, slug
+from datalinks_resources import (EXT_LINK_DEPOSITS, LINK_PROVIDERS, _norm, describe, doi_prefix,
+                                 is_reference_section, scheme_from_uri, slug)
 from ebisearch_links import EbiRoute, paper_keys
 from ebisearch_resources import browse_url, canonicalise_link, resolve_pxd_hosts
 from fetch_citations import _session
@@ -162,6 +163,7 @@ class Stats:
         self.ebisearch_confirmed: Counter = Counter()     # documents where EBI Search found a link already held
         self.ebisearch_rejected: Counter = Counter()      # domains EBI Search listed that are not accepted
         self.ebisearch_unclassified: Counter = Counter()  # (domain, field) values of no known shape
+        self.refused_ext_links: Counter = Counter()  # /datalinks external links refused, by publisher
 
 
 # ---------------------------------------------------------------------------
@@ -225,7 +227,24 @@ def annotation_doi_candidates(annotation: dict) -> list[str]:
     return [c for c in doi_candidates(exact) if slug("DOI", None, c) is not None]
 
 
+def deposit_link(link: dict) -> dict | None:
+    """A /datalinks link as the merge reads it. An external link (IDScheme URL) is kept only from
+    a publisher in EXT_LINK_DEPOSITS, rewritten to the DOI inside its URL (Dryad, ModelArchive) or
+    to the URL's last path segment (EMDB's EMD-6044); any other external link is None. Every other
+    link is returned unchanged. Shared by the doi.org lookup and the merge, so both see one link."""
+    if _norm_scheme(link.get("id_scheme")) != "url":
+        return link
+    if _norm(link.get("publisher")) not in EXT_LINK_DEPOSITS:
+        return None
+    ident = (link.get("id") or "").strip()
+    found = doi_candidates(ident)
+    if found:
+        return {**link, "id": found[0], "id_scheme": "DOI"}
+    return {**link, "id": ident.rstrip("/").rsplit("/", 1)[-1], "id_scheme": link.get("publisher")}
+
+
 def datalink_doi_candidates(link: dict) -> list[str]:
+    link = deposit_link(link) or {}
     ident = (link.get("id") or "").strip()
     if not ident or _norm_scheme(link.get("id_scheme")) != "doi":
         return []
@@ -308,8 +327,22 @@ def link_from_datalink(link: dict, stats: Stats,
     handles = handles or {}
     scheme, publisher = link.get("id_scheme"), link.get("publisher")
     original = link.get("url")
+    if _norm_scheme(scheme) == "url":
+        # An external link: kept only from a publisher that deposits data (deposit_link).
+        rewritten = deposit_link(link)
+        if rewritten is None:
+            stats.refused_ext_links[publisher or "?"] += 1
+            return None
+        link = rewritten
+        ident, scheme = link["id"], link["id_scheme"]
     if _norm_scheme(scheme) == "doi":
-        guess = slug("DOI", publisher, ident) or slug(publisher) or "doi"
+        guess = slug("DOI", publisher, ident)
+        if guess is None and _norm(publisher) in LINK_PROVIDERS:
+            # A DOI Europe PMC mined itself, under no data repository's prefix: literature.
+            stats.reference_dois += 1
+            stats.unmapped_doi_prefix[doi_prefix(ident) or "?"] += 1
+            return None
+        guess = guess or slug(publisher) or "doi"
         candidates = datalink_doi_candidates(link)
         if not candidates:
             stats.dropped[("malformed DOI", guess)] += 1
@@ -995,6 +1028,10 @@ def render(stats: Stats, report_only: bool, out_preprints: Path, out_data_links:
         print("\n  UNMAPPED schemes / publishers (add to datalinks_resources.ALIASES):")
         for name, n in stats.unmapped_scheme.most_common(30):
             print(f"    {name!r:<30} {n:>9,}")
+    if stats.refused_ext_links:
+        print("\n  /datalinks external links refused (not a deposit; EXT_LINK_DEPOSITS), by publisher:")
+        for name, n in stats.refused_ext_links.most_common(40):
+            print(f"    {name[:60]:<60} {n:>7,}")
     if stats.unmapped_doi_prefix:
         print("\n  DOI prefixes not in DOI_PREFIXES (literature, or a repository to add):")
         for name, n in stats.unmapped_doi_prefix.most_common(30):

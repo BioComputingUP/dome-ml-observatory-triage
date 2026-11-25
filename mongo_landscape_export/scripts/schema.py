@@ -128,7 +128,10 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # of the ELIXIR page supplied by the project owner), the ELIXIR Deposition Database list, every
 # ELIXIR Node, and each resource's Node(s) and host read from its own pages (host_source). v1.9.0
 # never reached moros, so migrate_v1_9_1.py stamps 1.8.0 or 1.9.0 straight to 1.9.1.
-SCHEMA_VERSION = "1.9.1"
+# 1.9.2 (2026-11-25): vocabulary only. data-resources gains ModelArchive (an ELIXIR Deposition
+# Database), one of the three depositors Europe PMC's /datalinks route lists as external links
+# (build_data_links.deposit_link). migrate_v1_9_2.py moves the stamp only.
+SCHEMA_VERSION = "1.9.2"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat

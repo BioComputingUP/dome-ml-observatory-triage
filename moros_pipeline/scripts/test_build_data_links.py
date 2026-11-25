@@ -679,3 +679,50 @@ def test_without_the_ebi_search_route_no_identifiers_file_is_written(tmp_path):
     bd.build(keys, metadata, missing, missing, missing, "none", False, tmp_path / "p.csv",
              tmp_path / "d.csv", out_identifiers=out_i)
     assert not out_i.exists()
+
+
+# ---------------------------------------------------------------------------------------------
+# /datalinks external links and Europe PMC's own DOIs (2026-11-25)
+# ---------------------------------------------------------------------------------------------
+
+def _ext(publisher, ident):
+    return {"id": ident, "id_scheme": "URL", "publisher": publisher, "url": ident,
+            "obtained_by": "ext_links", "relationship": "IsReferencedBy"}
+
+
+def test_an_external_link_is_kept_only_from_a_depositing_publisher():
+    import build_data_links as b
+    stats = b.Stats()
+    for publisher, ident in [("Altmetric", "https://www.altmetric.com/details/1"),
+                             ("Saccharomyces Genome Database", "https://www.yeastgenome.org/reference/S1"),
+                             ("ENCODE: Encyclopedia of DNA Elements", "http://encodeproject.org/publications/x/"),
+                             ("BioStudies: supplemental material and supporting data",
+                              "http://www.ebi.ac.uk/biostudies/studies/S-EPMC1617129?xr=true")]:
+        assert b.link_from_datalink(_ext(publisher, ident), stats) is None
+    assert sum(stats.refused_ext_links.values()) == 4
+    emdb = b.link_from_datalink(_ext("Electron Microscopy Data Bank (EMDB)",
+                                     "https://www.ebi.ac.uk/emdb/EMD-6044"), stats)
+    assert (emdb["resource"], emdb["id"]) == ("emdb", "EMD-6044")
+
+
+def test_a_deposit_doi_inside_an_external_link_is_confirmed_like_any_doi():
+    import build_data_links as b
+    link = _ext("ModelArchive", "https://doi.org/10.5452/ma-scodz")
+    assert b.datalink_doi_candidates(link) == ["10.5452/ma-scodz"]
+    assert b.link_from_datalink(link, b.Stats(), {}) is b.PENDING
+    kept = b.link_from_datalink(link, b.Stats(), {"10.5452/ma-scodz": True})
+    assert (kept["resource"], kept["id"]) == ("modelarchive", "10.5452/ma-scodz")
+    dryad = b.link_from_datalink(_ext("Dryad Data Platform", "http://dx.doi.org/doi:10.5061/dryad.b835k"),
+                                 b.Stats(), {"10.5061/dryad.b835k": True})
+    assert (dryad["resource"], dryad["id"]) == ("dryad", "10.5061/dryad.b835k")
+
+
+def test_a_doi_europe_pmc_mined_is_literature_unless_a_repository_owns_the_prefix():
+    import build_data_links as b
+    stats = b.Stats()
+    mined = {"id": "10.26879/1359", "id_scheme": "DOI", "publisher": "Europe PMC", "obtained_by": "tm_accession"}
+    assert b.link_from_datalink(mined, stats, {"10.26879/1359": True}) is None
+    assert stats.reference_dois == 1
+    zenodo = {**mined, "id": "10.5281/zenodo.123"}
+    kept = b.link_from_datalink(zenodo, b.Stats(), {"10.5281/zenodo.123": True})
+    assert kept["resource"] == "zenodo"

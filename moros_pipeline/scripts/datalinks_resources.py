@@ -143,6 +143,9 @@ RESOURCES: dict[str, Resource] = {r.slug: r for r in [
     Resource("fairdomhub", "FAIRDOMHub", MODELS),
     Resource("physiome", "Physiome Model Repository", MODELS),
     Resource("cellcollective", "Cell Collective", MODELS),
+    # 2026-11-25: deposits Europe PMC's /datalinks route lists as external links (see
+    # EXT_LINK_DEPOSITS). ModelArchive is an ELIXIR Deposition Database for theoretical models.
+    Resource("modelarchive", "ModelArchive", STRUCTURES),
 ]}
 
 # Every spelling seen so far for a scheme / accession type / publisher, normalised by `_norm`.
@@ -191,6 +194,10 @@ ALIASES: dict[str, str] = {
     "panoramapublic": "panorama", "massive": "massive", "europeanvariationarchive": "eva",
     "dgva": "dgva", "fairdomhub": "fairdomhub", "physiomemodelrepository": "physiome",
     "cellcollective": "cellcollective",
+    # 2026-11-25: the longer names Europe PMC's /datalinks route gives as Publisher.
+    "electronmicroscopydatabank": "emdb", "europeangenomephenomearchive": "ega",
+    "euclinicaltrialsregister": "eudract", "dryaddataplatform": "dryad",
+    "modelarchive": "modelarchive",
 }
 
 # DOI prefix -> resource, for a text-mined or cited DOI. Only data / code repositories belong
@@ -217,7 +224,25 @@ DOI_PREFIXES: dict[str, str] = {
     "10.34740": "kaggle",
     "10.57967": "huggingface",
     "10.25504": "doi",       # FAIRsharing records: a data resource description, kept generic
+    "10.5452": "modelarchive",
 }
+
+# Europe PMC's /datalinks route lists, besides accessions, "external links" (ObtainedBy
+# ext_links, IDScheme URL) from about 40 providers. Measured over the corpus on 2026-11-25
+# (31,673 such links on 13,236 records), almost all are not data the paper produced: the paper's
+# reference page at a curated database (MGI, FlyBase, SGD, WormBase, RGD, ZFIN, GOA, GlyGen,
+# IUPHAR, ENCODE's publication pages ...), which docs/data_links_sources.md §3 refuses for EBI
+# Search on the same grounds; metrics and reviews (Altmetric, Faculty Opinions, Publons, Kudos,
+# Wikipedia); copies of the paper in institutional archives; and the paper's own S-EPMC
+# BioStudies record, which the derived route already gives. Only these publishers deposit data
+# and are kept; every other external link is refused and counted by publisher in the report.
+EXT_LINK_DEPOSITS: frozenset[str] = frozenset({
+    "dryaddataplatform", "electronmicroscopydatabankemdb", "modelarchive",
+})
+
+# Europe PMC names itself as Publisher for the DOIs it text-mines. A DOI it mined is data only by
+# its prefix, as on the annotations route: Europe PMC is the miner, not a repository.
+LINK_PROVIDERS: frozenset[str] = frozenset({"europepmc"})
 
 # A DOI prefix several resources share, split by the start of the suffix. 10.6019 is EMBL-EBI's:
 # `10.6019/PXD024968` is PRIDE, `10.6019/EMPIAR-10164` is EMPIAR (13 corpus links were filed under
