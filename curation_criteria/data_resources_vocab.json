@@ -1,6 +1,7 @@
 {
  "source": "dome-ml-observatory-triage moros_pipeline/scripts/datalinks_resources.py (slug, label, category), with designations from the lists below",
  "decided": "2026-11-25",
+ "version_note": "v1.9.1 (2026-11-25): every designation sourced; host, host_source and ELIXIR Nodes read from each resource's own pages. FAIRsharing could not be read as a cross-check (its records render in the browser and its API needs a login).",
  "decision_note": "One entry per data-link resource slug, so the Observatory can group and filter linked resources by who runs them and how they are designated without stamping every document. `kind` says whether a slug is a data resource at all: only `data` resources are ranked on the Data page; software registries, transparency reports, code hosts, model hubs, generic identifiers and ontologies are listed but not ranked. A designation field holds the name of the designated entry the resource is, or belongs to (PRIDE carries ProteomeXchange Consortium), and null when it has none. A designation whose list has status `pending` has not been sourced yet, so its nulls mean unknown, not no.",
  "kinds": {
   "data": "a database or archive holding research data or curated knowledge records",
@@ -15,7 +16,7 @@
   "embl_ebi": {
    "label": "EMBL-EBI",
    "status": "sourced",
-   "source": "Resource operator as stated on each resource's own site; started from the dome-ml-observatory-research EBI_HOSTED set and reviewed 2026-11-25. A resource run by a consortium in which EMBL-EBI hosts a full copy or is a named operating partner counts.",
+   "source": "Each resource's own pages (host_source): a resource is marked when EMBL-EBI is among the institutions that run it, and then also carries the EMBL-EBI Node. Joint resources keep every partner, e.g. EGA (EMBL-EBI and CRG, Spain), UniProt (EMBL-EBI and SIB, Switzerland).",
    "retrieved": "2026-11-25"
   },
   "gcbr": {
@@ -27,72 +28,191 @@
   },
   "elixir_cdr": {
    "label": "ELIXIR Core Data Resource",
-   "status": "pending",
+   "status": "sourced",
    "source": "https://elixir-europe.org/platforms/data/core-data-resources",
-   "note": "elixir-europe.org refuses automated requests (HTTP 403, 2026-11-25); to be filled from a copy of the page."
+   "retrieved": "2026-11-25",
+   "entries": 41,
+   "note": "Copied from the page by the project owner: elixir-europe.org refuses automated requests. Member databases of an umbrella entry carry it (IntAct and MINT: IMEx; Pfam: InterPro; UniParc: UniProt)."
   },
   "elixir_edd": {
    "label": "ELIXIR Deposition Database",
-   "status": "pending",
+   "status": "sourced",
    "source": "https://elixir-europe.org/platforms/data/elixir-deposition-databases",
-   "note": "elixir-europe.org refuses automated requests (HTTP 403, 2026-11-25); to be filled from a copy of the page."
+   "retrieved": "2026-11-25",
+   "entries": 18,
+   "note": "Read from the Internet Archive's copy of the page dated 2026-08-31 (https://web.archive.org/web/20260831071102/https://elixir-europe.org/platforms/data/elixir-deposition-databases), as elixir-europe.org refuses automated requests. It includes the January 2026 additions (BioImage Archive, DisProt). ELIXIR's announcement of that round gives the total as 17 while the page lists 18; the page is followed here. DisProt, LIPID MAPS and ModelArchive are on the list but have no slug in the catalogue yet."
   },
   "elixir_nodes": {
    "label": "ELIXIR Node",
-   "status": "pending",
+   "status": "sourced",
    "source": "https://elixir-europe.org/about-us/who-we-are/nodes",
-   "note": "elixir-europe.org refuses automated requests (HTTP 403, 2026-11-25); to be filled from a copy of the page. Every Node is listed in `elixir_nodes`, including Nodes that run no resource in this table."
+   "retrieved": "2026-11-25",
+   "entries": 25,
+   "note": "A resource carries the Node of each institution that runs it, read from the resource's own pages (host_source), with FAIRsharing as a cross-check. EMBL-EBI is listed as a Node of its own. A resource run only outside ELIXIR member countries carries none."
   }
  },
- "elixir_nodes": [],
+ "elixir_nodes": [
+  {
+   "code": "BE",
+   "name": "ELIXIR Belgium"
+  },
+  {
+   "code": "CZ",
+   "name": "ELIXIR Czech Republic"
+  },
+  {
+   "code": "DK",
+   "name": "ELIXIR Denmark"
+  },
+  {
+   "code": "EMBL-EBI",
+   "name": "EMBL-EBI"
+  },
+  {
+   "code": "EE",
+   "name": "ELIXIR Estonia"
+  },
+  {
+   "code": "FI",
+   "name": "ELIXIR Finland"
+  },
+  {
+   "code": "FR",
+   "name": "ELIXIR France"
+  },
+  {
+   "code": "DE",
+   "name": "ELIXIR Germany"
+  },
+  {
+   "code": "GR",
+   "name": "ELIXIR Greece"
+  },
+  {
+   "code": "HU",
+   "name": "ELIXIR Hungary"
+  },
+  {
+   "code": "IE",
+   "name": "ELIXIR Ireland"
+  },
+  {
+   "code": "IL",
+   "name": "ELIXIR Israel"
+  },
+  {
+   "code": "IT",
+   "name": "ELIXIR Italy"
+  },
+  {
+   "code": "LU",
+   "name": "ELIXIR Luxembourg"
+  },
+  {
+   "code": "MT",
+   "name": "ELIXIR Malta"
+  },
+  {
+   "code": "NL",
+   "name": "ELIXIR Netherlands"
+  },
+  {
+   "code": "NO",
+   "name": "ELIXIR Norway"
+  },
+  {
+   "code": "PT",
+   "name": "ELIXIR Portugal"
+  },
+  {
+   "code": "RO",
+   "name": "ELIXIR Romania"
+  },
+  {
+   "code": "SK",
+   "name": "ELIXIR Slovakia"
+  },
+  {
+   "code": "SI",
+   "name": "ELIXIR Slovenia"
+  },
+  {
+   "code": "ES",
+   "name": "ELIXIR Spain"
+  },
+  {
+   "code": "SE",
+   "name": "ELIXIR Sweden"
+  },
+  {
+   "code": "CH",
+   "name": "ELIXIR Switzerland"
+  },
+  {
+   "code": "UK",
+   "name": "ELIXIR UK"
+  }
+ ],
  "resources": [
   {
    "slug": "4tu",
    "label": "4TU.ResearchData",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "TU Delft Library, for the 4TU Federation (Netherlands)",
+   "host_source": "https://www.re3data.org/repository/r3d100010216",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "NL"
+   ]
   },
   {
    "slug": "alphafold",
    "label": "AlphaFold DB",
    "category": "Protein Structures",
    "kind": "data",
-   "host": "EMBL-EBI and Google DeepMind",
+   "host": "EMBL-EBI with Google DeepMind",
+   "host_source": "https://alphafold.ebi.ac.uk/about",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "apollo",
    "label": "Apollo (Cambridge)",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "University of Cambridge",
+   "host_source": "https://www.repository.cam.ac.uk/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "UK"
+   ]
   },
   {
    "slug": "arrayexpress",
    "label": "ArrayExpress / BioStudies",
    "category": "Gene Expression",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI (a BioStudies collection)",
+   "host_source": "https://www.ebi.ac.uk/biostudies/arrayexpress/help",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "ArrayExpress",
+   "elixir_edd": "ArrayExpress",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "bioimage_archive",
@@ -100,11 +220,14 @@
    "category": "Imaging",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/bioimage-archive/",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "BioImage Archive",
+   "elixir_edd": "BioImage Archive",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "biomodels",
@@ -112,18 +235,22 @@
    "category": "Models",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/biomodels/",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_edd": "BioModels",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "bioproject",
    "label": "BioProject",
    "category": "Genomes & Assemblies",
    "kind": "data",
-   "host": "NCBI",
+   "host": "NCBI (USA); accessions shared through INSDC with ENA and DDBJ",
+   "host_source": "https://www.ncbi.nlm.nih.gov/bioproject/docs/faq/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -135,12 +262,15 @@
    "label": "BioSample",
    "category": "Genomes & Assemblies",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI BioSamples, sharing its namespace with NCBI BioSample",
+   "host_source": "https://www.ebi.ac.uk/biosamples/about",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_edd": "BioSamples",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "biostudies",
@@ -148,35 +278,44 @@
    "category": "Supplementary Material",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/biostudies/about",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "BioStudies",
+   "elixir_edd": "BioStudies",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "biotools",
    "label": "bio.tools",
    "category": "Software Registries",
    "kind": "software_registry",
-   "host": "ELIXIR",
+   "host": "ELIXIR Denmark (DTU) with the ELIXIR Tools Platform",
+   "host_source": "https://biotools.readthedocs.io/en/latest/governance.html",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DK"
+   ]
   },
   {
    "slug": "brenda",
    "label": "BRENDA",
    "category": "Chemicals & Compounds",
    "kind": "data",
-   "host": "TU Braunschweig / DSMZ",
+   "host": "Leibniz Institute DSMZ, Braunschweig",
+   "host_source": "https://www.brenda-enzymes.org/introduction.php",
    "embl_ebi": false,
    "gcbr": "BRENDA",
-   "elixir_cdr": null,
+   "elixir_cdr": "BRENDA",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DE"
+   ]
   },
   {
    "slug": "cath",
@@ -184,18 +323,22 @@
    "category": "Protein Structures",
    "kind": "data",
    "host": "University College London",
+   "host_source": "https://www.cathdb.info/",
    "embl_ebi": false,
    "gcbr": "CATH",
-   "elixir_cdr": null,
+   "elixir_cdr": "CATH",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "UK"
+   ]
   },
   {
    "slug": "cellcollective",
    "label": "Cell Collective",
    "category": "Models",
    "kind": "data",
-   "host": null,
+   "host": "University of Nebraska-Lincoln",
+   "host_source": "https://newsroom.unl.edu/announce/nebraska-science/10574/62472",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -208,11 +351,14 @@
    "category": "Cell Lines & Reagents",
    "kind": "data",
    "host": "SIB Swiss Institute of Bioinformatics",
+   "host_source": "https://www.cellosaurus.org/description.html",
    "embl_ebi": false,
    "gcbr": "Cellosaurus",
-   "elixir_cdr": null,
+   "elixir_cdr": "Cellosaurus",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "CH"
+   ]
   },
   {
    "slug": "chebi",
@@ -220,11 +366,14 @@
    "category": "Chemicals & Compounds",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/chebi/aboutChebiForward.do",
    "embl_ebi": true,
    "gcbr": "ChEBI",
-   "elixir_cdr": null,
+   "elixir_cdr": "ChEBI",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "chembl",
@@ -232,11 +381,14 @@
    "category": "Chemicals & Compounds",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://chembl.gitbook.io/chembl-interface-documentation/about",
    "embl_ebi": true,
    "gcbr": "ChEMBL",
-   "elixir_cdr": null,
+   "elixir_cdr": "ChEMBL",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "clinicaltrials",
@@ -244,6 +396,7 @@
    "category": "Clinical Trials",
    "kind": "data",
    "host": "U.S. National Library of Medicine",
+   "host_source": "https://www.nlm.nih.gov/pubs/factsheets/clintrial.html",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -255,7 +408,8 @@
    "label": "Code Ocean",
    "category": "Code & Notebooks",
    "kind": "code",
-   "host": null,
+   "host": "Code Ocean Inc. (USA)",
+   "host_source": "https://www.builtinnyc.com/company/code-ocean",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -268,18 +422,22 @@
    "category": "Pathways & Interactions",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/complexportal/about",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "coriell",
    "label": "Coriell Biorepository",
    "category": "Cell Lines & Reagents",
    "kind": "data",
-   "host": null,
+   "host": "Coriell Institute for Medical Research (USA)",
+   "host_source": "https://www.nigms.nih.gov/Research/SpecificAreas/HGCR/Pages/default.aspx",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -291,7 +449,8 @@
    "label": "Dataverse",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "Harvard Dataverse (USA); the software also runs at other institutions",
+   "host_source": "https://dataverse.org/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -303,7 +462,8 @@
    "label": "dbGaP",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "NCBI",
+   "host": "NCBI (USA)",
+   "host_source": "https://dbgap.ncbi.nlm.nih.gov/home",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -315,12 +475,15 @@
    "label": "DGVa",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI (closed to submissions; data now in EVA)",
+   "host_source": "https://www.ebi.ac.uk/dgva",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "doi",
@@ -328,6 +491,7 @@
    "category": "Data Citations",
    "kind": "identifier",
    "host": null,
+   "host_source": "https://www.doi.org/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -339,19 +503,23 @@
    "label": "DOME Registry",
    "category": "Transparency Reports",
    "kind": "transparency_report",
-   "host": "DOME Registry (University of Padova)",
+   "host": "University of Padova (ELIXIR Italy), for the ELIXIR Machine Learning Focus Group",
+   "host_source": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11633452/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "IT"
+   ]
   },
   {
    "slug": "dryad",
    "label": "Dryad",
    "category": "Data Citations",
    "kind": "data",
-   "host": "Dryad",
+   "host": "Dryad (US not-for-profit)",
+   "host_source": "https://datadryad.org/stash/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -363,24 +531,31 @@
    "label": "EBiSC",
    "category": "Cell Lines & Reagents",
    "kind": "data",
-   "host": null,
+   "host": "Fraunhofer IBMT (Germany) and Fraunhofer UK",
+   "host_source": "https://ibmt.fraunhofer.de/en/ibmt-press-releases/press-ebisc2-2019-03-11.html",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DE",
+    "UK"
+   ]
   },
   {
    "slug": "edinburgh_datashare",
    "label": "Edinburgh DataShare",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "University of Edinburgh",
+   "host_source": "https://datashare.ed.ac.uk/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "UK"
+   ]
   },
   {
    "slug": "efo",
@@ -388,35 +563,45 @@
    "category": "Ontologies & Annotations",
    "kind": "ontology",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/efo/about.html",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "ega",
    "label": "European Genome-phenome Archive",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "EMBL-EBI and CRG",
+   "host": "EMBL-EBI (Hinxton) and CRG (Barcelona), jointly",
+   "host_source": "https://ega-archive.org/about/ega/",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "EGA",
+   "elixir_edd": "EGA",
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "ES"
+   ]
   },
   {
    "slug": "emdb",
    "label": "Electron Microscopy Data Bank",
    "category": "Protein Structures",
    "kind": "data",
-   "host": "EMBL-EBI (wwPDB)",
+   "host": "EMBL-EBI (a wwPDB core archive with RCSB PDB and PDBj)",
+   "host_source": "https://www.ebi.ac.uk/emdb/about",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "EMDB",
+   "elixir_edd": "EMDB",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "empiar",
@@ -424,35 +609,44 @@
    "category": "Imaging",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/empiar/about/",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_edd": "EMPIAR",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "ena",
    "label": "European Nucleotide Archive",
    "category": "Nucleotide Sequences",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI (INSDC partner with NCBI and DDBJ)",
+   "host_source": "https://www.ebi.ac.uk/ena/browser/about",
    "embl_ebi": true,
    "gcbr": "European Nucleotide Archive",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "ENA",
+   "elixir_edd": "ENA",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "ena_assembly",
    "label": "ENA genome assembly",
    "category": "Genomes & Assemblies",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI (part of ENA)",
+   "host_source": "https://www.ebi.ac.uk/ena/browser/about",
    "embl_ebi": true,
    "gcbr": "European Nucleotide Archive",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "ENA",
+   "elixir_edd": "ENA",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "ensembl",
@@ -460,18 +654,22 @@
    "category": "Genomes & Assemblies",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://jun2026.archive.ensembl.org/info/about/index.html",
    "embl_ebi": true,
    "gcbr": "Ensembl",
-   "elixir_cdr": null,
+   "elixir_cdr": "Ensembl",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "eudract",
    "label": "EU Clinical Trials Register",
    "category": "Clinical Trials",
    "kind": "data",
-   "host": "European Medicines Agency",
+   "host": "European Medicines Agency (EU agency); superseded by CTIS",
+   "host_source": "https://www.clinicaltrials.eu/about.html",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -484,11 +682,14 @@
    "category": "Genomic Variation",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/eva/",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_edd": "EVA",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "expression_atlas",
@@ -496,30 +697,38 @@
    "category": "Gene Expression",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/gxa/about.html",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "fairdomhub",
    "label": "FAIRDOMHub",
    "category": "Models",
    "kind": "data",
-   "host": null,
+   "host": "University of Manchester and HITS (Heidelberg), for the FAIRDOM consortium",
+   "host_source": "https://fairdomhub.org/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DE",
+    "UK"
+   ]
   },
   {
    "slug": "figshare",
    "label": "figshare",
    "category": "Data Citations",
    "kind": "data",
-   "host": "Figshare",
+   "host": "Figshare (Digital Science, commercial)",
+   "host_source": "https://knowledge.figshare.com/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -531,7 +740,8 @@
    "label": "GBIF",
    "category": "Data Citations",
    "kind": "data",
-   "host": "GBIF Secretariat",
+   "host": "GBIF Secretariat (intergovernmental), Copenhagen",
+   "host_source": "https://www.gbif.org/contact-us",
    "embl_ebi": false,
    "gcbr": "Global Biodiversity Information Facility",
    "elixir_cdr": null,
@@ -543,7 +753,8 @@
    "label": "Gene Expression Omnibus",
    "category": "Gene Expression",
    "kind": "data",
-   "host": "NCBI",
+   "host": "NCBI (USA)",
+   "host_source": "https://www.ncbi.nlm.nih.gov/geo/info/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -555,7 +766,8 @@
    "label": "GigaDB",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "GigaScience Press / BGI (Hong Kong)",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3626507/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -567,7 +779,8 @@
    "label": "GISAID",
    "category": "Nucleotide Sequences",
    "kind": "data",
-   "host": "GISAID",
+   "host": "GISAID Initiative (current host not confirmed)",
+   "host_source": "https://gisaid.org/about-us/public-private-partnerships/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -579,7 +792,8 @@
    "label": "GitHub",
    "category": "Code & Notebooks",
    "kind": "code",
-   "host": null,
+   "host": "GitHub (Microsoft, commercial)",
+   "host_source": "https://github.com/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -591,79 +805,101 @@
    "label": "Gene Ontology",
    "category": "Ontologies & Annotations",
    "kind": "ontology",
-   "host": "Gene Ontology Consortium",
+   "host": "Gene Ontology Consortium: USC, Caltech, LBNL, Stanford and SIB",
+   "host_source": "https://geneontology.org/docs/whoweare/",
    "embl_ebi": false,
    "gcbr": "Gene Ontology",
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "CH"
+   ]
   },
   {
    "slug": "gwas",
    "label": "GWAS Catalog",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "EMBL-EBI and NHGRI",
+   "host": "EMBL-EBI with NHGRI and the University of Cambridge",
+   "host_source": "https://www.ebi.ac.uk/gwas/docs/about",
    "embl_ebi": true,
    "gcbr": "GWAS Catalog",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "GWAS Catalog",
+   "elixir_edd": "GWAS Catalog",
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "UK"
+   ]
   },
   {
    "slug": "hgnc",
    "label": "HGNC",
    "category": "Ontologies & Annotations",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "University of Cambridge, jointly with EMBL-EBI",
+   "host_source": "https://www.genenames.org/about/",
    "embl_ebi": true,
    "gcbr": "HGNC: HUGO Gene Nomenclature Committee",
-   "elixir_cdr": null,
+   "elixir_cdr": "HGNC",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "UK"
+   ]
   },
   {
    "slug": "hipsci",
    "label": "HipSci",
    "category": "Cell Lines & Reagents",
    "kind": "data",
-   "host": "EMBL-EBI and Wellcome Sanger Institute",
+   "host": "Wellcome Sanger Institute, EMBL-EBI and UK universities (project closed)",
+   "host_source": "https://www.embl.org/news/science/1709-hipsci-human-stem-cell-bank/",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "UK"
+   ]
   },
   {
    "slug": "hpa",
    "label": "Human Protein Atlas",
    "category": "Gene Expression",
    "kind": "data",
-   "host": "Human Protein Atlas (Sweden)",
+   "host": "SciLifeLab (KTH, Uppsala University, Karolinska Institutet)",
+   "host_source": "https://www.proteinatlas.org/about",
    "embl_ebi": false,
    "gcbr": "Human Protein Atlas",
-   "elixir_cdr": null,
+   "elixir_cdr": "Human Protein Atlas",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "SE"
+   ]
   },
   {
    "slug": "hpscreg",
    "label": "hPSCreg",
    "category": "Cell Lines & Reagents",
    "kind": "data",
-   "host": null,
+   "host": "Fraunhofer IBMT",
+   "host_source": "https://hpscreg.eu/contact",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DE"
+   ]
   },
   {
    "slug": "huggingface",
    "label": "Hugging Face",
    "category": "Models",
    "kind": "model_hub",
-   "host": null,
+   "host": "Hugging Face (commercial)",
+   "host_source": "https://huggingface.co/huggingface",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -675,7 +911,8 @@
    "label": "ICPSR",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "University of Michigan (USA)",
+   "host_source": "https://www.icpsr.umich.edu/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -687,7 +924,8 @@
    "label": "IEEE DataPort",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "IEEE (USA)",
+   "host_source": "https://fairsharing.org/10.25504/FAIRsharing.0f24d5",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -700,11 +938,14 @@
    "category": "Genomes & Assemblies",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.internationalgenome.org/about",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "intact",
@@ -712,11 +953,14 @@
    "category": "Pathways & Interactions",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/intact/about/overview",
    "embl_ebi": true,
    "gcbr": "IMEx: International Molecular Exchange Consortium",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "The IMEx Consortium: represented by IntAct and MINT",
+   "elixir_edd": "IntAct",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "interpro",
@@ -724,18 +968,22 @@
    "category": "Protein Sequences",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/interpro/about/interpro/",
    "embl_ebi": true,
    "gcbr": "InterPro",
-   "elixir_cdr": null,
+   "elixir_cdr": "InterPro",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "iprox",
    "label": "iProX",
    "category": "Proteomics",
    "kind": "data",
-   "host": "iProX (China)",
+   "host": "Beijing Proteome Research Center (China)",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6323926/",
    "embl_ebi": false,
    "gcbr": "ProteomeXchange Consortium",
    "elixir_cdr": null,
@@ -747,7 +995,8 @@
    "label": "jPOST",
    "category": "Proteomics",
    "kind": "data",
-   "host": "jPOST (Japan)",
+   "host": "jPOST consortium (Japan)",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6324006/",
    "embl_ebi": false,
    "gcbr": "ProteomeXchange Consortium",
    "elixir_cdr": null,
@@ -759,7 +1008,8 @@
    "label": "Kaggle",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "Kaggle (Google, commercial)",
+   "host_source": "https://www.kaggle.com/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -771,7 +1021,8 @@
    "label": "MassIVE",
    "category": "Proteomics",
    "kind": "data",
-   "host": "UC San Diego",
+   "host": "Center for Computational Mass Spectrometry, UC San Diego",
+   "host_source": "https://massive.ucsd.edu/ProteoSAFe/static/massive.jsp",
    "embl_ebi": false,
    "gcbr": "ProteomeXchange Consortium",
    "elixir_cdr": null,
@@ -783,7 +1034,8 @@
    "label": "Mendeley Data",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "Elsevier (commercial), preserved by DANS",
+   "host_source": "https://data.mendeley.com/mission",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -796,11 +1048,14 @@
    "category": "Metabolomics",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/metabolights/about",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_edd": "MetaboLights",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "mgnify",
@@ -808,30 +1063,38 @@
    "category": "Genomes & Assemblies",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/metagenomics/about",
    "embl_ebi": true,
    "gcbr": null,
-   "elixir_cdr": null,
+   "elixir_cdr": "MGnify",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "mint",
    "label": "MINT",
    "category": "Pathways & Interactions",
    "kind": "data",
-   "host": null,
-   "embl_ebi": false,
+   "host": "University of Rome Tor Vergata; data released through IntAct at EMBL-EBI since 2013",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3965093/",
+   "embl_ebi": true,
    "gcbr": "IMEx: International Molecular Exchange Consortium",
-   "elixir_cdr": null,
+   "elixir_cdr": "The IMEx Consortium: represented by IntAct and MINT",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "IT"
+   ]
   },
   {
    "slug": "morphosource",
    "label": "MorphoSource",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "Duke University (USA)",
+   "host_source": "https://trinity.duke.edu/news/how-digital-repository-democratizing-science-duke-basement",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -843,7 +1106,8 @@
    "label": "NODE",
    "category": "Genomes & Assemblies",
    "kind": "data",
-   "host": "NODE (China)",
+   "host": "Bio-Med Big Data Center, Chinese Academy of Sciences",
+   "host_source": "https://www.biosino.org/node/aboutUs",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -855,7 +1119,8 @@
    "label": "OMIM",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "Johns Hopkins University",
+   "host": "Johns Hopkins University (USA)",
+   "host_source": "https://nlm.nih.gov/research/umls/sourcereleasedocs/current/OMIM",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -867,19 +1132,23 @@
    "label": "Orphanet",
    "category": "Ontologies & Annotations",
    "kind": "data",
-   "host": "Orphanet (INSERM)",
+   "host": "INSERM US14 (Paris), coordinating the Orphanet consortium",
+   "host_source": "https://www.orphadata.com/",
    "embl_ebi": false,
    "gcbr": "Orphadata Science",
-   "elixir_cdr": null,
+   "elixir_cdr": "Orphadata Science",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "FR"
+   ]
   },
   {
    "slug": "osf",
    "label": "Open Science Framework",
    "category": "Data Citations",
    "kind": "data",
-   "host": "Center for Open Science",
+   "host": "Center for Open Science (USA)",
+   "host_source": "https://www.cos.io/about",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -891,19 +1160,23 @@
    "label": "PANGAEA",
    "category": "Data Citations",
    "kind": "data",
-   "host": null,
+   "host": "Alfred Wegener Institute and MARUM, University of Bremen",
+   "host_source": "https://www.pangaea.de/about/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "DE"
+   ]
   },
   {
    "slug": "panorama",
    "label": "Panorama Public",
    "category": "Proteomics",
    "kind": "data",
-   "host": "University of Washington",
+   "host": "University of Washington (USA)",
+   "host_source": "https://panoramaweb.org/project/home/begin.view",
    "embl_ebi": false,
    "gcbr": "ProteomeXchange Consortium",
    "elixir_cdr": null,
@@ -915,31 +1188,38 @@
    "label": "Protein Data Bank in Europe",
    "category": "Protein Structures",
    "kind": "data",
-   "host": "PDBe, EMBL-EBI (wwPDB member)",
+   "host": "PDBe at EMBL-EBI, the EMBL-EBI member of wwPDB",
+   "host_source": "https://www.ebi.ac.uk/pdbe/about",
    "embl_ebi": true,
    "gcbr": "Protein Data Bank",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "PDBe",
+   "elixir_edd": "PDBe",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "pfam",
    "label": "Pfam",
    "category": "Protein Sequences",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI, served through InterPro",
+   "host_source": "https://academic.oup.com/nar/article/53/D1/D523/7900195",
    "embl_ebi": true,
    "gcbr": "InterPro",
-   "elixir_cdr": null,
+   "elixir_cdr": "InterPro",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "physiome",
    "label": "Physiome Model Repository",
    "category": "Models",
    "kind": "data",
-   "host": null,
+   "host": "Auckland Bioengineering Institute, University of Auckland",
+   "host_source": "https://www.auckland.ac.nz/en/abi/our-research/research-groups-themes/12-labours-project/tools-and-resources/physiome-model-repository.html",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -952,42 +1232,52 @@
    "category": "Proteomics",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://www.ebi.ac.uk/about/teams/proteomics-metabolomics",
    "embl_ebi": true,
    "gcbr": "ProteomeXchange Consortium",
-   "elixir_cdr": null,
-   "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_cdr": "PRIDE",
+   "elixir_edd": "PRIDE",
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "proteomexchange",
    "label": "ProteomeXchange",
    "category": "Proteomics",
    "kind": "data",
-   "host": null,
-   "embl_ebi": false,
+   "host": "ProteomeXchange Consortium (PRIDE at EMBL-EBI, with partners in the USA, Japan and China)",
+   "host_source": "https://www.proteomexchange.org/",
+   "embl_ebi": true,
    "gcbr": "ProteomeXchange Consortium",
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "reactome",
    "label": "Reactome",
    "category": "Pathways & Interactions",
    "kind": "data",
-   "host": "Reactome (OICR, EMBL-EBI, NYU Langone, OHSU)",
+   "host": "Reactome: OICR, NYU Langone, OHSU and EMBL-EBI",
+   "host_source": "https://oicr.on.ca/reactome-announces-annotation-and-release-of-10000th-human-protein/",
    "embl_ebi": true,
    "gcbr": "Reactome",
-   "elixir_cdr": null,
+   "elixir_cdr": "Reactome",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "refseq",
    "label": "NCBI RefSeq",
    "category": "Nucleotide Sequences",
    "kind": "data",
-   "host": "NCBI",
+   "host": "NCBI (USA)",
+   "host_source": "https://www.ncbi.nlm.nih.gov/refseq/about/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -999,7 +1289,8 @@
    "label": "dbSNP",
    "category": "Genomic Variation",
    "kind": "data",
-   "host": "NCBI",
+   "host": "NCBI (USA)",
+   "host_source": "https://www.ncbi.nlm.nih.gov/snp/docs/about/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -1012,11 +1303,14 @@
    "category": "Nucleotide Sequences",
    "kind": "data",
    "host": "EMBL-EBI",
+   "host_source": "https://docs.rfam.org/en/latest/rfam-team.html",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "rhea",
@@ -1024,30 +1318,37 @@
    "category": "Chemicals & Compounds",
    "kind": "data",
    "host": "SIB Swiss Institute of Bioinformatics",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8728268/",
    "embl_ebi": false,
    "gcbr": "Rhea",
-   "elixir_cdr": null,
+   "elixir_cdr": "Rhea",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "CH"
+   ]
   },
   {
    "slug": "rnacentral",
    "label": "RNAcentral",
    "category": "Nucleotide Sequences",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI, coordinating the RNAcentral Consortium",
+   "host_source": "https://rnacentral.org/about-us",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "rrid",
    "label": "Research Resource Identifiers",
    "category": "Cell Lines & Reagents",
    "kind": "identifier",
-   "host": null,
+   "host": "RRIDs.org and SciCrunch (USA)",
+   "host_source": "https://www.rrids.org/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -1059,19 +1360,23 @@
    "label": "Software Heritage",
    "category": "Code & Notebooks",
    "kind": "code",
-   "host": null,
+   "host": "Inria (France), with UNESCO",
+   "host_source": "https://en.wikipedia.org/wiki/Software_Heritage",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "FR"
+   ]
   },
   {
    "slug": "tcia",
    "label": "The Cancer Imaging Archive",
    "category": "Imaging",
    "kind": "data",
-   "host": "The Cancer Imaging Archive",
+   "host": "US National Cancer Institute and partners",
+   "host_source": "https://www.cancerimagingarchive.net/about-the-cancer-imaging-archive-tcia/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,
@@ -1083,43 +1388,55 @@
    "label": "TreeFam",
    "category": "Protein Sequences",
    "kind": "data",
-   "host": "EMBL-EBI",
+   "host": "EMBL-EBI from release 9 (retired 2026-09-30; data on the EMBL-EBI FTP)",
+   "host_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3965059/",
    "embl_ebi": true,
    "gcbr": null,
    "elixir_cdr": null,
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI"
+   ]
   },
   {
    "slug": "uniparc",
    "label": "UniParc",
    "category": "Protein Sequences",
    "kind": "data",
-   "host": "UniProt Consortium (EMBL-EBI, SIB, PIR)",
+   "host": "EMBL-EBI, for the UniProt Consortium (EMBL-EBI, SIB, PIR)",
+   "host_source": "https://www.ebi.ac.uk/uniparc/",
    "embl_ebi": true,
    "gcbr": "UniProt",
-   "elixir_cdr": null,
+   "elixir_cdr": "UniProt",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "CH"
+   ]
   },
   {
    "slug": "uniprot",
    "label": "UniProt",
    "category": "Protein Sequences",
    "kind": "data",
-   "host": "UniProt Consortium (EMBL-EBI, SIB, PIR)",
+   "host": "UniProt Consortium: EMBL-EBI, SIB (Geneva) and PIR (USA)",
+   "host_source": "https://www.uniprot.org/help/about",
    "embl_ebi": true,
    "gcbr": "UniProt",
-   "elixir_cdr": null,
+   "elixir_cdr": "UniProt",
    "elixir_edd": null,
-   "elixir_nodes": []
+   "elixir_nodes": [
+    "EMBL-EBI",
+    "CH"
+   ]
   },
   {
    "slug": "zenodo",
    "label": "Zenodo",
    "category": "Data Citations",
    "kind": "data",
-   "host": "CERN",
+   "host": "CERN (intergovernmental), with OpenAIRE",
+   "host_source": "https://about.zenodo.org/infrastructure/",
    "embl_ebi": false,
    "gcbr": null,
    "elixir_cdr": null,

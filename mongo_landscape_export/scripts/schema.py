@@ -124,7 +124,11 @@ TIER_MODEL_IDS = {"flash": "deepseek-v4-flash", "pro": "deepseek-v4-pro"}
 # Biodata Resource, an ELIXIR Core Data Resource or Deposition Database, and which ELIXIR Nodes run
 # it. Documents keep only the slug in data_links.resources[].resource. Minor, because a vocabulary
 # is added; migrate_v1_9_0.py moves the stamp only.
-SCHEMA_VERSION = "1.9.0"
+# 1.9.1 (2026-11-25): vocabulary only. data-resources gains the ELIXIR Core Data Resource list (copy
+# of the ELIXIR page supplied by the project owner), the ELIXIR Deposition Database list, every
+# ELIXIR Node, and each resource's Node(s) and host read from its own pages (host_source). v1.9.0
+# never reached moros, so migrate_v1_9_1.py stamps 1.8.0 or 1.9.0 straight to 1.9.1.
+SCHEMA_VERSION = "1.9.1"
 
 # The three values source.decision_provenance can take. "llm" is every document Step 23a produced;
 # the other two come from canonical_dataset.csv's `label_confidence`. Deliberately a flat
